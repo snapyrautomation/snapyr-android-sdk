@@ -25,11 +25,11 @@ package com.example.kotlin_sample
 
 import android.app.Application
 import android.util.Log
-import com.segment.analytics.Analytics
-import com.segment.analytics.Middleware
-import com.segment.analytics.ValueMap
-import com.segment.analytics.integrations.BasePayload
-import com.segment.analytics.integrations.TrackPayload
+import com.snapyr.analytics.Analytics
+import com.snapyr.analytics.Middleware
+import com.snapyr.analytics.ValueMap
+import com.snapyr.analytics.integrations.BasePayload
+import com.snapyr.analytics.integrations.TrackPayload
 import io.github.inflationx.calligraphy3.CalligraphyConfig
 import io.github.inflationx.calligraphy3.CalligraphyInterceptor
 import io.github.inflationx.viewpump.ViewPump
@@ -74,33 +74,33 @@ class SampleApp : Application() {
                     )
             )
             .useSourceMiddleware(
-                Middleware { chain ->
-                    if (chain.payload().type() == BasePayload.Type.track) {
-                        val payload = chain.payload() as TrackPayload
-                        if (payload.event()
-                            .equals("Button B Clicked", ignoreCase = true)
-                        ) {
-                            chain.proceed(payload.toBuilder().build())
-                            return@Middleware
+                    Middleware { chain ->
+                        if (chain.payload().type() == BasePayload.Type.track) {
+                            val payload = chain.payload() as TrackPayload
+                            if (payload.event()
+                                            .equals("Button B Clicked", ignoreCase = true)
+                            ) {
+                                chain.proceed(payload.toBuilder().build())
+                                return@Middleware
+                            }
                         }
+                        chain.proceed(chain.payload())
                     }
-                    chain.proceed(chain.payload())
-                }
             )
             .useDestinationMiddleware(
                 "Segment.io",
-                Middleware { chain ->
-                    if (chain.payload().type() == BasePayload.Type.track) {
-                        val payload = chain.payload() as TrackPayload
-                        if (payload.event()
-                            .equals("Button B Clicked", ignoreCase = true)
-                        ) {
-                            chain.proceed(payload.toBuilder().build())
-                            return@Middleware
+                    Middleware { chain ->
+                        if (chain.payload().type() == BasePayload.Type.track) {
+                            val payload = chain.payload() as TrackPayload
+                            if (payload.event()
+                                            .equals("Button B Clicked", ignoreCase = true)
+                            ) {
+                                chain.proceed(payload.toBuilder().build())
+                                return@Middleware
+                            }
                         }
+                        chain.proceed(chain.payload())
                     }
-                    chain.proceed(chain.payload())
-                }
             )
             .flushQueueSize(1)
             .recordScreenViews()

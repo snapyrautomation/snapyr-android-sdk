@@ -33,7 +33,7 @@ import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.kotlin_sample.databinding.ActivityScreenBinding
-import com.segment.analytics.Analytics
+import com.snapyr.analytics.Analytics
 
 class ScreenActivity : AppCompatActivity() {
 
