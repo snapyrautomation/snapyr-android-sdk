@@ -190,8 +190,8 @@ class ValueMapTest {
             assertThat(exception)
                 .hasMessage(
                     """
-                        |Could not create instance of com.segment.analytics.ValueMapTest.AmplitudeSettings.
-                        |java.lang.NoSuchMethodException: com.segment.analytics.ValueMapTest${"$"}AmplitudeSettings.<init>(java.util.Map)
+                        |Could not create instance of com.snapyr.analytics.ValueMapTest.AmplitudeSettings.
+                        |java.lang.NoSuchMethodException: com.snapyr.analytics.ValueMapTest${"$"}AmplitudeSettings.<init>(java.util.Map)
                     """.trimMargin()
                 )
         }
