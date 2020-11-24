@@ -56,30 +56,8 @@ class Client {
         return new Connection(connection, null, outputStream) {
             @Override
             public void close() throws IOException {
-                try {
-                    int responseCode = connection.getResponseCode();
-                    if (responseCode >= 300) {
-                        String responseBody;
-                        InputStream inputStream = null;
-                        try {
-                            inputStream = Utils.getInputStream(connection);
-                            responseBody = Utils.readFully(inputStream);
-                        } catch (IOException e) {
-                            responseBody =
-                                    "Could not read response body for rejected message: "
-                                            + e.toString();
-                        } finally {
-                            if (inputStream != null) {
-                                inputStream.close();
-                            }
-                        }
-                        throw new HTTPException(
-                                responseCode, connection.getResponseMessage(), responseBody);
-                    }
-                } finally {
-                    super.close();
-                    os.close();
-                }
+                super.close();
+                os.close();
             }
         };
     }

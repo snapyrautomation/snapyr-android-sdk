@@ -57,6 +57,7 @@ class SampleApp : Application() {
         val builder = Analytics.Builder(this, ANALYTICS_WRITE_KEY)
             .experimentalNanosecondTimestamps()
             .trackApplicationLifecycleEvents()
+            .logLevel(Analytics.LogLevel.DEBUG)
             .defaultProjectSettings(
                 ValueMap()
                     .putValue(

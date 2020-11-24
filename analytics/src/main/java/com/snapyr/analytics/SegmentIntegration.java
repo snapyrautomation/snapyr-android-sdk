@@ -385,7 +385,30 @@ class SegmentIntegration extends Integration<Void> {
             payloadsUploaded = payloadWriter.payloadCount;
 
             // Upload the payloads.
-            connection.close();
+            int responseCode = connection.connection.getResponseCode();
+            InputStream inputStream = Utils.getInputStream(connection.connection);
+            String responseBody;
+            if (responseCode >= 300) {
+                try {
+                    responseBody = Utils.readFully(inputStream);
+                } catch (IOException e) {
+                    responseBody =
+                            "Could not read response body for rejected message: "
+                                    + e.toString();
+                } finally {
+                    if (inputStream != null) {
+                        inputStream.close();
+                    }
+                }
+                throw new Client.HTTPException(
+                        responseCode, connection.connection.getResponseMessage(), responseBody);
+            } else {
+                responseBody = Utils.readFully(inputStream);
+                logger.info("flush response: " + responseBody);
+            }
+
+            Utils.closeQuietly(inputStream);
+            Utils.closeQuietly(connection);
         } catch (Client.HTTPException e) {
             if (e.is4xx() && e.responseCode != 429) {
                 // Simply log and proceed to remove the rejected payloads from the queue.
