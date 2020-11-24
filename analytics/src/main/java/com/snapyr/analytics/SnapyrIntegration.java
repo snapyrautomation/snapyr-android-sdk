@@ -414,6 +414,8 @@ class SnapyrIntegration extends Integration<Void> {
             } else if (inputStream != null ){
                 responseBody = Utils.readFully(inputStream);
                 logger.info("flush response: " + responseBody);
+                // TODO: remove this once we get real actions from server
+                // Stub some actions with some random probability
                 if (Math.random() < 0.1) {
                     responseBody = "{\"success\": true, \"actions\": [{\"action\": \"open-popup\", \"properties\": {\"name\": \"Rewards\"}},{\"action\": \"show-message\", \"properties\": {\"text\": \"Hello\"}}]}";
                 }
