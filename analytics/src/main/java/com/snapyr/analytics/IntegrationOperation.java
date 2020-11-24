@@ -50,7 +50,7 @@ abstract class IntegrationOperation {
         if (Utils.isNullOrEmpty(integrations)) {
             return true;
         }
-        if (SegmentIntegration.SEGMENT_KEY.equals(key)) {
+        if (SnapyrIntegration.SEGMENT_KEY.equals(key)) {
             return true; // Leave Segment integration enabled.
         }
         boolean enabled = true;
@@ -289,7 +289,7 @@ abstract class IntegrationOperation {
 
             // Send the event if new events are enabled or if this is the Segment integration.
             boolean defaultEventsEnabled = defaultPlan.getBoolean("enabled", true);
-            if (defaultEventsEnabled || SegmentIntegration.SEGMENT_KEY.equals(key)) {
+            if (defaultEventsEnabled || SnapyrIntegration.SEGMENT_KEY.equals(key)) {
                 integration.track(trackPayload);
             }
 
@@ -300,7 +300,7 @@ abstract class IntegrationOperation {
         boolean isEnabled = eventPlan.getBoolean("enabled", true);
         if (!isEnabled) {
             // If event is disabled in the tracking plan, send it only Segment.
-            if (SegmentIntegration.SEGMENT_KEY.equals(key)) {
+            if (SnapyrIntegration.SEGMENT_KEY.equals(key)) {
                 integration.track(trackPayload);
             }
             return;

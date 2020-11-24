@@ -74,7 +74,7 @@ public class Options {
      * @return This options object for chaining
      */
     public Options setIntegration(String integrationKey, boolean enabled) {
-        if (SegmentIntegration.SEGMENT_KEY.equals(integrationKey)) {
+        if (SnapyrIntegration.SEGMENT_KEY.equals(integrationKey)) {
             throw new IllegalArgumentException(
                     "Segment integration cannot be enabled or disabled.");
         }

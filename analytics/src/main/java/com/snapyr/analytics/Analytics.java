@@ -127,6 +127,7 @@ public class Analytics {
     final Crypto crypto;
     @Private final AnalyticsActivityLifecycleCallbacks activityLifecycleCallback;
     @Private final Lifecycle lifecycle;
+    @Private final SnapyrActionHandler actionHandler;
     ProjectSettings projectSettings; // todo: make final (non-final for testing).
     @Private final String writeKey;
     final int flushQueueSize;
@@ -221,6 +222,7 @@ public class Analytics {
             long flushIntervalInMillis,
             final ExecutorService analyticsExecutor,
             final boolean shouldTrackApplicationLifecycleEvents,
+            final SnapyrActionHandler actionHandler,
             CountDownLatch advertisingIdLatch,
             final boolean shouldRecordScreenViews,
             final boolean trackDeepLinks,
@@ -258,6 +260,7 @@ public class Analytics {
         this.lifecycle = lifecycle;
         this.nanosecondTimestamps = nanosecondTimestamps;
         this.useNewLifecycleMethods = useNewLifecycleMethods;
+        this.actionHandler = actionHandler;
 
         namespaceSharedPreferences();
 
@@ -1038,6 +1041,21 @@ public class Analytics {
         void onReady(T instance);
     }
 
+    static class DummyActionHandler implements SnapyrActionHandler {
+
+        private Logger logger;
+
+        DummyActionHandler(Logger logger) {
+            this.logger = logger;
+        }
+
+        @Override
+        public void handleAction(SnapyrAction action) {
+            logger.info("warning: action handler not configured");
+            logger.info("received action message: " + action.getAction());
+        }
+    }
+
     /** Fluent API for creating {@link Analytics} instances. */
     public static class Builder {
 
@@ -1056,6 +1074,7 @@ public class Analytics {
         private List<Middleware> sourceMiddleware;
         private Map<String, List<Middleware>> destinationMiddleware;
         private JSMiddleware edgeFunctionMiddleware;
+        private SnapyrActionHandler actionHandler;
         private boolean trackApplicationLifecycleEvents = false;
         private boolean recordScreenViews = false;
         private boolean trackDeepLinks = false;
@@ -1372,6 +1391,11 @@ public class Analytics {
             return this;
         }
 
+        public Builder actionHandler(SnapyrActionHandler actionHandler) {
+            this.actionHandler = actionHandler;
+            return this;
+        }
+
         /**
          * The executor on which payloads are dispatched asynchronously. This is not exposed
          * publicly.
@@ -1439,8 +1463,12 @@ public class Analytics {
             analyticsContext.attachAdvertisingId(application, advertisingIdLatch, logger);
 
             List<Integration.Factory> factories = new ArrayList<>(1 + this.factories.size());
-            factories.add(SegmentIntegration.FACTORY);
+            factories.add(SnapyrIntegration.FACTORY);
             factories.addAll(this.factories);
+
+            if (actionHandler == null) {
+                actionHandler = new DummyActionHandler(logger);
+            }
 
             // Check for edge functions, disable the destination and source middleware if found
             if (this.edgeFunctionMiddleware != null) {
@@ -1483,6 +1511,7 @@ public class Analytics {
                     flushIntervalInMillis,
                     executor,
                     trackApplicationLifecycleEvents,
+                    actionHandler,
                     advertisingIdLatch,
                     recordScreenViews,
                     trackDeepLinks,

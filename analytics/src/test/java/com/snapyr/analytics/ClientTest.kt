@@ -165,36 +165,6 @@ class ClientTest {
 
     @Test
     @Throws(Exception::class)
-    fun uploadFailureWithErrorStreamClosesStreamsAndThrowsException() {
-        val os = mock(OutputStream::class.java)
-        val input = mock(InputStream::class.java)
-        whenever(mockConnection.outputStream).thenReturn(os)
-        whenever(mockConnection.responseCode).thenReturn(404)
-        whenever(mockConnection.responseMessage).thenReturn("bar")
-        whenever(mockConnection.inputStream).thenThrow(FileNotFoundException())
-        whenever(mockConnection.errorStream).thenReturn(input)
-
-        val connection = mockClient.upload()
-        verify(mockConnection).doOutput = true
-        verify(mockConnection).setChunkedStreamingMode(0)
-
-        try {
-            connection.close()
-            fail(">= 300 return code should throw an exception")
-        } catch (e: Client.HTTPException) {
-            assertThat(e)
-                .hasMessage(
-                    "HTTP 404: bar. " +
-                        "Response: Could not read response body for rejected message: " +
-                        "java.io.IOException: Underlying input stream returned zero bytes"
-                )
-        }
-        verify(mockConnection).disconnect()
-        verify(os).close()
-    }
-
-    @Test
-    @Throws(Exception::class)
     fun fetchSettings() {
         server.enqueue(MockResponse())
 

@@ -31,11 +31,11 @@ import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.verifyZeroInteractions
 import com.nhaarman.mockitokotlin2.whenever
 import com.snapyr.analytics.PayloadQueue.PersistentQueue
-import com.snapyr.analytics.SegmentIntegration.BatchPayloadWriter
-import com.snapyr.analytics.SegmentIntegration.MAX_PAYLOAD_SIZE
-import com.snapyr.analytics.SegmentIntegration.MAX_QUEUE_SIZE
-import com.snapyr.analytics.SegmentIntegration.PayloadWriter
-import com.snapyr.analytics.SegmentIntegration.UTF_8
+import com.snapyr.analytics.SnapyrIntegration.BatchPayloadWriter
+import com.snapyr.analytics.SnapyrIntegration.MAX_PAYLOAD_SIZE
+import com.snapyr.analytics.SnapyrIntegration.MAX_QUEUE_SIZE
+import com.snapyr.analytics.SnapyrIntegration.PayloadWriter
+import com.snapyr.analytics.SnapyrIntegration.UTF_8
 import com.snapyr.analytics.TestUtils.SynchronousExecutor
 import com.snapyr.analytics.TestUtils.TRACK_PAYLOAD
 import com.snapyr.analytics.TestUtils.TRACK_PAYLOAD_JSON
@@ -76,7 +76,7 @@ import org.robolectric.shadows.ShadowLog
 
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE)
-class SegmentIntegrationTest {
+class SnapyrIntegrationTest {
 
     @Rule @JvmField
     val folder = TemporaryFolder()
@@ -114,7 +114,7 @@ class SegmentIntegrationTest {
     @Throws(IOException::class)
     fun enqueueAddsToQueueFile() {
         val payloadQueue = PersistentQueue(queueFile)
-        val segmentIntegration = SegmentBuilder().payloadQueue(payloadQueue).build()
+        val segmentIntegration = SnapyrBuilder().payloadQueue(payloadQueue).build()
         segmentIntegration.performEnqueue(TRACK_PAYLOAD)
         assertThat(payloadQueue.size()).isEqualTo(1)
     }
@@ -128,7 +128,7 @@ class SegmentIntegrationTest {
         integrations["foo"] = true // should add new values.
         val payloadQueue = mock(PayloadQueue::class.java)
         val segmentIntegration =
-            SegmentBuilder()
+            SnapyrBuilder()
                 .payloadQueue(payloadQueue)
                 .integrations(integrations)
                 .build()
@@ -174,7 +174,7 @@ class SegmentIntegrationTest {
         val payloadQueue = mock(PayloadQueue::class.java)
         // We want to trigger a remove, but not a flush.
         whenever(payloadQueue.size()).thenReturn(0, MAX_QUEUE_SIZE, MAX_QUEUE_SIZE, 0)
-        val segmentIntegration = SegmentBuilder().payloadQueue(payloadQueue).build()
+        val segmentIntegration = SnapyrBuilder().payloadQueue(payloadQueue).build()
 
         segmentIntegration.performEnqueue(TRACK_PAYLOAD)
 
@@ -188,7 +188,7 @@ class SegmentIntegrationTest {
         val payloadQueue = mock(PayloadQueue::class.java)
         doThrow(IOException("no remove for you.")).whenever(payloadQueue).remove(1)
         whenever(payloadQueue.size()).thenReturn(MAX_QUEUE_SIZE) // trigger a remove
-        val segmentIntegration = SegmentBuilder().payloadQueue(payloadQueue).build()
+        val segmentIntegration = SnapyrBuilder().payloadQueue(payloadQueue).build()
 
         try {
             segmentIntegration.performEnqueue(TRACK_PAYLOAD)
@@ -207,7 +207,7 @@ class SegmentIntegrationTest {
         val connection = mockConnection()
         whenever(client.upload()).thenReturn(connection)
         val segmentIntegration =
-            SegmentBuilder()
+            SnapyrBuilder()
                 .client(client)
                 .flushSize(5)
                 .payloadQueue(payloadQueue)
@@ -229,7 +229,7 @@ class SegmentIntegrationTest {
         val client = mock(Client::class.java)
         whenever(client.upload()).thenReturn(mockConnection())
         val segmentIntegration =
-            SegmentBuilder()
+            SnapyrBuilder()
                 .client(client)
                 .payloadQueue(payloadQueue)
                 .build()
@@ -250,7 +250,7 @@ class SegmentIntegrationTest {
         val payloadQueue = mock(PayloadQueue::class.java)
         whenever(payloadQueue.size()).thenReturn(1)
         val dispatcher =
-            SegmentBuilder()
+            SnapyrBuilder()
                 .payloadQueue(payloadQueue)
                 .networkExecutor(executor)
                 .build()
@@ -266,7 +266,7 @@ class SegmentIntegrationTest {
         val payloadQueue = mock(PayloadQueue::class.java)
         whenever(payloadQueue.size()).thenReturn(1)
         val dispatcher =
-            SegmentBuilder()
+            SnapyrBuilder()
                 .payloadQueue(payloadQueue)
                 .networkExecutor(executor)
                 .build()
@@ -288,7 +288,7 @@ class SegmentIntegrationTest {
         val context: Context = mockApplication()
         whenever(context.getSystemService(Context.CONNECTIVITY_SERVICE)).thenReturn(connectivityManager)
         val client = mock(Client::class.java)
-        val segmentIntegration = SegmentBuilder().context(context).client(client).build()
+        val segmentIntegration = SnapyrBuilder().context(context).client(client).build()
 
         segmentIntegration.submitFlush()
 
@@ -302,7 +302,7 @@ class SegmentIntegrationTest {
         whenever(payloadQueue.size()).thenReturn(0)
         val context: Context = mockApplication()
         val client = mock(Client::class.java)
-        val segmentIntegration = SegmentBuilder()
+        val segmentIntegration = SnapyrBuilder()
             .payloadQueue(payloadQueue)
             .context(context)
             .client(client)
@@ -324,7 +324,7 @@ class SegmentIntegrationTest {
         val connection = mockConnection(urlConnection)
         whenever(client.upload()).thenReturn(connection)
         val segmentIntegration =
-            SegmentBuilder()
+            SnapyrBuilder()
                 .client(client)
                 .payloadQueue(payloadQueue)
                 .build()
@@ -351,7 +351,7 @@ class SegmentIntegrationTest {
                     }
                 })
         val segmentIntegration =
-            SegmentBuilder()
+            SnapyrBuilder()
                 .client(client)
                 .payloadQueue(payloadQueue)
                 .build()
@@ -383,7 +383,7 @@ class SegmentIntegrationTest {
                         )
                     }
                 })
-        val segmentIntegration = SegmentBuilder()
+        val segmentIntegration = SnapyrBuilder()
             .client(client)
             .payloadQueue(payloadQueue)
             .build()
@@ -415,7 +415,7 @@ class SegmentIntegrationTest {
                         throw Client.HTTPException(429, "Too Many Requests", "too many requests")
                     }
                 })
-        val segmentIntegration = SegmentBuilder()
+        val segmentIntegration = SnapyrBuilder()
             .client(client)
             .payloadQueue(payloadQueue)
             .build()
@@ -435,7 +435,7 @@ class SegmentIntegrationTest {
         val payloadQueue = mock(PayloadQueue::class.java)
         val cartographer = mock(Cartographer::class.java)
         val payload = Builder().event("event").userId("userId").build()
-        val segmentIntegration = SegmentBuilder()
+        val segmentIntegration = SnapyrBuilder()
             .cartographer(cartographer)
             .payloadQueue(payloadQueue)
             .build()
@@ -464,7 +464,7 @@ class SegmentIntegrationTest {
     @Throws(IOException::class)
     fun shutDown() {
         val payloadQueue = mock(PayloadQueue::class.java)
-        val segmentIntegration = SegmentBuilder().payloadQueue(payloadQueue).build()
+        val segmentIntegration = SnapyrBuilder().payloadQueue(payloadQueue).build()
 
         segmentIntegration.shutdown()
 
@@ -545,7 +545,7 @@ class SegmentIntegrationTest {
         assertThat(payloadWriter.payloadCount).isEqualTo(331)
     }
 
-    internal class SegmentBuilder() {
+    internal class SnapyrBuilder() {
         var client: Client? = null
         var stats: Stats? = null
         var payloadQueue: PayloadQueue? = null
@@ -556,8 +556,9 @@ class SegmentIntegrationTest {
         var flushSize = DEFAULT_FLUSH_QUEUE_SIZE
         var logger = with(Analytics.LogLevel.NONE)
         var networkExecutor: ExecutorService? = null
+        var actionHandler: SnapyrActionHandler? = null
 
-        fun SegmentBuilder() {
+        fun SnapyrBuilder() {
             initMocks(this)
             context = mockApplication()
             whenever(context!!.checkCallingOrSelfPermission(ACCESS_NETWORK_STATE)) //
@@ -565,57 +566,62 @@ class SegmentIntegrationTest {
             cartographer = Cartographer.INSTANCE
         }
 
-        fun client(client: Client): SegmentBuilder {
+        fun client(client: Client): SnapyrBuilder {
             this.client = client
             return this
         }
 
-        fun stats(stats: Stats): SegmentBuilder {
+        fun stats(stats: Stats): SnapyrBuilder {
             this.stats = stats
             return this
         }
 
-        fun payloadQueue(payloadQueue: PayloadQueue): SegmentBuilder {
+        fun payloadQueue(payloadQueue: PayloadQueue): SnapyrBuilder {
             this.payloadQueue = payloadQueue
             return this
         }
 
-        fun context(context: Context): SegmentBuilder {
+        fun context(context: Context): SnapyrBuilder {
             this.context = context
             return this
         }
 
-        fun cartographer(cartographer: Cartographer): SegmentBuilder {
+        fun cartographer(cartographer: Cartographer): SnapyrBuilder {
             this.cartographer = cartographer
             return this
         }
 
-        fun integrations(integrations: Map<String, Boolean>): SegmentBuilder {
+        fun integrations(integrations: Map<String, Boolean>): SnapyrBuilder {
             this.integrations = integrations
             return this
         }
 
-        fun flushInterval(flushInterval: Int): SegmentBuilder {
+        fun flushInterval(flushInterval: Int): SnapyrBuilder {
             this.flushInterval = flushInterval
             return this
         }
 
-        fun flushSize(flushSize: Int): SegmentBuilder {
+        fun flushSize(flushSize: Int): SnapyrBuilder {
             this.flushSize = flushSize
             return this
         }
 
-        fun log(logger: Logger): SegmentBuilder {
+        fun log(logger: Logger): SnapyrBuilder {
             this.logger = logger
             return this
         }
 
-        fun networkExecutor(networkExecutor: ExecutorService): SegmentBuilder {
+        fun networkExecutor(networkExecutor: ExecutorService): SnapyrBuilder {
             this.networkExecutor = networkExecutor
             return this
         }
 
-        fun build(): SegmentIntegration {
+        fun actionHandler(actionHandler: SnapyrActionHandler): SnapyrBuilder {
+            this.actionHandler = actionHandler;
+            return this;
+        }
+
+        fun build(): SnapyrIntegration {
             if (context == null) {
                 context = mockApplication()
                 whenever(context!!.checkCallingOrSelfPermission(ACCESS_NETWORK_STATE))
@@ -639,7 +645,7 @@ class SegmentIntegrationTest {
             if (networkExecutor == null) {
                 networkExecutor = SynchronousExecutor()
             }
-            return SegmentIntegration(
+            return SnapyrIntegration(
                     context,
                     client,
                     cartographer,
@@ -650,7 +656,8 @@ class SegmentIntegrationTest {
                     flushInterval.toLong(),
                     flushSize,
                     logger,
-                    Crypto.none()
+                    Crypto.none(),
+                    actionHandler
             )
         }
     }

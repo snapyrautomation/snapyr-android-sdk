@@ -23,7 +23,7 @@
  */
 package com.snapyr.analytics
 
-import com.snapyr.analytics.SegmentIntegration.BatchPayloadWriter
+import com.snapyr.analytics.SnapyrIntegration.BatchPayloadWriter
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import kotlin.jvm.Throws

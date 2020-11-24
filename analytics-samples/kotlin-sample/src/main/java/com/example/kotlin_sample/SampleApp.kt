@@ -25,6 +25,7 @@ package com.example.kotlin_sample
 
 import android.app.Application
 import android.util.Log
+import android.widget.Toast
 import com.snapyr.analytics.Analytics
 import com.snapyr.analytics.Middleware
 import com.snapyr.analytics.ValueMap
@@ -105,6 +106,7 @@ class SampleApp : Application() {
             )
             .flushQueueSize(1)
             .recordScreenViews()
+            .actionHandler { Toast.makeText(this, "Action received: ${it.action}", Toast.LENGTH_SHORT).show() }
             .build()
 
         Analytics.setSingletonInstance(builder)

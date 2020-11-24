@@ -55,6 +55,7 @@ import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -62,13 +63,13 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /** Entity that queues payloads on disks and uploads them periodically. */
-class SegmentIntegration extends Integration<Void> {
+class SnapyrIntegration extends Integration<Void> {
 
     static final Integration.Factory FACTORY =
             new Integration.Factory() {
                 @Override
                 public Integration<?> create(ValueMap settings, Analytics analytics) {
-                    return SegmentIntegration.create(
+                    return SnapyrIntegration.create(
                             analytics.getApplication(),
                             analytics.client,
                             analytics.cartographer,
@@ -79,7 +80,8 @@ class SegmentIntegration extends Integration<Void> {
                             analytics.flushIntervalInMillis,
                             analytics.flushQueueSize,
                             analytics.getLogger(),
-                            analytics.crypto);
+                            analytics.crypto,
+                            analytics.actionHandler);
                 }
 
                 @Override
@@ -119,6 +121,7 @@ class SegmentIntegration extends Integration<Void> {
     private final Cartographer cartographer;
     private final ExecutorService networkExecutor;
     private final ScheduledExecutorService flushScheduler;
+    private final SnapyrActionHandler actionHandler;
     /**
      * We don't want to stop adding payloads to our disk queue when we're uploading payloads. So we
      * upload payloads on a network executor instead.
@@ -165,7 +168,7 @@ class SegmentIntegration extends Integration<Void> {
         }
     }
 
-    static synchronized SegmentIntegration create(
+    static synchronized SnapyrIntegration create(
             Context context,
             Client client,
             Cartographer cartographer,
@@ -176,7 +179,8 @@ class SegmentIntegration extends Integration<Void> {
             long flushIntervalInMillis,
             int flushQueueSize,
             Logger logger,
-            Crypto crypto) {
+            Crypto crypto,
+            SnapyrActionHandler actionHandler) {
         PayloadQueue payloadQueue;
         try {
             File folder = context.getDir("segment-disk-queue", Context.MODE_PRIVATE);
@@ -186,7 +190,7 @@ class SegmentIntegration extends Integration<Void> {
             logger.error(e, "Could not create disk queue. Falling back to memory queue.");
             payloadQueue = new PayloadQueue.MemoryQueue();
         }
-        return new SegmentIntegration(
+        return new SnapyrIntegration(
                 context,
                 client,
                 cartographer,
@@ -197,10 +201,11 @@ class SegmentIntegration extends Integration<Void> {
                 flushIntervalInMillis,
                 flushQueueSize,
                 logger,
-                crypto);
+                crypto,
+                actionHandler);
     }
 
-    SegmentIntegration(
+    SnapyrIntegration(
             Context context,
             Client client,
             Cartographer cartographer,
@@ -211,7 +216,8 @@ class SegmentIntegration extends Integration<Void> {
             long flushIntervalInMillis,
             int flushQueueSize,
             Logger logger,
-            Crypto crypto) {
+            Crypto crypto,
+            SnapyrActionHandler actionHandler) {
         this.context = context;
         this.client = client;
         this.networkExecutor = networkExecutor;
@@ -222,11 +228,12 @@ class SegmentIntegration extends Integration<Void> {
         this.cartographer = cartographer;
         this.flushQueueSize = flushQueueSize;
         this.flushScheduler = Executors.newScheduledThreadPool(1, new Utils.AnalyticsThreadFactory());
+        this.actionHandler = actionHandler;
         this.crypto = crypto;
 
         segmentThread = new HandlerThread(SEGMENT_THREAD_NAME, THREAD_PRIORITY_BACKGROUND);
         segmentThread.start();
-        handler = new SegmentDispatcherHandler(segmentThread.getLooper(), this);
+        handler = new SnapyrDispatcherHandler(segmentThread.getLooper(), this);
 
         long initialDelay = payloadQueue.size() >= flushQueueSize ? 0L : flushIntervalInMillis;
         flushScheduler.scheduleAtFixedRate(
@@ -268,7 +275,7 @@ class SegmentIntegration extends Integration<Void> {
 
     private void dispatchEnqueue(BasePayload payload) {
         handler.sendMessage(
-                handler.obtainMessage(SegmentDispatcherHandler.REQUEST_ENQUEUE, payload));
+                handler.obtainMessage(SnapyrDispatcherHandler.REQUEST_ENQUEUE, payload));
     }
 
     void performEnqueue(BasePayload original) {
@@ -329,7 +336,7 @@ class SegmentIntegration extends Integration<Void> {
     /** Enqueues a flush message to the handler. */
     @Override
     public void flush() {
-        handler.sendMessage(handler.obtainMessage(SegmentDispatcherHandler.REQUEST_FLUSH));
+        handler.sendMessage(handler.obtainMessage(SnapyrDispatcherHandler.REQUEST_FLUSH));
     }
 
     /** Submits a flush message to the network executor. */
@@ -387,28 +394,34 @@ class SegmentIntegration extends Integration<Void> {
             // Upload the payloads.
             int responseCode = connection.connection.getResponseCode();
             InputStream inputStream = Utils.getInputStream(connection.connection);
-            String responseBody;
+            String responseBody = null;
             if (responseCode >= 300) {
-                try {
-                    responseBody = Utils.readFully(inputStream);
-                } catch (IOException e) {
-                    responseBody =
-                            "Could not read response body for rejected message: "
-                                    + e.toString();
-                } finally {
-                    if (inputStream != null) {
-                        inputStream.close();
+                if (inputStream != null) {
+                    try {
+                        responseBody = Utils.readFully(inputStream);
+                    } catch (IOException e) {
+                        responseBody =
+                                "Could not read response body for rejected message: "
+                                        + e.toString();
+                    } finally {
+                        if (inputStream != null) {
+                            inputStream.close();
+                        }
                     }
                 }
                 throw new Client.HTTPException(
                         responseCode, connection.connection.getResponseMessage(), responseBody);
-            } else {
+            } else if (inputStream != null ){
                 responseBody = Utils.readFully(inputStream);
                 logger.info("flush response: " + responseBody);
+                if (Math.random() < 0.1) {
+                    responseBody = "{\"success\": true, \"actions\": [{\"action\": \"open-popup\", \"properties\": {\"name\": \"Rewards\"}},{\"action\": \"show-message\", \"properties\": {\"text\": \"Hello\"}}]}";
+                }
+                handleActionsIfAny(responseBody);
             }
 
             Utils.closeQuietly(inputStream);
-            Utils.closeQuietly(connection);
+            connection.close();
         } catch (Client.HTTPException e) {
             if (e.is4xx() && e.responseCode != 429) {
                 // Simply log and proceed to remove the rejected payloads from the queue.
@@ -444,6 +457,34 @@ class SegmentIntegration extends Integration<Void> {
         stats.dispatchFlush(payloadsUploaded);
         if (payloadQueue.size() > 0) {
             performFlush(); // Flush any remaining items.
+        }
+    }
+
+    void handleActionsIfAny(String uploadResponse) {
+        try {
+            Map<String, Object> map = cartographer.fromJson(uploadResponse);
+            if (map.containsKey("actions")) {
+                List<Map<String, Object>> actionMapList = (List<Map<String, Object>>) map.get("actions");
+
+                for (Map<String, Object> actionMap : actionMapList) {
+                    final SnapyrAction action = SnapyrAction.create(actionMap);
+                    if (actionHandler != null) {
+                        Analytics.HANDLER.post(
+                                new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        try {
+                                            actionHandler.handleAction(action);
+                                        } catch (Exception e) {
+                                            logger.error(e, "error handling action: " + action.getAction());
+                                        }
+                                    }
+                                });
+                    }
+                }
+            }
+        } catch (IOException e) {
+            logger.error(e, "Error parsing upload response");
         }
     }
 
@@ -546,15 +587,15 @@ class SegmentIntegration extends Integration<Void> {
         }
     }
 
-    static class SegmentDispatcherHandler extends Handler {
+    static class SnapyrDispatcherHandler extends Handler {
 
         static final int REQUEST_FLUSH = 1;
         @Private static final int REQUEST_ENQUEUE = 0;
-        private final SegmentIntegration segmentIntegration;
+        private final SnapyrIntegration snapyrIntegration;
 
-        SegmentDispatcherHandler(Looper looper, SegmentIntegration segmentIntegration) {
+        SnapyrDispatcherHandler(Looper looper, SnapyrIntegration snapyrIntegration) {
             super(looper);
-            this.segmentIntegration = segmentIntegration;
+            this.snapyrIntegration = snapyrIntegration;
         }
 
         @Override
@@ -562,10 +603,10 @@ class SegmentIntegration extends Integration<Void> {
             switch (msg.what) {
                 case REQUEST_ENQUEUE:
                     BasePayload payload = (BasePayload) msg.obj;
-                    segmentIntegration.performEnqueue(payload);
+                    snapyrIntegration.performEnqueue(payload);
                     break;
                 case REQUEST_FLUSH:
-                    segmentIntegration.submitFlush();
+                    snapyrIntegration.submitFlush();
                     break;
                 default:
                     throw new AssertionError("Unknown dispatcher message: " + msg.what);
