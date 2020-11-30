@@ -27,7 +27,6 @@ import static java.util.Collections.unmodifiableMap;
 
 import android.content.Context;
 import com.snapyr.analytics.internal.Private;
-
 import java.util.Map;
 
 class ProjectSettings extends ValueMap {

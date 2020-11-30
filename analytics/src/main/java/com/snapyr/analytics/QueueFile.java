@@ -26,7 +26,6 @@ package com.snapyr.analytics;
 import static java.lang.Math.min;
 
 import com.snapyr.analytics.internal.Private;
-
 import java.io.Closeable;
 import java.io.EOFException;
 import java.io.File;

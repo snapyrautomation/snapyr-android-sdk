@@ -23,12 +23,9 @@
  */
 package com.snapyr.analytics;
 
-import static com.snapyr.analytics.internal.Utils.isNullOrEmpty;
-
 import android.content.Context;
 import android.content.SharedPreferences;
 import com.snapyr.analytics.internal.Utils;
-
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;

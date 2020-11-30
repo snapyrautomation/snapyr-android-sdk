@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Segment Sample</string>
+    <string name="app_name">Snapyr Sample</string>
     <string name="docs">Docs</string>
     <string name="primary_dark">#12424a</string>
     <string name="track_button_a">Track Button A</string>

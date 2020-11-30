@@ -28,11 +28,10 @@ import static org.junit.Assert.fail;
 
 import androidx.test.rule.ActivityTestRule;
 import androidx.test.runner.AndroidJUnit4;
-import com.segment.analytics.sample.BuildConfig;
+import com.segment.backo.Backo;
+import com.snapyr.analytics.sample.BuildConfig;
 import com.snapyr.analytics.sample.MainActivity;
 import com.snapyr.analytics.webhook.WebhookService;
-import com.segment.backo.Backo;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;

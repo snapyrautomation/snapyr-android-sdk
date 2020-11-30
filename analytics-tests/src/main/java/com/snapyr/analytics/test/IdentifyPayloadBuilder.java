@@ -23,13 +23,11 @@
  */
 package com.snapyr.analytics.test;
 
-import static com.snapyr.analytics.Utils.createTraits;
-
 import com.snapyr.analytics.AnalyticsContext;
 import com.snapyr.analytics.Options;
 import com.snapyr.analytics.Traits;
-import com.snapyr.analytics.integrations.IdentifyPayload;
 import com.snapyr.analytics.Utils;
+import com.snapyr.analytics.integrations.IdentifyPayload;
 
 @Deprecated
 public class IdentifyPayloadBuilder {

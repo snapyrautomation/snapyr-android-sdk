@@ -27,7 +27,6 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.View;
 import com.snapyr.analytics.WearAnalytics;
-import com.snapyr.analytics.sample.R;
 
 public class MainActivity extends Activity {
 

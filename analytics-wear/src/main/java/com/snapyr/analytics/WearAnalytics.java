@@ -29,9 +29,9 @@ import android.content.Context;
 import com.snapyr.analytics.integrations.BasePayload;
 
 /**
- * The counterpart to {@link Analytics} for Android Wear. This class will
- * simply forward all events to the host. The host app must register {@link
- * PhoneAnalyticsListenerService} (or a subclass) to be able to receive the events.
+ * The counterpart to {@link Analytics} for Android Wear. This class will simply forward all events
+ * to the host. The host app must register {@link PhoneAnalyticsListenerService} (or a subclass) to
+ * be able to receive the events.
  *
  * <p>This class can only send track or screen events. You should `identify`, `group` or `alias`
  * users through your host app (that runs on an Android phone).

@@ -23,14 +23,11 @@
  */
 package com.snapyr.analytics;
 
-import static com.snapyr.analytics.internal.Utils.isNullOrEmpty;
-import static com.snapyr.analytics.internal.Utils.toISO8601Date;
 import static java.util.Collections.unmodifiableMap;
 
 import android.content.Context;
 import com.snapyr.analytics.internal.Private;
 import com.snapyr.analytics.internal.Utils;
-
 import java.text.ParseException;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -102,8 +99,8 @@ public class Traits extends ValueMap {
     }
 
     /**
-     * Private API, users should call {@link Analytics#identify(String)}
-     * instead. Note that this is unable to enforce it, users can easily do traits.put(id, ..);
+     * Private API, users should call {@link Analytics#identify(String)} instead. Note that this is
+     * unable to enforce it, users can easily do traits.put(id, ..);
      */
     Traits putUserId(String id) {
         return putValue(USER_ID_KEY, id);
@@ -265,7 +262,9 @@ public class Traits extends ValueMap {
 
     public String name() {
         String name = getString(NAME_KEY);
-        if (Utils.isNullOrEmpty(name) && Utils.isNullOrEmpty(firstName()) && Utils.isNullOrEmpty(lastName())) {
+        if (Utils.isNullOrEmpty(name)
+                && Utils.isNullOrEmpty(firstName())
+                && Utils.isNullOrEmpty(lastName())) {
             return null;
         }
 

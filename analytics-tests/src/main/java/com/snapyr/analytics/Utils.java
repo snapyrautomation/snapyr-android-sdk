@@ -30,9 +30,7 @@ public final class Utils {
         throw new AssertionError("No instances.");
     }
 
-    /**
-     * Create a {@link Traits} with only a randomly generated anonymous ID.
-     */
+    /** Create a {@link Traits} with only a randomly generated anonymous ID. */
     public static Traits createTraits() {
         return Traits.create();
     }

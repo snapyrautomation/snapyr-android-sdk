@@ -29,7 +29,6 @@ import static android.content.Context.TELEPHONY_SERVICE;
 import static android.net.ConnectivityManager.TYPE_BLUETOOTH;
 import static android.net.ConnectivityManager.TYPE_MOBILE;
 import static android.net.ConnectivityManager.TYPE_WIFI;
-import static com.snapyr.analytics.internal.Utils.isNullOrEmpty;
 import static java.util.Collections.unmodifiableMap;
 
 import android.annotation.SuppressLint;
@@ -43,11 +42,10 @@ import android.telephony.TelephonyManager;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.WindowManager;
-import com.segment.analytics.core.BuildConfig;
+import com.snapyr.analytics.core.BuildConfig;
 import com.snapyr.analytics.integrations.Logger;
 import com.snapyr.analytics.internal.Private;
 import com.snapyr.analytics.internal.Utils;
-
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -413,8 +411,7 @@ public class AnalyticsContext extends ValueMap {
     /** Information about the device. */
     public static class Device extends ValueMap {
 
-        @Private
-        static final String DEVICE_ID_KEY = "id";
+        @Private static final String DEVICE_ID_KEY = "id";
         @Private static final String DEVICE_MANUFACTURER_KEY = "manufacturer";
         @Private static final String DEVICE_MODEL_KEY = "model";
         @Private static final String DEVICE_NAME_KEY = "name";

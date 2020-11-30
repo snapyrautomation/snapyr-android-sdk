@@ -45,9 +45,7 @@ import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import com.snapyr.analytics.Analytics;
-
 import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.File;
@@ -79,7 +77,7 @@ import org.json.JSONObject;
 
 public final class Utils {
 
-    public static final String THREAD_PREFIX = "Segment-";
+    public static final String THREAD_PREFIX = "Snapyr-";
     public static final int DEFAULT_FLUSH_INTERVAL = 30 * 1000; // 30s
     public static final int DEFAULT_FLUSH_QUEUE_SIZE = 20;
     public static final boolean DEFAULT_COLLECT_DEVICE_ID = true;
@@ -539,9 +537,8 @@ public final class Utils {
     }
 
     /**
-     * A {@link ThreadPoolExecutor} implementation by {@link Analytics}
-     * instances. Exists as a custom type so that we can differentiate the use of defaults versus a
-     * user-supplied instance.
+     * A {@link ThreadPoolExecutor} implementation by {@link Analytics} instances. Exists as a
+     * custom type so that we can differentiate the use of defaults versus a user-supplied instance.
      */
     public static class AnalyticsNetworkExecutorService extends ThreadPoolExecutor {
 

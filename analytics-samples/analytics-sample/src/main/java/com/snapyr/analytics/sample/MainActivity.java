@@ -38,8 +38,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import com.snapyr.analytics.Analytics;
-import com.snapyr.analytics.sample.R;
-
 import io.github.inflationx.viewpump.ViewPumpContextWrapper;
 
 public class MainActivity extends Activity {

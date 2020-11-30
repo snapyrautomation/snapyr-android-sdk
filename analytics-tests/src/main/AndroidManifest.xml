@@ -24,6 +24,6 @@
   -->
 
 <manifest
-    package="com.segment.analytics.core.tests">
+    package="com.snapyr.analytics.core.tests">
   <application/>
 </manifest>

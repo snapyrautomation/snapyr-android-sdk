@@ -23,7 +23,6 @@
  */
 package com.snapyr.analytics;
 
-import static com.snapyr.analytics.internal.Utils.immutableCopyOf;
 import static com.snapyr.analytics.internal.Utils.isNullOrEmpty;
 
 import android.Manifest;
@@ -54,7 +53,6 @@ import com.snapyr.analytics.integrations.TrackPayload;
 import com.snapyr.analytics.internal.NanoDate;
 import com.snapyr.analytics.internal.Private;
 import com.snapyr.analytics.internal.Utils;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -97,8 +95,7 @@ public class Analytics {
                     throw new AssertionError("Unknown handler message received: " + msg.what);
                 }
             };
-    @Private
-    static final String OPT_OUT_PREFERENCE_KEY = "opt-out";
+    @Private static final String OPT_OUT_PREFERENCE_KEY = "opt-out";
     static final String WRITE_KEY_RESOURCE_IDENTIFIER = "analytics_write_key";
     static final List<String> INSTANCES = new ArrayList<>(1);
     /* This is intentional since we're only using the application context. */
@@ -167,7 +164,8 @@ public class Analytics {
             }
             synchronized (Analytics.class) {
                 if (singleton == null) {
-                    String writeKey = Utils.getResourceString(context, WRITE_KEY_RESOURCE_IDENTIFIER);
+                    String writeKey =
+                            Utils.getResourceString(context, WRITE_KEY_RESOURCE_IDENTIFIER);
                     Builder builder = new Builder(context, writeKey);
 
                     try {

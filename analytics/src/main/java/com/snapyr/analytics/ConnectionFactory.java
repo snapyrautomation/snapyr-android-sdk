@@ -24,7 +24,7 @@
 package com.snapyr.analytics;
 
 import android.util.Base64;
-import com.segment.analytics.core.BuildConfig;
+import com.snapyr.analytics.core.BuildConfig;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;

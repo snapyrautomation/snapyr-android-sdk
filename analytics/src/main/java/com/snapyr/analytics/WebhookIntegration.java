@@ -23,8 +23,6 @@
  */
 package com.snapyr.analytics;
 
-import static com.snapyr.analytics.internal.Utils.readFully;
-
 import android.util.Log;
 import com.snapyr.analytics.integrations.AliasPayload;
 import com.snapyr.analytics.integrations.GroupPayload;
@@ -33,7 +31,6 @@ import com.snapyr.analytics.integrations.Integration;
 import com.snapyr.analytics.integrations.ScreenPayload;
 import com.snapyr.analytics.integrations.TrackPayload;
 import com.snapyr.analytics.internal.Utils;
-
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;

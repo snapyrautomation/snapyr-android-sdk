@@ -27,10 +27,10 @@ import android.app.Activity;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import com.snapyr.analytics.Analytics;
-import com.snapyr.analytics.Traits;
-import com.snapyr.analytics.ValueMap;
 import com.snapyr.analytics.Options;
 import com.snapyr.analytics.Properties;
+import com.snapyr.analytics.Traits;
+import com.snapyr.analytics.ValueMap;
 
 /**
  * Converts Segment messages to a format a bundled integration understands, and calls those methods.
@@ -75,26 +75,19 @@ public abstract class Integration<T> {
     /** @see android.app.Application.ActivityLifecycleCallbacks */
     public void onActivityDestroyed(Activity activity) {}
 
-    /**
-     * @see Analytics#identify(String, Traits, Options)
-     */
+    /** @see Analytics#identify(String, Traits, Options) */
     public void identify(IdentifyPayload identify) {}
 
     /** @see Analytics#group(String, Traits, Options) */
     public void group(GroupPayload group) {}
 
-    /**
-     * @see Analytics#track(String, Properties, Options)
-     */
+    /** @see Analytics#track(String, Properties, Options) */
     public void track(TrackPayload track) {}
 
     /** @see Analytics#alias(String, Options) */
     public void alias(AliasPayload alias) {}
 
-    /**
-     * @see Analytics#screen(String, String, Properties,
-     *     Options)
-     */
+    /** @see Analytics#screen(String, String, Properties, Options) */
     public void screen(ScreenPayload screen) {}
 
     /** @see Analytics#flush() */

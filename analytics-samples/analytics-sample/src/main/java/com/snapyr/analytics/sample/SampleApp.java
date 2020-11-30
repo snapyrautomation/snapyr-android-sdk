@@ -30,8 +30,6 @@ import com.snapyr.analytics.Middleware;
 import com.snapyr.analytics.ValueMap;
 import com.snapyr.analytics.integrations.BasePayload;
 import com.snapyr.analytics.integrations.TrackPayload;
-import com.snapyr.analytics.sample.R;
-
 import io.github.inflationx.calligraphy3.CalligraphyConfig;
 import io.github.inflationx.calligraphy3.CalligraphyInterceptor;
 import io.github.inflationx.viewpump.ViewPump;

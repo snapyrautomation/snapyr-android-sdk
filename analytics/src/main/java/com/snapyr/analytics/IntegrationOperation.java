@@ -24,7 +24,6 @@
 package com.snapyr.analytics;
 
 import static com.snapyr.analytics.Options.ALL_INTEGRATIONS_KEY;
-import static com.snapyr.analytics.internal.Utils.isNullOrEmpty;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -37,7 +36,6 @@ import com.snapyr.analytics.integrations.ScreenPayload;
 import com.snapyr.analytics.integrations.TrackPayload;
 import com.snapyr.analytics.internal.Private;
 import com.snapyr.analytics.internal.Utils;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;

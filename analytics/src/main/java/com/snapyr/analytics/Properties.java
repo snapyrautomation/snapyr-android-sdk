@@ -24,9 +24,6 @@
 package com.snapyr.analytics;
 
 import com.snapyr.analytics.internal.Utils;
-
-import static com.snapyr.analytics.internal.Utils.isNullOrEmpty;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

@@ -31,7 +31,7 @@ import android.content.res.Resources
 import com.nhaarman.mockitokotlin2.whenever
 import com.snapyr.analytics.Analytics.Builder
 import com.snapyr.analytics.Analytics.WRITE_KEY_RESOURCE_IDENTIFIER
-import com.segment.analytics.core.BuildConfig
+import com.snapyr.analytics.core.BuildConfig
 import java.util.concurrent.TimeUnit
 import kotlin.jvm.Throws
 import org.assertj.core.api.Assertions.assertThat

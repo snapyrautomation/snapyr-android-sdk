@@ -23,13 +23,10 @@
  */
 package com.snapyr.analytics;
 
-import static com.snapyr.analytics.internal.Utils.readFully;
 import static java.net.HttpURLConnection.HTTP_OK;
 
 import android.text.TextUtils;
-
 import com.snapyr.analytics.internal.Utils;
-
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;

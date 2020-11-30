@@ -24,7 +24,6 @@
 package com.snapyr.analytics;
 
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
-import static com.snapyr.analytics.internal.Utils.toISO8601Date;
 
 import android.content.Context;
 import android.os.Handler;
@@ -42,7 +41,6 @@ import com.snapyr.analytics.integrations.ScreenPayload;
 import com.snapyr.analytics.integrations.TrackPayload;
 import com.snapyr.analytics.internal.Private;
 import com.snapyr.analytics.internal.Utils;
-
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
@@ -103,8 +101,7 @@ class SnapyrIntegration extends Integration<Void> {
      * is not present in payloads themselves, but is added later, such as {@code sentAt}, {@code
      * integrations} and other json tokens.
      */
-    @Private
-    static final int MAX_BATCH_SIZE = 475000; // 475KB.
+    @Private static final int MAX_BATCH_SIZE = 475000; // 475KB.
 
     @Private static final Charset UTF_8 = Charset.forName("UTF-8");
     private static final String SEGMENT_THREAD_NAME = Utils.THREAD_PREFIX + "SegmentDispatcher";
@@ -227,7 +224,8 @@ class SnapyrIntegration extends Integration<Void> {
         this.bundledIntegrations = bundledIntegrations;
         this.cartographer = cartographer;
         this.flushQueueSize = flushQueueSize;
-        this.flushScheduler = Executors.newScheduledThreadPool(1, new Utils.AnalyticsThreadFactory());
+        this.flushScheduler =
+                Executors.newScheduledThreadPool(1, new Utils.AnalyticsThreadFactory());
         this.actionHandler = actionHandler;
         this.crypto = crypto;
 
@@ -411,13 +409,14 @@ class SnapyrIntegration extends Integration<Void> {
                 }
                 throw new Client.HTTPException(
                         responseCode, connection.connection.getResponseMessage(), responseBody);
-            } else if (inputStream != null ){
+            } else if (inputStream != null) {
                 responseBody = Utils.readFully(inputStream);
                 logger.info("flush response: " + responseBody);
                 // TODO: remove this once we get real actions from server
                 // Stub some actions with some random probability
                 if (Math.random() < 0.1) {
-                    responseBody = "{\"success\": true, \"actions\": [{\"action\": \"open-popup\", \"properties\": {\"name\": \"Rewards\"}},{\"action\": \"show-message\", \"properties\": {\"text\": \"Hello\"}}]}";
+                    responseBody =
+                            "{\"success\": true, \"actions\": [{\"action\": \"open-popup\", \"properties\": {\"name\": \"Rewards\"}},{\"action\": \"show-message\", \"properties\": {\"text\": \"Hello\"}}]}";
                 }
                 handleActionsIfAny(responseBody);
             }
@@ -466,7 +465,8 @@ class SnapyrIntegration extends Integration<Void> {
         try {
             Map<String, Object> map = cartographer.fromJson(uploadResponse);
             if (map.containsKey("actions")) {
-                List<Map<String, Object>> actionMapList = (List<Map<String, Object>>) map.get("actions");
+                List<Map<String, Object>> actionMapList =
+                        (List<Map<String, Object>>) map.get("actions");
 
                 for (Map<String, Object> actionMap : actionMapList) {
                     final SnapyrAction action = SnapyrAction.create(actionMap);
@@ -478,7 +478,9 @@ class SnapyrIntegration extends Integration<Void> {
                                         try {
                                             actionHandler.handleAction(action);
                                         } catch (Exception e) {
-                                            logger.error(e, "error handling action: " + action.getAction());
+                                            logger.error(
+                                                    e,
+                                                    "error handling action: " + action.getAction());
                                         }
                                     }
                                 });

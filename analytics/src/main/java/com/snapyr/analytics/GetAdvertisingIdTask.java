@@ -29,7 +29,6 @@ import android.os.AsyncTask;
 import android.provider.Settings.Secure;
 import android.util.Pair;
 import com.snapyr.analytics.integrations.Logger;
-
 import java.util.concurrent.CountDownLatch;
 
 /**

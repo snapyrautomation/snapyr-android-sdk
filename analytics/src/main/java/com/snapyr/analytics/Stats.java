@@ -32,7 +32,6 @@ import android.os.Message;
 import android.util.Pair;
 import com.snapyr.analytics.internal.Private;
 import com.snapyr.analytics.internal.Utils;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -103,8 +102,7 @@ class Stats {
 
     private static class StatsHandler extends Handler {
 
-        @Private
-        static final int TRACK_FLUSH = 1;
+        @Private static final int TRACK_FLUSH = 1;
         @Private static final int TRACK_INTEGRATION_OPERATION = 2;
 
         private final Stats stats;
