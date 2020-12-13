@@ -46,9 +46,9 @@ class GetAdvertisingIdTest {
         val latch = CountDownLatch(1)
         val traits: Traits = Traits.create()
         val context: AnalyticsContext =
-                AnalyticsContext.create(RuntimeEnvironment.application, traits, true)
+            AnalyticsContext.create(RuntimeEnvironment.application, traits, true)
         val task =
-                GetAdvertisingIdTask(context, latch, Logger.with(Analytics.LogLevel.VERBOSE))
+            GetAdvertisingIdTask(context, latch, Logger.with(Analytics.LogLevel.VERBOSE))
         task.execute(RuntimeEnvironment.application)
         latch.await()
         assertThat(context.device()).doesNotContainKey("advertisingId")
@@ -64,10 +64,10 @@ class GetAdvertisingIdTest {
 
         val traits = Traits.create()
         val analyticsContext =
-                AnalyticsContext.create(RuntimeEnvironment.application, traits, true)
+            AnalyticsContext.create(RuntimeEnvironment.application, traits, true)
 
         val task =
-                GetAdvertisingIdTask(analyticsContext, latch, Logger.with(Analytics.LogLevel.VERBOSE))
+            GetAdvertisingIdTask(analyticsContext, latch, Logger.with(Analytics.LogLevel.VERBOSE))
         task.execute(context)
         latch.await()
 
@@ -87,7 +87,7 @@ class GetAdvertisingIdTest {
 
         val traits = Traits.create()
         val analyticsContext =
-                AnalyticsContext.create(RuntimeEnvironment.application, traits, true)
+            AnalyticsContext.create(RuntimeEnvironment.application, traits, true)
 
         val task = GetAdvertisingIdTask(analyticsContext, latch, Logger.with(Analytics.LogLevel.VERBOSE))
         task.execute(context)

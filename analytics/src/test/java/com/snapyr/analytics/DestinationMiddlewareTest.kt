@@ -365,8 +365,8 @@ class DestinationMiddlewareTest {
                     }
 
                     private fun isDeepEqual(
-                            payload: IdentifyPayload?,
-                            previousPayload: IdentifyPayload?
+                        payload: IdentifyPayload?,
+                        previousPayload: IdentifyPayload?
                     ): Boolean {
                         if (payload == null && previousPayload != null ||
                             payload != null && previousPayload == null

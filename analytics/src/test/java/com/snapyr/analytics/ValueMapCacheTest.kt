@@ -42,9 +42,9 @@ class ValueMapCacheTest {
     fun setUp() {
         cartographer = Cartographer.INSTANCE
         traitsCache =
-                ValueMap.Cache<Traits>(
-                        RuntimeEnvironment.application, cartographer, "traits-cache-test", "tag", Traits::class.java
-                )
+            ValueMap.Cache<Traits>(
+                RuntimeEnvironment.application, cartographer, "traits-cache-test", "tag", Traits::class.java
+            )
         traitsCache.delete()
         assertThat(traitsCache.get()).isNullOrEmpty()
     }
@@ -65,9 +65,9 @@ class ValueMapCacheTest {
         traitsCache.set(traits)
 
         val traitsCacheDuplicate =
-                ValueMap.Cache<Traits>(
-                        RuntimeEnvironment.application, cartographer, "traits-cache-test", "tag", Traits::class.java
-                )
+            ValueMap.Cache<Traits>(
+                RuntimeEnvironment.application, cartographer, "traits-cache-test", "tag", Traits::class.java
+            )
         assertThat(traitsCacheDuplicate.isSet).isTrue()
     }
 }

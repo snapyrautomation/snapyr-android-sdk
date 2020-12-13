@@ -121,7 +121,7 @@ class EdgeFunctionMiddlewareTest {
             val analytics = builder
                 .useEdgeFunctionMiddleware(Mockito.mock(JSMiddleware::class.java))
                 .useSourceMiddleware(
-                        Middleware { throw AssertionError("should not be invoked") }
+                    Middleware { throw AssertionError("should not be invoked") }
                 )
                 .build()
 
@@ -140,7 +140,7 @@ class EdgeFunctionMiddlewareTest {
                 .useEdgeFunctionMiddleware(Mockito.mock(JSMiddleware::class.java))
                 .useDestinationMiddleware(
                     "test",
-                        Middleware { throw AssertionError("should not be invoked") }
+                    Middleware { throw AssertionError("should not be invoked") }
                 )
                 .build()
 
@@ -159,10 +159,10 @@ class EdgeFunctionMiddlewareTest {
                 .useEdgeFunctionMiddleware(Mockito.mock(JSMiddleware::class.java))
                 .useDestinationMiddleware(
                     "test",
-                        Middleware { throw AssertionError("should not be invoked") }
+                    Middleware { throw AssertionError("should not be invoked") }
                 )
                 .useSourceMiddleware(
-                        Middleware { throw AssertionError("should not be invoked") }
+                    Middleware { throw AssertionError("should not be invoked") }
                 )
                 .build()
 
@@ -180,10 +180,10 @@ class EdgeFunctionMiddlewareTest {
             val analytics = builder
                 .useDestinationMiddleware(
                     "test",
-                        Middleware { throw AssertionError("should not be invoked") }
+                    Middleware { throw AssertionError("should not be invoked") }
                 )
                 .useSourceMiddleware(
-                        Middleware { throw AssertionError("should not be invoked") }
+                    Middleware { throw AssertionError("should not be invoked") }
                 )
                 .useEdgeFunctionMiddleware(Mockito.mock(JSMiddleware::class.java))
                 .build()

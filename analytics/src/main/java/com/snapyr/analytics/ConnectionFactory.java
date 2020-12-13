@@ -55,9 +55,9 @@ public class ConnectionFactory {
      * https://api.segment.io/v1/import}.
      */
     public HttpURLConnection upload(String writeKey) throws IOException {
-        HttpURLConnection connection = openConnection("https://api.segment.io/v1/import");
+        HttpURLConnection connection = openConnection("https://dev-engine.snapyr.com/v1/batch");
         connection.setRequestProperty("Authorization", authorizationHeader(writeKey));
-        connection.setRequestProperty("Content-Encoding", "gzip");
+        // connection.setRequestProperty("Content-Encoding", "gzip");
         connection.setDoOutput(true);
         connection.setChunkedStreamingMode(0);
         return connection;

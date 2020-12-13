@@ -39,7 +39,8 @@ class OptionsTest {
     private lateinit var options: Options
 
     @Before
-    fun setUp() { options = Options()
+    fun setUp() {
+        options = Options()
     }
 
     @Test
@@ -66,7 +67,7 @@ class OptionsTest {
         )
 
         options.setIntegrationOptions(
-                Analytics.BundledIntegration.TAPSTREAM,
+            Analytics.BundledIntegration.TAPSTREAM,
             ImmutableMap.Builder<String, Any>().put("appId", "bar").build()
         )
 

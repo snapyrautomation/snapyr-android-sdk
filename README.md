@@ -59,6 +59,17 @@ You can find usage documentation at [https://segment.com/docs/sources/mobile/and
 
 Interested in integrating your service with us? Check out our [Partners page](https://segment.com/partners/) for more details.
 
+## Building SDK
+
+To build the sdk you should have JDK 1.8, Android SDK (android-28) installed.
+
+```bash
+./gradlew clean
+./gradlew check build assembleAndroidTest
+```
+
+Output .jar file can be found in analytics/build/libs folder
+
 ## License
 
 ```

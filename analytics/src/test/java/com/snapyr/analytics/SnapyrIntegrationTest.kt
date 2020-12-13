@@ -78,7 +78,8 @@ import org.robolectric.shadows.ShadowLog
 @Config(manifest = Config.NONE)
 class SnapyrIntegrationTest {
 
-    @Rule @JvmField
+    @Rule
+    @JvmField
     val folder = TemporaryFolder()
     private lateinit var queueFile: QueueFile
 
@@ -379,7 +380,7 @@ class SnapyrIntegrationTest {
                     @Throws(IOException::class)
                     override fun close() {
                         throw Client.HTTPException(
-                                500, "Internal Server Error", "internal server error"
+                            500, "Internal Server Error", "internal server error"
                         )
                     }
                 })
@@ -617,8 +618,8 @@ class SnapyrIntegrationTest {
         }
 
         fun actionHandler(actionHandler: SnapyrActionHandler): SnapyrBuilder {
-            this.actionHandler = actionHandler;
-            return this;
+            this.actionHandler = actionHandler
+            return this
         }
 
         fun build(): SnapyrIntegration {
@@ -646,18 +647,18 @@ class SnapyrIntegrationTest {
                 networkExecutor = SynchronousExecutor()
             }
             return SnapyrIntegration(
-                    context,
-                    client,
-                    cartographer,
-                    networkExecutor,
-                    payloadQueue,
-                    stats,
-                    integrations,
-                    flushInterval.toLong(),
-                    flushSize,
-                    logger,
-                    Crypto.none(),
-                    actionHandler
+                context,
+                client,
+                cartographer,
+                networkExecutor,
+                payloadQueue,
+                stats,
+                integrations,
+                flushInterval.toLong(),
+                flushSize,
+                logger,
+                Crypto.none(),
+                actionHandler
             )
         }
     }
