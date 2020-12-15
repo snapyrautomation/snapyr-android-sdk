@@ -459,7 +459,7 @@ class SnapyrIntegration extends Integration<Void> {
         try {
             Object response = cartographer.parseJson(uploadResponse);
             if (response instanceof List) {
-                for (Object eventResponse : (List)response) {
+                for (Object eventResponse : (List) response) {
                     handleEventActions((Map<String, Object>) eventResponse);
                 }
             } else if (response instanceof Map) {
@@ -473,24 +473,23 @@ class SnapyrIntegration extends Integration<Void> {
     void handleEventActions(Map<String, Object> eventResponse) {
         if (eventResponse.containsKey("actions") && eventResponse.get("actions") != null) {
             List<Map<String, Object>> actionMapList =
-                (List<Map<String, Object>>) eventResponse.get("actions");
+                    (List<Map<String, Object>>) eventResponse.get("actions");
 
             for (Map<String, Object> actionMap : actionMapList) {
                 final SnapyrAction action = SnapyrAction.create(actionMap);
                 if (actionHandler != null) {
                     Analytics.HANDLER.post(
-                        new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    actionHandler.handleAction(action);
-                                } catch (Exception e) {
-                                    logger.error(
-                                        e,
-                                        "error handling action: " + action.getAction());
+                            new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        actionHandler.handleAction(action);
+                                    } catch (Exception e) {
+                                        logger.error(
+                                                e, "error handling action: " + action.getAction());
+                                    }
                                 }
-                            }
-                        });
+                            });
                 }
             }
         }

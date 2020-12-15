@@ -83,9 +83,7 @@ public class Cartographer {
         }
     }
 
-    /**
-     * Deserializes the specified json into an Object (Map, List or primitive type)
-     */
+    /** Deserializes the specified json into an Object (Map, List or primitive type) */
     public Object parseJson(String json) throws IOException {
         if (json == null) {
             throw new IllegalArgumentException("json == null");
