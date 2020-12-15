@@ -412,12 +412,6 @@ class SnapyrIntegration extends Integration<Void> {
             } else if (inputStream != null) {
                 responseBody = Utils.readFully(inputStream);
                 logger.info("flush response: " + responseBody);
-                // TODO: remove this once we get real actions from server
-                // Stub some actions with some random probability
-                if (Math.random() < 0.1) {
-                    responseBody =
-                            "{\"success\": true, \"actions\": [{\"action\": \"open-popup\", \"properties\": {\"name\": \"Rewards\"}},{\"action\": \"show-message\", \"properties\": {\"text\": \"Hello\"}}]}";
-                }
                 handleActionsIfAny(responseBody);
             }
 
@@ -463,32 +457,42 @@ class SnapyrIntegration extends Integration<Void> {
 
     void handleActionsIfAny(String uploadResponse) {
         try {
-            Map<String, Object> map = cartographer.fromJson(uploadResponse);
-            if (map.containsKey("actions")) {
-                List<Map<String, Object>> actionMapList =
-                        (List<Map<String, Object>>) map.get("actions");
-
-                for (Map<String, Object> actionMap : actionMapList) {
-                    final SnapyrAction action = SnapyrAction.create(actionMap);
-                    if (actionHandler != null) {
-                        Analytics.HANDLER.post(
-                                new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        try {
-                                            actionHandler.handleAction(action);
-                                        } catch (Exception e) {
-                                            logger.error(
-                                                    e,
-                                                    "error handling action: " + action.getAction());
-                                        }
-                                    }
-                                });
-                    }
+            Object response = cartographer.parseJson(uploadResponse);
+            if (response instanceof List) {
+                for (Object eventResponse : (List)response) {
+                    handleEventActions((Map<String, Object>) eventResponse);
                 }
+            } else if (response instanceof Map) {
+                handleEventActions((Map<String, Object>) response);
             }
         } catch (IOException e) {
             logger.error(e, "Error parsing upload response");
+        }
+    }
+
+    void handleEventActions(Map<String, Object> eventResponse) {
+        if (eventResponse.containsKey("actions") && eventResponse.get("actions") != null) {
+            List<Map<String, Object>> actionMapList =
+                (List<Map<String, Object>>) eventResponse.get("actions");
+
+            for (Map<String, Object> actionMap : actionMapList) {
+                final SnapyrAction action = SnapyrAction.create(actionMap);
+                if (actionHandler != null) {
+                    Analytics.HANDLER.post(
+                        new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    actionHandler.handleAction(action);
+                                } catch (Exception e) {
+                                    logger.error(
+                                        e,
+                                        "error handling action: " + action.getAction());
+                                }
+                            }
+                        });
+                }
+            }
         }
     }
 

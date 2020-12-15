@@ -35,10 +35,11 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.kotlin_sample.databinding.ActivityMainBinding
 import com.snapyr.analytics.Analytics
+import com.snapyr.analytics.Properties
 import com.snapyr.analytics.Traits
 import kotlinx.android.synthetic.main.activity_main.alias_text
 import kotlinx.android.synthetic.main.activity_main.group_id
-import kotlinx.android.synthetic.main.activity_main.identify_age
+import kotlinx.android.synthetic.main.activity_main.identify_user_id
 import kotlinx.android.synthetic.main.activity_main.identify_email
 import kotlinx.android.synthetic.main.activity_main.identify_name
 
@@ -81,7 +82,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun onAButtonClick() {
-        Analytics.with(this).track("Button A clicked")
+        val props = Properties()
+        props.putName("capture")
+        props.put("move", "exd6")
+        props.put("orgId", "f95991da-ea9c-4e44-998d-5ff5f4ca04d3")
+        props.put("workspaceId", "d00f0649-c6a4-475c-8eeb-518ae5f29768")
+        Analytics.with(this).track("capture", props)
         Toast.makeText(this, "Button A clicked", Toast.LENGTH_SHORT).show()
     }
 
@@ -93,15 +99,17 @@ class MainActivity : AppCompatActivity() {
     private fun onIdentifyClick() {
         val name = identify_name.text.toString()
         val email = identify_email.text.toString()
-        val age = identify_age.text.toString()
-        val allFieldsEmpty = isNullOrEmpty(name) && isNullOrEmpty(email) && isNullOrEmpty(age)
+        val userId = identify_user_id.text.toString()
+        val allFieldsEmpty = isNullOrEmpty(name) && isNullOrEmpty(email) && isNullOrEmpty(userId)
 
         if (allFieldsEmpty) {
             Toast.makeText(this, "At least one field must be filled in", Toast.LENGTH_SHORT).show()
         } else {
+            if (!isNullOrEmpty(userId)) {
+                Analytics.with(this).identify(userId)
+            }
             if (!isNullOrEmpty(name)) { Analytics.with(this).identify(Traits().putName(name)) }
             if (!isNullOrEmpty(email)) { Analytics.with(this).identify(Traits().putEmail(email)) }
-            if (!isNullOrEmpty(age)) { Analytics.with(this).identify(Traits().putAge(age.toInt())) }
 
             Toast.makeText(this, "Identification acknowledged", Toast.LENGTH_SHORT).show()
         }

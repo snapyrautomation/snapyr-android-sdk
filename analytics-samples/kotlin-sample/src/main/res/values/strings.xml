@@ -8,6 +8,7 @@
     <string name="name">Name</string>
     <string name="email">Email</string>
     <string name="age">Age</string>
+    <string name="user_id">User Id</string>
     <string name="identify">Identify</string>
     <string name="screen">Screen</string>
     <string name="group_id">Group ID</string>

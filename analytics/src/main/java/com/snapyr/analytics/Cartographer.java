@@ -84,6 +84,25 @@ public class Cartographer {
     }
 
     /**
+     * Deserializes the specified json into an Object (Map, List or primitive type)
+     */
+    public Object parseJson(String json) throws IOException {
+        if (json == null) {
+            throw new IllegalArgumentException("json == null");
+        }
+        if (json.length() == 0) {
+            throw new IllegalArgumentException("json empty");
+        }
+        JsonReader reader = new JsonReader(new StringReader(json));
+        reader.setLenient(isLenient);
+        try {
+            return readValue(reader);
+        } finally {
+            reader.close();
+        }
+    }
+
+    /**
      * Serializes the map into it's json representation and returns it as a String. If you want to
      * write the json to {@link Writer} instead of retrieving it as a String, use {@link
      * #toJson(Map, Writer)} instead.
