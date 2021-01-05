@@ -37,11 +37,7 @@ import com.example.kotlin_sample.databinding.ActivityMainBinding
 import com.snapyr.analytics.Analytics
 import com.snapyr.analytics.Properties
 import com.snapyr.analytics.Traits
-import kotlinx.android.synthetic.main.activity_main.alias_text
-import kotlinx.android.synthetic.main.activity_main.group_id
-import kotlinx.android.synthetic.main.activity_main.identify_user_id
-import kotlinx.android.synthetic.main.activity_main.identify_email
-import kotlinx.android.synthetic.main.activity_main.identify_name
+import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
