@@ -121,7 +121,6 @@ Once you initialize an Analytics client, you can safely call any of its tracking
 
 Note: You should only ever initialize ONE instance of the Analytics client. These are expensive to create and throw away, and in most cases, you should stick to Snapyr's singleton implementation to make using the SDK easier.
 ### Step 3. Add Permissions
-}
 
 Ensure that the necessary permissions are declared in your application’s AndroidManifest.xml.
 
@@ -359,8 +358,7 @@ The group call has the following fields:
 Find more details about the Group method, including the Group call payload, in the Snapyr Group call spec.
 
 
-### Alias"
-}
+### Alias
 
 Alias is how you associate one identity with another. This is an advanced method, but it is required to manage user identities successfully in some Snapyr destinations, such as Mixpanel or Kissmetrics.
 
