@@ -84,7 +84,7 @@ class SnapyrIntegration extends Integration<Void> {
 
                 @Override
                 public String key() {
-                    return SEGMENT_KEY;
+                    return SNAPYR_KEY;
                 }
             };
 
@@ -104,15 +104,15 @@ class SnapyrIntegration extends Integration<Void> {
     @Private static final int MAX_BATCH_SIZE = 475000; // 475KB.
 
     @Private static final Charset UTF_8 = Charset.forName("UTF-8");
-    private static final String SEGMENT_THREAD_NAME = Utils.THREAD_PREFIX + "SegmentDispatcher";
-    static final String SEGMENT_KEY = "Segment.io";
+    private static final String SNAPYR_THREAD_NAME = Utils.THREAD_PREFIX + "SnapyrDispatcher";
+    static final String SNAPYR_KEY = "Snapyr";
     private final Context context;
     private final PayloadQueue payloadQueue;
     private final Client client;
     private final int flushQueueSize;
     private final Stats stats;
     private final Handler handler;
-    private final HandlerThread segmentThread;
+    private final HandlerThread snapyrThread;
     private final Logger logger;
     private final Map<String, Boolean> bundledIntegrations;
     private final Cartographer cartographer;
@@ -180,7 +180,7 @@ class SnapyrIntegration extends Integration<Void> {
             SnapyrActionHandler actionHandler) {
         PayloadQueue payloadQueue;
         try {
-            File folder = context.getDir("segment-disk-queue", Context.MODE_PRIVATE);
+            File folder = context.getDir("snapyr-disk-queue", Context.MODE_PRIVATE);
             QueueFile queueFile = createQueueFile(folder, tag);
             payloadQueue = new PayloadQueue.PersistentQueue(queueFile);
         } catch (IOException e) {
@@ -229,9 +229,9 @@ class SnapyrIntegration extends Integration<Void> {
         this.actionHandler = actionHandler;
         this.crypto = crypto;
 
-        segmentThread = new HandlerThread(SEGMENT_THREAD_NAME, THREAD_PRIORITY_BACKGROUND);
-        segmentThread.start();
-        handler = new SnapyrDispatcherHandler(segmentThread.getLooper(), this);
+        snapyrThread = new HandlerThread(SNAPYR_THREAD_NAME, THREAD_PRIORITY_BACKGROUND);
+        snapyrThread.start();
+        handler = new SnapyrDispatcherHandler(snapyrThread.getLooper(), this);
 
         long initialDelay = payloadQueue.size() >= flushQueueSize ? 0L : flushIntervalInMillis;
         flushScheduler.scheduleAtFixedRate(
@@ -285,7 +285,7 @@ class SnapyrIntegration extends Integration<Void> {
                 new LinkedHashMap<>(providedIntegrations.size() + bundledIntegrations.size());
         combinedIntegrations.putAll(providedIntegrations);
         combinedIntegrations.putAll(bundledIntegrations);
-        combinedIntegrations.remove("Segment.io"); // don't include the Segment integration.
+        combinedIntegrations.remove("Snapyr"); // don't include the Snapyr integration.
         // Make a copy of the payload so we don't mutate the original.
         ValueMap payload = new ValueMap();
         payload.putAll(original);
@@ -371,7 +371,7 @@ class SnapyrIntegration extends Integration<Void> {
             return;
         }
 
-        logger.verbose("Uploading payloads in queue to Segment.");
+        logger.verbose("Uploading payloads in queue to Snapyr.");
         int payloadsUploaded = 0;
         Client.Connection connection = null;
         try {
@@ -497,7 +497,7 @@ class SnapyrIntegration extends Integration<Void> {
 
     void shutdown() {
         flushScheduler.shutdownNow();
-        segmentThread.quit();
+        snapyrThread.quit();
         Utils.closeQuietly(payloadQueue);
     }
 

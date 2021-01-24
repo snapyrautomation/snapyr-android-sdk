@@ -34,7 +34,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.util.zip.GZIPOutputStream;
 
-/** HTTP client which can upload payloads and fetch project settings from the Segment public API. */
+/** HTTP client which can upload payloads and fetch project settings from the Snapyr public API. */
 class Client {
 
     final ConnectionFactory connectionFactory;

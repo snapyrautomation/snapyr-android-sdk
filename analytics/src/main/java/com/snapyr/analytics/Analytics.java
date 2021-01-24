@@ -68,23 +68,23 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 /**
- * The entry point into the Segment for Android SDK.
+ * The entry point into the Snapyr for Android SDK.
  *
- * <p>The idea is simple: one pipeline for all your data. Segment is the single hub to collect,
+ * <p>The idea is simple: one pipeline for all your data. Snapyr is the single hub to collect,
  * translate and route your data with the flip of a switch.
  *
  * <p>Analytics for Android will automatically batch events, queue them to disk, and upload it
- * periodically to Segment for you. It will also look up your project's settings (that you've
+ * periodically to Snapyr for you. It will also look up your project's settings (that you've
  * configured in the web interface), specifically looking up settings for bundled integrations, and
  * then initialize them for you on the user's phone, and mapping our standardized events to formats
- * they can all understand. You only need to instrument Segment once, then flip a switch to install
+ * they can all understand. You only need to instrument Snapyr once, then flip a switch to install
  * new tools.
  *
  * <p>This class is the main entry point into the client API. Use {@link
  * #with(android.content.Context)} for the global singleton instance or construct your own instance
  * with {@link Builder}.
  *
- * @see <a href="https://Segment/">Segment</a>
+ * @see <a href="https://snapyr.com/">Snapyr</a>
  */
 public class Analytics {
 
@@ -268,14 +268,14 @@ public class Analytics {
                     public void run() {
                         projectSettings = getSettings();
                         if (isNullOrEmpty(projectSettings)) {
-                            // Backup mode - Enable the Segment integration and load the provided
+                            // Backup mode - Enable the Snapyr integration and load the provided
                             // defaultProjectSettings
                             // {
                             //   ...defaultProjectSettings
                             //   integrations: {
                             //     ...defaultProjectSettings.integrations
-                            //     Segment.io: {
-                            //       ...defaultProjectSettings.integrations.Segment.io
+                            //     Snapyr: {
+                            //       ...defaultProjectSettings.integrations.Snapyr
                             //       apiKey: "{writeKey}"
                             //     }
                             //   }
@@ -285,18 +285,18 @@ public class Analytics {
                             }
                             if (!defaultProjectSettings
                                     .getValueMap("integrations")
-                                    .containsKey("Segment.io")) {
+                                    .containsKey("Snapyr")) {
                                 defaultProjectSettings
                                         .getValueMap("integrations")
-                                        .put("Segment.io", new ValueMap());
+                                        .put("Snapyr", new ValueMap());
                             }
                             if (!defaultProjectSettings
                                     .getValueMap("integrations")
-                                    .getValueMap("Segment.io")
+                                    .getValueMap("Snapyr")
                                     .containsKey("apiKey")) {
                                 defaultProjectSettings
                                         .getValueMap("integrations")
-                                        .getValueMap("Segment.io")
+                                        .getValueMap("Snapyr")
                                         .putValue("apiKey", Analytics.this.writeKey);
                             }
                             projectSettings = ProjectSettings.create(defaultProjectSettings);
@@ -343,7 +343,7 @@ public class Analytics {
         int currentBuild = packageInfo.versionCode;
 
         // Get the previous recorded version.
-        SharedPreferences sharedPreferences = Utils.getSegmentSharedPreferences(application, tag);
+        SharedPreferences sharedPreferences = Utils.getSnapyrSharedPreferences(application, tag);
         String previousVersion = sharedPreferences.getString(VERSION_KEY, null);
         int previousBuild = sharedPreferences.getInt(BUILD_KEY, -1);
 
@@ -768,7 +768,7 @@ public class Analytics {
     void run(BasePayload payload) {
         logger.verbose("Running payload %s.", payload);
         final IntegrationOperation operation =
-                IntegrationOperation.segmentEvent(payload, destinationMiddleware);
+                IntegrationOperation.snapyrEvent(payload, destinationMiddleware);
         HANDLER.post(
                 new Runnable() {
                     @Override
@@ -858,7 +858,7 @@ public class Analytics {
      * values.
      */
     public void reset() {
-        SharedPreferences sharedPreferences = Utils.getSegmentSharedPreferences(application, tag);
+        SharedPreferences sharedPreferences = Utils.getSnapyrSharedPreferences(application, tag);
         // LIB-1578: only remove traits, preserve BUILD and VERSION keys in order to to fix
         // over-sending
         // of 'Application Installed' events and under-sending of 'Application Updated' events
@@ -1034,7 +1034,7 @@ public class Analytics {
          * This method will be invoked once for each callback.
          *
          * @param instance The underlying instance that has been initialized with the settings from
-         *     Segment.
+         *     Snapyr.
          */
         void onReady(T instance);
     }
@@ -1102,7 +1102,7 @@ public class Analytics {
 
         /**
          * Set the queue size at which the client should flush events. The client will automatically
-         * flush events to Segment when the queue reaches {@code flushQueueSize}.
+         * flush events to Snapyr when the queue reaches {@code flushQueueSize}.
          *
          * @throws IllegalArgumentException if the flushQueueSize is less than or equal to zero.
          */
@@ -1124,7 +1124,7 @@ public class Analytics {
 
         /**
          * Set the interval at which the client should flush events. The client will automatically
-         * flush events to Segment every {@code flushInterval} duration, regardless of {@code
+         * flush events to Snapyr every {@code flushInterval} duration, regardless of {@code
          * flushQueueSize}.
          *
          * @throws IllegalArgumentException if the flushInterval is less than or equal to zero.
@@ -1378,7 +1378,7 @@ public class Analytics {
         }
 
         /**
-         * Set the default project settings to use, if Segment.com cannot be reached. An example
+         * Set the default project settings to use, if Snapyr.com cannot be reached. An example
          * configuration can be found here, using your write key: <a
          * href="https://cdn-settings.segment.com/v1/projects/YOUR_WRITE_KEY/settings">
          * https://cdn-settings.segment.com/v1/projects/YOUR_WRITE_KEY/settings </a>
@@ -1444,7 +1444,7 @@ public class Analytics {
 
             BooleanPreference optOut =
                     new BooleanPreference(
-                            Utils.getSegmentSharedPreferences(application, tag),
+                            Utils.getSnapyrSharedPreferences(application, tag),
                             OPT_OUT_PREFERENCE_KEY,
                             false);
 
@@ -1659,8 +1659,7 @@ public class Analytics {
      * namespaceSharedPreferences to false.
      */
     private void namespaceSharedPreferences() {
-        SharedPreferences newSharedPreferences =
-                Utils.getSegmentSharedPreferences(application, tag);
+        SharedPreferences newSharedPreferences = Utils.getSnapyrSharedPreferences(application, tag);
         BooleanPreference namespaceSharedPreferences =
                 new BooleanPreference(newSharedPreferences, "namespaceSharedPreferences", true);
 

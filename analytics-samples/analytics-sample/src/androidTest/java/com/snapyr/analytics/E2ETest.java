@@ -73,7 +73,7 @@ public class E2ETest {
      * Write key for the Segment project to send data to.
      * https://app.segment.com/segment-libraries/sources/analytics_android_e2e_test/overview
      */
-    private static final String SEGMENT_WRITE_KEY = "OAtgAHjkAD5MP31srDe9wiBjpvcXC8De";
+    private static final String SNAPYR_WRITE_KEY = "OAtgAHjkAD5MP31srDe9wiBjpvcXC8De";
     /** Webhook bucket that is connected to the Segment project. */
     private static final String WEBHOOK_BUCKET = "android";
     /** Credentials to retrieve data from the webhook. */
@@ -88,7 +88,7 @@ public class E2ETest {
     @Before
     public void setup() {
         analytics =
-                new Analytics.Builder(activityActivityTestRule.getActivity(), SEGMENT_WRITE_KEY)
+                new Analytics.Builder(activityActivityTestRule.getActivity(), SNAPYR_WRITE_KEY)
                         .build();
 
         webhookService =
@@ -144,7 +144,7 @@ public class E2ETest {
     @Test
     public void group() {
         final String uuid = UUID.randomUUID().toString();
-        analytics.group("segment", new Traits().putValue("id", uuid));
+        analytics.group("snapyr", new Traits().putValue("id", uuid));
         analytics.flush();
 
         assertMessageReceivedByWebhook(uuid);

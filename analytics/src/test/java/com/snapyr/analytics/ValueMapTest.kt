@@ -171,7 +171,7 @@ class ValueMapTest {
         val settings = Settings.Settings(cartographer.fromJson(PROJECT_SETTINGS_JSON_SAMPLE))
         assertThat(settings).hasSize(4)
         assertThat(settings).containsKey("Amplitude")
-        assertThat(settings.containsKey("Segment"))
+        assertThat(settings.containsKey("Snapyr"))
         assertThat(settings).containsKey("Flurry")
         assertThat(settings).containsKey("Mixpanel")
 

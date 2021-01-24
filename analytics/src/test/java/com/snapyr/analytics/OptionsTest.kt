@@ -45,13 +45,13 @@ class OptionsTest {
 
     @Test
     @Throws(Exception::class)
-    fun disallowsDisablingSegmentIntegration() {
+    fun disallowsDisablingSnapyrIntegration() {
         try {
-            options.setIntegration("Segment.io", true)
-            fail("shouldn't be able to set option for Segment integration.")
+            options.setIntegration("Snapyr", true)
+            fail("shouldn't be able to set option for Snapyr integration.")
         } catch (expected: IllegalArgumentException) {
             assertThat(expected)
-                .hasMessage("Segment integration cannot be enabled or disabled.")
+                .hasMessage("Snapyr integration cannot be enabled or disabled.")
         }
     }
 

@@ -48,8 +48,8 @@ abstract class IntegrationOperation {
         if (Utils.isNullOrEmpty(integrations)) {
             return true;
         }
-        if (SnapyrIntegration.SEGMENT_KEY.equals(key)) {
-            return true; // Leave Segment integration enabled.
+        if (SnapyrIntegration.SNAPYR_KEY.equals(key)) {
+            return true; // Leave Snapyr integration enabled.
         }
         boolean enabled = true;
         if (integrations.containsKey(key)) {
@@ -185,11 +185,11 @@ abstract class IntegrationOperation {
     }
 
     /**
-     * Integration Operation for a Segment Event (track | identify | alias | group | screen)
+     * Integration Operation for a Snapyr Event (track | identify | alias | group | screen)
      * Operation runs destination middleware for given integration before sending to the desired
      * integration
      */
-    static IntegrationOperation segmentEvent(
+    static IntegrationOperation snapyrEvent(
             final BasePayload payload, Map<String, List<Middleware>> destinationMiddleware) {
         return new IntegrationOperation() {
             @Override
@@ -285,9 +285,9 @@ abstract class IntegrationOperation {
                 return;
             }
 
-            // Send the event if new events are enabled or if this is the Segment integration.
+            // Send the event if new events are enabled or if this is the Snapyr integration.
             boolean defaultEventsEnabled = defaultPlan.getBoolean("enabled", true);
-            if (defaultEventsEnabled || SnapyrIntegration.SEGMENT_KEY.equals(key)) {
+            if (defaultEventsEnabled || SnapyrIntegration.SNAPYR_KEY.equals(key)) {
                 integration.track(trackPayload);
             }
 
@@ -297,8 +297,8 @@ abstract class IntegrationOperation {
         // We have a tracking plan for the event.
         boolean isEnabled = eventPlan.getBoolean("enabled", true);
         if (!isEnabled) {
-            // If event is disabled in the tracking plan, send it only Segment.
-            if (SnapyrIntegration.SEGMENT_KEY.equals(key)) {
+            // If event is disabled in the tracking plan, send it only Snapyr.
+            if (SnapyrIntegration.SNAPYR_KEY.equals(key)) {
                 integration.track(trackPayload);
             }
             return;

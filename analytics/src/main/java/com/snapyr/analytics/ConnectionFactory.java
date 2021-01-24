@@ -52,7 +52,7 @@ public class ConnectionFactory {
 
     /**
      * Return a {@link HttpURLConnection} that writes batched payloads to {@code
-     * https://api.segment.io/v1/import}.
+     * https://dev-engine.snapyr.com/v1/import}.
      */
     public HttpURLConnection upload(String writeKey) throws IOException {
         HttpURLConnection connection = openConnection("https://dev-engine.snapyr.com/v1/batch");

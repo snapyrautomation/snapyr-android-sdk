@@ -90,7 +90,7 @@ class SampleApp : Application() {
                     }
             )
             .useDestinationMiddleware(
-                "Segment.io",
+                "Snapyr",
                     Middleware { chain ->
                         if (chain.payload().type() == BasePayload.Type.track) {
                             val payload = chain.payload() as TrackPayload
@@ -114,9 +114,9 @@ class SampleApp : Application() {
         val analytics = Analytics.with(this)
 
         analytics.onIntegrationReady(
-            "Segment.io",
+            "Snapyr",
             Analytics.Callback<Any?> {
-                Log.d("Segment Sample", "Segment integration ready.")
+                Log.d("Snapyr Sample", "Snapyr integration ready.")
             }
         )
     }

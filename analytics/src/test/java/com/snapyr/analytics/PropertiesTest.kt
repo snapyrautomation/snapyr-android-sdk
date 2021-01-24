@@ -77,8 +77,8 @@ class PropertiesTest {
 
     @Test
     fun url() {
-        properties.putUrl("https://segment.com/docs/spec")
-        assertThat(properties.url()).isEqualTo("https://segment.com/docs/spec")
+        properties.putUrl("https://snapyr.com/")
+        assertThat(properties.url()).isEqualTo("https://snapyr.com/")
     }
 
     @Test
@@ -159,8 +159,8 @@ class PropertiesTest {
 
     @Test
     fun coupon() {
-        properties.putCoupon("segment")
-        assertThat(properties.coupon()).isEqualTo("segment")
+        properties.putCoupon("snapyr")
+        assertThat(properties.coupon()).isEqualTo("snapyr")
     }
 
     @Test

@@ -176,7 +176,7 @@ class DestinationMiddlewareTest {
                 chain.proceed(chain.payload())
             }
             .useDestinationMiddleware("foo", middleware)
-            .useDestinationMiddleware("Segment.io", middleware)
+            .useDestinationMiddleware("Snapyr", middleware)
             .build()
 
         analytics.track("foo")

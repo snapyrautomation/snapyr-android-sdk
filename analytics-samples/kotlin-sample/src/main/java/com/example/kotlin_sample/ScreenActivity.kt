@@ -58,7 +58,7 @@ class ScreenActivity : AppCompatActivity() {
         return when (item.itemId) {
             R.id.docs -> {
                 val openDocs = Intent(Intent.ACTION_VIEW)
-                openDocs.data = Uri.parse("https://segment.com/docs/tutorials/quickstart-android/")
+                openDocs.data = Uri.parse("https://snapyr.com/docs/")
                 startActivity(openDocs)
                 try {
                     startActivity(openDocs)
@@ -84,7 +84,7 @@ class ScreenActivity : AppCompatActivity() {
         val returnMessage =
             """
                 Screen event has been recorded!
-                Press 'Flush' to send events to Segment.
+                Press 'Flush' to send events to Snapyr.
             """.trimIndent()
         binding.screenResult.text = returnMessage
 

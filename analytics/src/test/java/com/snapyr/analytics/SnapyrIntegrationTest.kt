@@ -115,8 +115,8 @@ class SnapyrIntegrationTest {
     @Throws(IOException::class)
     fun enqueueAddsToQueueFile() {
         val payloadQueue = PersistentQueue(queueFile)
-        val segmentIntegration = SnapyrBuilder().payloadQueue(payloadQueue).build()
-        segmentIntegration.performEnqueue(TRACK_PAYLOAD)
+        val snapyrIntegration = SnapyrBuilder().payloadQueue(payloadQueue).build()
+        snapyrIntegration.performEnqueue(TRACK_PAYLOAD)
         assertThat(payloadQueue.size()).isEqualTo(1)
     }
 
@@ -125,10 +125,10 @@ class SnapyrIntegrationTest {
     fun enqueueWritesIntegrations() {
         val integrations = LinkedHashMap<String, Boolean>()
         integrations["All"] = false // should overwrite existing values in the map.
-        integrations["Segment.io"] = false // should ignore Segment setting in payload.
+        integrations["Snapyr"] = false // should ignore Snapyr setting in payload.
         integrations["foo"] = true // should add new values.
         val payloadQueue = mock(PayloadQueue::class.java)
-        val segmentIntegration =
+        val snapyrIntegration =
             SnapyrBuilder()
                 .payloadQueue(payloadQueue)
                 .integrations(integrations)
@@ -142,7 +142,7 @@ class SnapyrIntegrationTest {
                 .userId("userId")
                 .build()
 
-        segmentIntegration.performEnqueue(trackPayload)
+        snapyrIntegration.performEnqueue(trackPayload)
         val expected =
             (
                 """
@@ -175,9 +175,9 @@ class SnapyrIntegrationTest {
         val payloadQueue = mock(PayloadQueue::class.java)
         // We want to trigger a remove, but not a flush.
         whenever(payloadQueue.size()).thenReturn(0, MAX_QUEUE_SIZE, MAX_QUEUE_SIZE, 0)
-        val segmentIntegration = SnapyrBuilder().payloadQueue(payloadQueue).build()
+        val snapyrIntegration = SnapyrBuilder().payloadQueue(payloadQueue).build()
 
-        segmentIntegration.performEnqueue(TRACK_PAYLOAD)
+        snapyrIntegration.performEnqueue(TRACK_PAYLOAD)
 
         verify(payloadQueue).remove(1) // Oldest entry is removed.
         verify(payloadQueue).add(any(ByteArray::class.java)) // Newest entry is added.
@@ -189,10 +189,10 @@ class SnapyrIntegrationTest {
         val payloadQueue = mock(PayloadQueue::class.java)
         doThrow(IOException("no remove for you.")).whenever(payloadQueue).remove(1)
         whenever(payloadQueue.size()).thenReturn(MAX_QUEUE_SIZE) // trigger a remove
-        val segmentIntegration = SnapyrBuilder().payloadQueue(payloadQueue).build()
+        val snapyrIntegration = SnapyrBuilder().payloadQueue(payloadQueue).build()
 
         try {
-            segmentIntegration.performEnqueue(TRACK_PAYLOAD)
+            snapyrIntegration.performEnqueue(TRACK_PAYLOAD)
         } catch (unexpected: IOError) {
             fail("did not expect QueueFile to throw an error.")
         }
@@ -207,18 +207,18 @@ class SnapyrIntegrationTest {
         val client = mock(Client::class.java)
         val connection = mockConnection()
         whenever(client.upload()).thenReturn(connection)
-        val segmentIntegration =
+        val snapyrIntegration =
             SnapyrBuilder()
                 .client(client)
                 .flushSize(5)
                 .payloadQueue(payloadQueue)
                 .build()
         for (i in 0 until 4) {
-            segmentIntegration.performEnqueue(TRACK_PAYLOAD)
+            snapyrIntegration.performEnqueue(TRACK_PAYLOAD)
         }
         verifyZeroInteractions(client)
         // Only the last enqueue should trigger an upload.
-        segmentIntegration.performEnqueue(TRACK_PAYLOAD)
+        snapyrIntegration.performEnqueue(TRACK_PAYLOAD)
 
         verify(client).upload()
     }
@@ -229,7 +229,7 @@ class SnapyrIntegrationTest {
         val payloadQueue = PersistentQueue(queueFile)
         val client = mock(Client::class.java)
         whenever(client.upload()).thenReturn(mockConnection())
-        val segmentIntegration =
+        val snapyrIntegration =
             SnapyrBuilder()
                 .client(client)
                 .payloadQueue(payloadQueue)
@@ -239,7 +239,7 @@ class SnapyrIntegrationTest {
             queueFile.add(bytes)
         }
 
-        segmentIntegration.submitFlush()
+        snapyrIntegration.submitFlush()
 
         assertThat(queueFile.size()).isEqualTo(0)
     }
@@ -289,9 +289,9 @@ class SnapyrIntegrationTest {
         val context: Context = mockApplication()
         whenever(context.getSystemService(Context.CONNECTIVITY_SERVICE)).thenReturn(connectivityManager)
         val client = mock(Client::class.java)
-        val segmentIntegration = SnapyrBuilder().context(context).client(client).build()
+        val snapyrIntegration = SnapyrBuilder().context(context).client(client).build()
 
-        segmentIntegration.submitFlush()
+        snapyrIntegration.submitFlush()
 
         verify(client, never()).upload()
     }
@@ -303,13 +303,13 @@ class SnapyrIntegrationTest {
         whenever(payloadQueue.size()).thenReturn(0)
         val context: Context = mockApplication()
         val client = mock(Client::class.java)
-        val segmentIntegration = SnapyrBuilder()
+        val snapyrIntegration = SnapyrBuilder()
             .payloadQueue(payloadQueue)
             .context(context)
             .client(client)
             .build()
 
-        segmentIntegration.submitFlush()
+        snapyrIntegration.submitFlush()
 
         verifyZeroInteractions(context)
         verify(client, never()).upload()
@@ -324,13 +324,13 @@ class SnapyrIntegrationTest {
         val urlConnection = mock(HttpURLConnection::class.java)
         val connection = mockConnection(urlConnection)
         whenever(client.upload()).thenReturn(connection)
-        val segmentIntegration =
+        val snapyrIntegration =
             SnapyrBuilder()
                 .client(client)
                 .payloadQueue(payloadQueue)
                 .build()
 
-        segmentIntegration.submitFlush()
+        snapyrIntegration.submitFlush()
 
         verify(urlConnection, times(2)).disconnect()
     }
@@ -351,7 +351,7 @@ class SnapyrIntegrationTest {
                         throw Client.HTTPException(400, "Bad Request", "bad request")
                     }
                 })
-        val segmentIntegration =
+        val snapyrIntegration =
             SnapyrBuilder()
                 .client(client)
                 .payloadQueue(payloadQueue)
@@ -360,7 +360,7 @@ class SnapyrIntegrationTest {
             payloadQueue.add(TRACK_PAYLOAD_JSON.toByteArray())
         }
 
-        segmentIntegration.submitFlush()
+        snapyrIntegration.submitFlush()
 
         assertThat(queueFile.size()).isEqualTo(0)
         verify(client).upload()
@@ -384,14 +384,14 @@ class SnapyrIntegrationTest {
                         )
                     }
                 })
-        val segmentIntegration = SnapyrBuilder()
+        val snapyrIntegration = SnapyrBuilder()
             .client(client)
             .payloadQueue(payloadQueue)
             .build()
         for (i in 0..3) {
             payloadQueue.add(TRACK_PAYLOAD_JSON.toByteArray())
         }
-        segmentIntegration.submitFlush()
+        snapyrIntegration.submitFlush()
         assertThat(queueFile.size()).isEqualTo(4)
         verify(client).upload()
     }
@@ -416,14 +416,14 @@ class SnapyrIntegrationTest {
                         throw Client.HTTPException(429, "Too Many Requests", "too many requests")
                     }
                 })
-        val segmentIntegration = SnapyrBuilder()
+        val snapyrIntegration = SnapyrBuilder()
             .client(client)
             .payloadQueue(payloadQueue)
             .build()
         for (i in 0..3) {
             payloadQueue.add(TRACK_PAYLOAD_JSON.toByteArray())
         }
-        segmentIntegration.submitFlush()
+        snapyrIntegration.submitFlush()
 
         // Verify that messages were not removed from the queue when server returned a 429.
         assertThat(queueFile.size()).isEqualTo(4)
@@ -436,19 +436,19 @@ class SnapyrIntegrationTest {
         val payloadQueue = mock(PayloadQueue::class.java)
         val cartographer = mock(Cartographer::class.java)
         val payload = Builder().event("event").userId("userId").build()
-        val segmentIntegration = SnapyrBuilder()
+        val snapyrIntegration = SnapyrBuilder()
             .cartographer(cartographer)
             .payloadQueue(payloadQueue)
             .build()
 
         // Serialized json is null.
         whenever(cartographer.toJson(any(Map::class.java))).thenReturn(null)
-        segmentIntegration.performEnqueue(payload)
+        snapyrIntegration.performEnqueue(payload)
         verify(payloadQueue, never()).add(any<Any>() as ByteArray?)
 
         // Serialized json is empty.
         whenever(cartographer.toJson(any(Map::class.java))).thenReturn("")
-        segmentIntegration.performEnqueue(payload)
+        snapyrIntegration.performEnqueue(payload)
         verify(payloadQueue, never()).add(any<Any>() as ByteArray?)
 
         // Serialized json is too large (> MAX_PAYLOAD_SIZE).
@@ -457,7 +457,7 @@ class SnapyrIntegrationTest {
             stringBuilder.append("a")
         }
         whenever(cartographer.toJson(any(Map::class.java))).thenReturn(stringBuilder.toString())
-        segmentIntegration.performEnqueue(payload)
+        snapyrIntegration.performEnqueue(payload)
         verify(payloadQueue, never()).add(any<Any>() as ByteArray?)
     }
 
@@ -465,9 +465,9 @@ class SnapyrIntegrationTest {
     @Throws(IOException::class)
     fun shutDown() {
         val payloadQueue = mock(PayloadQueue::class.java)
-        val segmentIntegration = SnapyrBuilder().payloadQueue(payloadQueue).build()
+        val snapyrIntegration = SnapyrBuilder().payloadQueue(payloadQueue).build()
 
-        segmentIntegration.shutdown()
+        snapyrIntegration.shutdown()
 
         verify(payloadQueue).close()
     }

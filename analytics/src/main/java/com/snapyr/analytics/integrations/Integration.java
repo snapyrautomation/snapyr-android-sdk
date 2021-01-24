@@ -33,7 +33,7 @@ import com.snapyr.analytics.Traits;
 import com.snapyr.analytics.ValueMap;
 
 /**
- * Converts Segment messages to a format a bundled integration understands, and calls those methods.
+ * Converts Snapyr messages to a format a bundled integration understands, and calls those methods.
  *
  * @param <T> The type of the backing instance. This isn't strictly necessary (since we return an
  *     object), but serves as documentation for what type to expect with {@link

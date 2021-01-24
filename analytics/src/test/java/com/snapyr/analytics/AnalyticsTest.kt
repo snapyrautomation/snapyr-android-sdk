@@ -298,14 +298,14 @@ open class AnalyticsTest {
 
     @Test
     fun group() {
-        analytics.group("segment", Traits().putEmployees(42), null)
+        analytics.group("snapyr", Traits().putEmployees(42), null)
 
         verify(integration)
             .group(
                 argThat<GroupPayload>(
                     object : NoDescriptionMatcher<GroupPayload>() {
                         override fun matchesSafely(item: GroupPayload): Boolean {
-                            return item.groupId() == "segment" &&
+                            return item.groupId() == "snapyr" &&
                                 item.traits().employees() == 42L
                         }
                     })
@@ -2094,7 +2094,7 @@ open class AnalyticsTest {
         assertThat(analytics.projectSettings).hasSize(2)
         assertThat(analytics.projectSettings).containsKey("integrations")
         assertThat(analytics.projectSettings.integrations()).hasSize(2)
-        assertThat(analytics.projectSettings.integrations()).containsKey("Segment.io")
+        assertThat(analytics.projectSettings.integrations()).containsKey("Snapyr")
         assertThat(analytics.projectSettings.integrations()).containsKey("Adjust")
     }
 
@@ -2140,12 +2140,12 @@ open class AnalyticsTest {
         assertThat(analytics.projectSettings).hasSize(2)
         assertThat(analytics.projectSettings).containsKey("integrations")
         assertThat(analytics.projectSettings.integrations()).hasSize(1)
-        assertThat(analytics.projectSettings.integrations()).containsKey("Segment.io")
+        assertThat(analytics.projectSettings.integrations()).containsKey("Snapyr")
     }
 
     @Test
     @Throws(IOException::class)
-    fun overwriteSegmentIoIntegration() {
+    fun overwriteSnapyrIoIntegration() {
         Analytics.INSTANCES.clear()
         // Make project download empty map and thus use default settings
         whenever(projectSettingsCache.get()).thenReturn(null)
@@ -2156,7 +2156,7 @@ open class AnalyticsTest {
                 "integrations",
                 ValueMap()
                     .putValue(
-                        "Segment.io",
+                        "Snapyr",
                         ValueMap()
                             .putValue("appToken", "<>")
                             .putValue("trackAttributionData", true)
@@ -2194,15 +2194,15 @@ open class AnalyticsTest {
 
         assertThat(analytics.projectSettings).hasSize(2)
         assertThat(analytics.projectSettings).containsKey("integrations")
-        assertThat(analytics.projectSettings.integrations()).containsKey("Segment.io")
+        assertThat(analytics.projectSettings.integrations()).containsKey("Snapyr")
         assertThat(analytics.projectSettings.integrations()).hasSize(1)
-        assertThat(analytics.projectSettings.integrations().getValueMap("Segment.io"))
+        assertThat(analytics.projectSettings.integrations().getValueMap("Snapyr"))
             .hasSize(3)
-        assertThat(analytics.projectSettings.integrations().getValueMap("Segment.io"))
+        assertThat(analytics.projectSettings.integrations().getValueMap("Snapyr"))
             .containsKey("apiKey")
-        assertThat(analytics.projectSettings.integrations().getValueMap("Segment.io"))
+        assertThat(analytics.projectSettings.integrations().getValueMap("Snapyr"))
             .containsKey("appToken")
-        assertThat(analytics.projectSettings.integrations().getValueMap("Segment.io"))
+        assertThat(analytics.projectSettings.integrations().getValueMap("Snapyr"))
             .containsKey("trackAttributionData")
     }
 

@@ -7,7 +7,7 @@ if (!hasProperty("SONATYPE_STAGING_PROFILE_ID")) {
 }
 
 nexusStaging {
-    packageGroup = "com.segment.analytics.android"
+    packageGroup = "com.snapyr.analytics.android"
     stagingProfileId = SONATYPE_STAGING_PROFILE_ID
     username = NEXUS_USERNAME
     password = NEXUS_PASSWORD

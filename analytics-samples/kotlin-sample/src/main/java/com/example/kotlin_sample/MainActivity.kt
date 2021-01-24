@@ -60,7 +60,7 @@ class MainActivity : AppCompatActivity() {
         return when (item.itemId) {
             R.id.docs -> {
                 val openDocs = Intent(Intent.ACTION_VIEW)
-                openDocs.data = Uri.parse("https://segment.com/docs/tutorials/quickstart-android/")
+                openDocs.data = Uri.parse("https://snapyr.com/docs/")
                 startActivity(openDocs)
                 try {
                     startActivity(openDocs)

@@ -274,7 +274,7 @@ public final class Utils {
 
     /**
      * Creates a unique device id. Suppresses `HardwareIds` lint warnings as we don't use this ID
-     * for identifying specific users. This is also what is required by the Segment spec.
+     * for identifying specific users. This is also what is required by the Snapyr spec.
      */
     @SuppressLint("HardwareIds")
     public static String getDeviceId(Context context) {
@@ -307,7 +307,7 @@ public final class Utils {
     }
 
     /** Returns a shared preferences for storing any library preferences. */
-    public static SharedPreferences getSegmentSharedPreferences(Context context, String tag) {
+    public static SharedPreferences getSnapyrSharedPreferences(Context context, String tag) {
         return context.getSharedPreferences("analytics-android-" + tag, MODE_PRIVATE);
     }
 

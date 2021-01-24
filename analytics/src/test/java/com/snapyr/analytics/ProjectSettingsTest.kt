@@ -67,7 +67,7 @@ class ProjectSettingsTest {
                     |        ],
                     |        "legacySuperProperties": false
                     |    },
-                    |    "Segment.io": {
+                    |    "Snapyr": {
                     |        "apiKey": "x"
                     |    }
                     |}
@@ -76,7 +76,7 @@ class ProjectSettingsTest {
 
         assertThat(projectSettings).hasSize(5)
         assertThat(projectSettings).containsKey("timestamp")
-        assertThat(projectSettings).containsKey("Segment.io")
+        assertThat(projectSettings).containsKey("Snapyr")
 
         try {
             projectSettings["foo"] = "bar"

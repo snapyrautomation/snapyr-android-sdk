@@ -86,7 +86,7 @@ public class SampleApp extends Application {
                                     }
                                 })
                         .useDestinationMiddleware(
-                                "Segment.io",
+                                "Snapyr",
                                 new Middleware() {
                                     @Override
                                     public void intercept(Chain chain) {
@@ -113,11 +113,11 @@ public class SampleApp extends Application {
         // If you need to know when integrations have been initialized, use the onIntegrationReady
         // listener.
         analytics.onIntegrationReady(
-                "Segment.io",
+                "Snapyr",
                 new Analytics.Callback() {
                     @Override
                     public void onReady(Object instance) {
-                        Log.d("Segment Sample", "Segment integration ready.");
+                        Log.d("Snapyr Sample", "Snapyr integration ready.");
                     }
                 });
     }

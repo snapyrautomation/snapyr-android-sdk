@@ -389,7 +389,7 @@ public class ValueMap implements Map<String, Object> {
 
         Cache(Context context, Cartographer cartographer, String key, String tag, Class<T> clazz) {
             this.cartographer = cartographer;
-            this.preferences = Utils.getSegmentSharedPreferences(context, tag);
+            this.preferences = Utils.getSnapyrSharedPreferences(context, tag);
             this.key = key;
             this.clazz = clazz;
         }

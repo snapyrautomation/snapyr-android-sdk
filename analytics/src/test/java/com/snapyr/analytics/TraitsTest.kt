@@ -150,8 +150,8 @@ class TraitsTest {
 
     @Test
     fun avatar() {
-        traits.putAvatar("https://github.com/identicons/segmentio.png")
-        assertThat(traits.avatar()).isEqualTo("https://github.com/identicons/segmentio.png")
+        traits.putAvatar("https://snapyr.com/someavatar.png")
+        assertThat(traits.avatar()).isEqualTo("https://snapyr.com/someavatar.png")
     }
 
     @Test
@@ -254,7 +254,7 @@ class TraitsTest {
 
     @Test
     fun website() {
-        traits.putWebsite("https://segment.com/")
-        assertThat(traits.website()).isEqualTo("https://segment.com/")
+        traits.putWebsite("https://snapyr.com/")
+        assertThat(traits.website()).isEqualTo("https://snapyr.com/")
     }
 }
