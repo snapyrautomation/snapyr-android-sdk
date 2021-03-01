@@ -1380,8 +1380,8 @@ public class Analytics {
         /**
          * Set the default project settings to use, if Snapyr.com cannot be reached. An example
          * configuration can be found here, using your write key: <a
-         * href="https://cdn-settings.segment.com/v1/projects/YOUR_WRITE_KEY/settings">
-         * https://cdn-settings.segment.com/v1/projects/YOUR_WRITE_KEY/settings </a>
+         * href="https://snapyr.com/sdk/write-key-goes-here">
+         * https://snapyr.com/sdk/write-key-goes-here </a>
          */
         public Builder defaultProjectSettings(ValueMap defaultProjectSettings) {
             Utils.assertNotNull(defaultProjectSettings, "defaultProjectSettings");

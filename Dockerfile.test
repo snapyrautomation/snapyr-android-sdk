@@ -1,0 +1,8 @@
+FROM androidsdk/android-29
+WORKDIR /app
+
+COPY . .
+
+RUN ./gradlew clean
+
+CMD ["./gradlew", "check", "build", "assembleAndroidTest"]

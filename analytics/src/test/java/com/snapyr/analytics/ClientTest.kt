@@ -176,7 +176,7 @@ class ClientTest {
         assertThat(connection.`is`).isNotNull()
         assertThat(connection.connection.responseCode).isEqualTo(200)
         RecordedRequestAssert.assertThat(server.takeRequest())
-            .hasRequestLine("GET /v1/projects/foo/settings HTTP/1.1")
+            .hasRequestLine("GET /sdk/foo HTTP/1.1")
             .containsHeader("User-Agent", ConnectionFactory.USER_AGENT)
             .containsHeader("Content-Type", "application/json")
     }
