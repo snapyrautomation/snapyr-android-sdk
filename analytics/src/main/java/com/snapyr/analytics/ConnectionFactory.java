@@ -46,7 +46,7 @@ public class ConnectionFactory {
 
     /** Return a {@link HttpURLConnection} that reads JSON formatted project settings. */
     public HttpURLConnection projectSettings(String writeKey) throws IOException {
-        return openConnection("https://snapyr.com/sdk/" + writeKey);
+        return openConnection("https://api.snapyr.com/sdk/" + writeKey);
     }
 
     /**
