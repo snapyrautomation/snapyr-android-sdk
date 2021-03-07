@@ -900,7 +900,7 @@ public class Snapyr {
      *       Amplitude.enableLocationListening();
      *     }
      *   });
-     *   analytics.onIntegrationReady("Mixpanel", new Callback<>() {
+     *   analytics.onIntegrationReady("Mixpanel", new Callback() {
      *     {@literal @}Override public void onIntegrationReady(MixpanelAPI mixpanel) {
      *       mixpanel.clearSuperProperties();
      *     }
