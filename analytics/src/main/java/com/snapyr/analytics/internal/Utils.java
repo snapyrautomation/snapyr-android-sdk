@@ -45,7 +45,7 @@ import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import com.snapyr.analytics.Analytics;
+import com.snapyr.analytics.Snapyr;
 import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.File;
@@ -537,7 +537,7 @@ public final class Utils {
     }
 
     /**
-     * A {@link ThreadPoolExecutor} implementation by {@link Analytics} instances. Exists as a
+     * A {@link ThreadPoolExecutor} implementation by {@link Snapyr} instances. Exists as a
      * custom type so that we can differentiate the use of defaults versus a user-supplied instance.
      */
     public static class AnalyticsNetworkExecutorService extends ThreadPoolExecutor {

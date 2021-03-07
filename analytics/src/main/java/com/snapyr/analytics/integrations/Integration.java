@@ -26,7 +26,7 @@ package com.snapyr.analytics.integrations;
 import android.app.Activity;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
-import com.snapyr.analytics.Analytics;
+import com.snapyr.analytics.Snapyr;
 import com.snapyr.analytics.Options;
 import com.snapyr.analytics.Properties;
 import com.snapyr.analytics.Traits;
@@ -47,7 +47,7 @@ public abstract class Integration<T> {
          * Attempts to create an adapter for with {@code settings}. This returns the adapter if one
          * was created, or null if this factory isn't capable of creating such an adapter.
          */
-        Integration<?> create(ValueMap settings, Analytics analytics);
+        Integration<?> create(ValueMap settings, Snapyr analytics);
 
         /** The key for which this factory can create an {@link Integration}. */
         @NonNull
@@ -75,25 +75,25 @@ public abstract class Integration<T> {
     /** @see android.app.Application.ActivityLifecycleCallbacks */
     public void onActivityDestroyed(Activity activity) {}
 
-    /** @see Analytics#identify(String, Traits, Options) */
+    /** @see Snapyr#identify(String, Traits, Options) */
     public void identify(IdentifyPayload identify) {}
 
-    /** @see Analytics#group(String, Traits, Options) */
+    /** @see Snapyr#group(String, Traits, Options) */
     public void group(GroupPayload group) {}
 
-    /** @see Analytics#track(String, Properties, Options) */
+    /** @see Snapyr#track(String, Properties, Options) */
     public void track(TrackPayload track) {}
 
-    /** @see Analytics#alias(String, Options) */
+    /** @see Snapyr#alias(String, Options) */
     public void alias(AliasPayload alias) {}
 
-    /** @see Analytics#screen(String, String, Properties, Options) */
+    /** @see Snapyr#screen(String, String, Properties, Options) */
     public void screen(ScreenPayload screen) {}
 
-    /** @see Analytics#flush() */
+    /** @see Snapyr#flush() */
     public void flush() {}
 
-    /** @see Analytics#reset() */
+    /** @see Snapyr#reset() */
     public void reset() {}
 
     /**

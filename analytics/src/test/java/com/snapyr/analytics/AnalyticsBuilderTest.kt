@@ -29,8 +29,8 @@ import android.content.Context
 import android.content.pm.PackageManager.PERMISSION_DENIED
 import android.content.res.Resources
 import com.nhaarman.mockitokotlin2.whenever
-import com.snapyr.analytics.Analytics.Builder
-import com.snapyr.analytics.Analytics.WRITE_KEY_RESOURCE_IDENTIFIER
+import com.snapyr.analytics.Snapyr.Builder
+import com.snapyr.analytics.Snapyr.WRITE_KEY_RESOURCE_IDENTIFIER
 import com.snapyr.analytics.core.BuildConfig
 import java.util.concurrent.TimeUnit
 import kotlin.jvm.Throws
@@ -55,7 +55,7 @@ class AnalyticsBuilderTest {
     fun setUp() {
         MockitoAnnotations.initMocks(this)
         context = TestUtils.mockApplication()
-        Analytics.INSTANCES.clear()
+        Snapyr.INSTANCES.clear()
         whenever(context.applicationContext).thenReturn(context)
     }
 
@@ -173,7 +173,7 @@ class AnalyticsBuilderTest {
     fun invalidWriteKeyFromResourcesThrowsException() {
         mockWriteKeyInResources(context, null)
         try {
-            Analytics.with(context)
+            Snapyr.with(context)
             fail("Null writeKey should throw exception.")
         } catch (expected: IllegalArgumentException) {
             assertThat(expected).hasMessage("writeKey must not be null or empty.")
@@ -181,7 +181,7 @@ class AnalyticsBuilderTest {
 
         mockWriteKeyInResources(context, "")
         try {
-            Analytics.with(context)
+            Snapyr.with(context)
             fail("Empty writeKey should throw exception.")
         } catch (expected: java.lang.IllegalArgumentException) {
             assertThat(expected).hasMessage("writeKey must not be null or empty.")
@@ -189,7 +189,7 @@ class AnalyticsBuilderTest {
 
         mockWriteKeyInResources(context, "    ")
         try {
-            Analytics.with(context)
+            Snapyr.with(context)
             fail("Blank writeKey should throw exception.")
         } catch (expected: java.lang.IllegalArgumentException) {
             assertThat(expected).hasMessage("writeKey must not be null or empty.")

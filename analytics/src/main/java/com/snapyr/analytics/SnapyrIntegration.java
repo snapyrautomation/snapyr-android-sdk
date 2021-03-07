@@ -66,7 +66,7 @@ class SnapyrIntegration extends Integration<Void> {
     static final Integration.Factory FACTORY =
             new Integration.Factory() {
                 @Override
-                public Integration<?> create(ValueMap settings, Analytics analytics) {
+                public Integration<?> create(ValueMap settings, Snapyr analytics) {
                     return SnapyrIntegration.create(
                             analytics.getApplication(),
                             analytics.client,
@@ -478,7 +478,7 @@ class SnapyrIntegration extends Integration<Void> {
             for (Map<String, Object> actionMap : actionMapList) {
                 final SnapyrAction action = SnapyrAction.create(actionMap);
                 if (actionHandler != null) {
-                    Analytics.HANDLER.post(
+                    Snapyr.HANDLER.post(
                             new Runnable() {
                                 @Override
                                 public void run() {
@@ -486,7 +486,7 @@ class SnapyrIntegration extends Integration<Void> {
                                         actionHandler.handleAction(action);
                                     } catch (Exception e) {
                                         logger.error(
-                                                e, "error handling action: " + action.getAction());
+                                                e, "error handling action: " + action.getString("action"));
                                     }
                                 }
                             });

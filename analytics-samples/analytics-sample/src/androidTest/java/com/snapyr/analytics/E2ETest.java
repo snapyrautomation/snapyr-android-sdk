@@ -82,13 +82,13 @@ public class E2ETest {
     private static final Backo BACKO =
             Backo.builder().base(TimeUnit.SECONDS, 1).cap(TimeUnit.MINUTES, 5).build();
 
-    private Analytics analytics;
+    private Snapyr analytics;
     private WebhookService webhookService;
 
     @Before
     public void setup() {
         analytics =
-                new Analytics.Builder(activityActivityTestRule.getActivity(), SNAPYR_WRITE_KEY)
+                new Snapyr.Builder(activityActivityTestRule.getActivity(), SNAPYR_WRITE_KEY)
                         .build();
 
         webhookService =

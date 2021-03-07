@@ -50,7 +50,7 @@ public class WebhookIntegration extends Integration<Void> {
         }
 
         @Override
-        public Integration<?> create(ValueMap settings, Analytics analytics) {
+        public Integration<?> create(ValueMap settings, Snapyr analytics) {
             return new WebhookIntegration(
                     webhookUrl, analytics.tag, key(), analytics.networkExecutor);
         }

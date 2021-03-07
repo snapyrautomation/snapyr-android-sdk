@@ -86,7 +86,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @see <a href="https://snapyr.com/">Snapyr</a>
  */
-public class Analytics {
+public class Snapyr {
 
     static final Handler HANDLER =
             new Handler(Looper.getMainLooper()) {
@@ -100,7 +100,7 @@ public class Analytics {
     static final List<String> INSTANCES = new ArrayList<>(1);
     /* This is intentional since we're only using the application context. */
     @SuppressLint("StaticFieldLeak")
-    static volatile Analytics singleton = null;
+    static volatile Snapyr singleton = null;
 
     @Private static final Properties EMPTY_PROPERTIES = new Properties();
     private static final String VERSION_KEY = "version";
@@ -145,7 +145,7 @@ public class Analytics {
     @Private final boolean useNewLifecycleMethods;
 
     /**
-     * Return a reference to the global default {@link Analytics} instance.
+     * Return a reference to the global default {@link Snapyr} instance.
      *
      * <p>This instance is automatically initialized with defaults that are suitable to most
      * implementations.
@@ -157,12 +157,12 @@ public class Analytics {
      * <p>By default, events are uploaded every 30 seconds, or every 20 events (whichever occurs
      * first), and debugging is disabled.
      */
-    public static Analytics with(Context context) {
+    public static Snapyr with(Context context) {
         if (singleton == null) {
             if (context == null) {
                 throw new IllegalArgumentException("Context must not be null.");
             }
-            synchronized (Analytics.class) {
+            synchronized (Snapyr.class) {
                 if (singleton == null) {
                     String writeKey =
                             Utils.getResourceString(context, WRITE_KEY_RESOURCE_IDENTIFIER);
@@ -193,8 +193,8 @@ public class Analytics {
      *
      * <p>This method must be called before any calls to {@link #with} and may only be called once.
      */
-    public static void setSingletonInstance(Analytics analytics) {
-        synchronized (Analytics.class) {
+    public static void setSingletonInstance(Snapyr analytics) {
+        synchronized (Snapyr.class) {
             if (singleton != null) {
                 throw new IllegalStateException("Singleton instance already exists.");
             }
@@ -202,7 +202,7 @@ public class Analytics {
         }
     }
 
-    Analytics(
+    Snapyr(
             Application application,
             ExecutorService networkExecutor,
             Stats stats,
@@ -297,7 +297,7 @@ public class Analytics {
                                 defaultProjectSettings
                                         .getValueMap("integrations")
                                         .getValueMap("Snapyr")
-                                        .putValue("apiKey", Analytics.this.writeKey);
+                                        .putValue("apiKey", Snapyr.this.writeKey);
                             }
                             projectSettings = ProjectSettings.create(defaultProjectSettings);
                         }
@@ -1050,11 +1050,11 @@ public class Analytics {
         @Override
         public void handleAction(SnapyrAction action) {
             logger.info("warning: action handler not configured");
-            logger.info("received action message: " + action.getAction());
+            logger.info("received action message: " + action.getString("action"));
         }
     }
 
-    /** Fluent API for creating {@link Analytics} instances. */
+    /** Fluent API for creating {@link Snapyr} instances. */
     public static class Builder {
 
         private final Application application;
@@ -1081,7 +1081,7 @@ public class Analytics {
         private ValueMap defaultProjectSettings = new ValueMap();
         private boolean useNewLifecycleMethods = true; // opt-out feature
 
-        /** Start building a new {@link Analytics} instance. */
+        /** Start building a new {@link Snapyr} instance. */
         public Builder(Context context, String writeKey) {
             if (context == null) {
                 throw new IllegalArgumentException("Context must not be null.");
@@ -1207,7 +1207,7 @@ public class Analytics {
         /**
          * Specify the executor service for making network calls in the background.
          *
-         * <p>Note: Calling {@link Analytics#shutdown()} will not shutdown supplied executors.
+         * <p>Note: Calling {@link Snapyr#shutdown()} will not shutdown supplied executors.
          *
          * <p>Use it with care! http://bit.ly/1JVlA2e
          */
@@ -1403,8 +1403,8 @@ public class Analytics {
             return this;
         }
 
-        /** Create a {@link Analytics} client. */
-        public Analytics build() {
+        /** Create a {@link Snapyr} client. */
+        public Snapyr build() {
             if (Utils.isNullOrEmpty(tag)) {
                 tag = writeKey;
             }
@@ -1491,7 +1491,7 @@ public class Analytics {
                 executor = Executors.newSingleThreadExecutor();
             }
             Lifecycle lifecycle = ProcessLifecycleOwner.get().getLifecycle();
-            return new Analytics(
+            return new Snapyr(
                     application,
                     networkExecutor,
                     stats,

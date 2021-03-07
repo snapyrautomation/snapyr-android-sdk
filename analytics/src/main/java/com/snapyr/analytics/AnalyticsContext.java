@@ -116,7 +116,7 @@ public class AnalyticsContext extends ValueMap {
 
     /**
      * Create a new {@link AnalyticsContext} instance filled in with information from the given
-     * {@link Context}. The {@link Analytics} client can be called from anywhere, so the returned
+     * {@link Context}. The {@link Snapyr} client can be called from anywhere, so the returned
      * instances is thread safe.
      */
     static synchronized AnalyticsContext create(
@@ -188,7 +188,7 @@ public class AnalyticsContext extends ValueMap {
 
     /**
      * Note: Not for public use. Clients should modify the user's traits with {@link
-     * Analytics#identify(String, Traits, Options)}. Modifying this instance will not reflect
+     * Snapyr#identify(String, Traits, Options)}. Modifying this instance will not reflect
      * changes to the user's information that is passed onto bundled integrations.
      *
      * <p>Return the {@link Traits} attached to this instance.

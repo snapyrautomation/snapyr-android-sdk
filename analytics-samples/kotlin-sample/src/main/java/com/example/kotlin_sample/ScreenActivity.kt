@@ -33,7 +33,7 @@ import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.kotlin_sample.databinding.ActivityScreenBinding
-import com.snapyr.analytics.Analytics
+import com.snapyr.analytics.Snapyr
 
 class ScreenActivity : AppCompatActivity() {
 
@@ -72,14 +72,14 @@ class ScreenActivity : AppCompatActivity() {
     }
 
     private fun onFlushClicked() {
-        Analytics.with(this).flush()
+        Snapyr.with(this).flush()
         Toast.makeText(this, "Events flushed", Toast.LENGTH_SHORT).show()
     }
 
     private lateinit var binding: ActivityScreenBinding
 
     private fun initialSetup() {
-        Analytics.with(this).screen("Screen activity viewed")
+        Snapyr.with(this).screen("Screen activity viewed")
 
         val returnMessage =
             """

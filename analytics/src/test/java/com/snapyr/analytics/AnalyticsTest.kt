@@ -133,7 +133,7 @@ open class AnalyticsTest {
     private lateinit var application: Application
     private lateinit var traits: Traits
     private lateinit var analyticsContext: AnalyticsContext
-    private lateinit var analytics: Analytics
+    private lateinit var analytics: Snapyr
     @Mock
     private lateinit var jsMiddleware: JSMiddleware
     @Mock
@@ -142,7 +142,7 @@ open class AnalyticsTest {
     @Before
     @Throws(IOException::class, NameNotFoundException::class)
     fun setUp() {
-        Analytics.INSTANCES.clear()
+        Snapyr.INSTANCES.clear()
 
         initMocks(this)
         defaultOptions = Options()
@@ -161,7 +161,7 @@ open class AnalyticsTest {
 
         analyticsContext = Utils.createContext(traits)
         factory = object : Integration.Factory {
-            override fun create(settings: ValueMap, analytics: Analytics): Integration<*>? {
+            override fun create(settings: ValueMap, analytics: Snapyr): Integration<*>? {
                 return integration
             }
 
@@ -177,14 +177,14 @@ open class AnalyticsTest {
                 .getSharedPreferences("analytics-test-qaz", MODE_PRIVATE)
         optOut = BooleanPreference(sharedPreferences, "opt-out-test", false)
 
-        analytics = Analytics(
+        analytics = Snapyr(
             application,
             networkExecutor,
             stats,
             traitsCache,
             analyticsContext,
             defaultOptions,
-            Logger.with(Analytics.LogLevel.VERBOSE),
+            Logger.with(Snapyr.LogLevel.VERBOSE),
             "qaz", listOf(factory),
             client,
             Cartographer.INSTANCE,
@@ -689,7 +689,7 @@ open class AnalyticsTest {
     @Test
     fun onIntegrationReadyShouldFailForNullKey() {
         try {
-            analytics.onIntegrationReady(null as String?, Mockito.mock(Analytics.Callback::class.java))
+            analytics.onIntegrationReady(null as String?, Mockito.mock(Snapyr.Callback::class.java))
             fail("registering for null integration should fail")
         } catch (e: java.lang.IllegalArgumentException) {
             assertThat(e).hasMessage("key cannot be null or empty.")
@@ -698,7 +698,7 @@ open class AnalyticsTest {
 
     @Test
     fun onIntegrationReady() {
-        val callback: Analytics.Callback<*> = Mockito.mock(Analytics.Callback::class.java)
+        val callback: Snapyr.Callback<*> = Mockito.mock(Snapyr.Callback::class.java)
         analytics.onIntegrationReady("test", callback)
         verify(callback).onReady(null)
     }
@@ -738,10 +738,10 @@ open class AnalyticsTest {
     @Test
     @Throws(Exception::class)
     fun shutdownDisallowedOnCustomSingletonInstance() {
-        Analytics.singleton = null
+        Snapyr.singleton = null
         try {
-            val analytics = Analytics.Builder(RuntimeEnvironment.application, "foo").build()
-            Analytics.setSingletonInstance(analytics)
+            val analytics = Snapyr.Builder(RuntimeEnvironment.application, "foo").build()
+            Snapyr.setSingletonInstance(analytics)
             analytics.shutdown()
             fail("Calling shutdown() on static singleton instance should throw")
         } catch (ignored: UnsupportedOperationException) {
@@ -750,13 +750,13 @@ open class AnalyticsTest {
 
     @Test
     fun setSingletonInstanceMayOnlyBeCalledOnce() {
-        Analytics.singleton = null
+        Snapyr.singleton = null
 
-        val analytics = Analytics.Builder(RuntimeEnvironment.application, "foo").build()
-        Analytics.setSingletonInstance(analytics)
+        val analytics = Snapyr.Builder(RuntimeEnvironment.application, "foo").build()
+        Snapyr.setSingletonInstance(analytics)
 
         try {
-            Analytics.setSingletonInstance(analytics)
+            Snapyr.setSingletonInstance(analytics)
             fail("Can't set singleton instance twice.")
         } catch (e: IllegalStateException) {
             assertThat(e).hasMessage("Singleton instance already exists.")
@@ -765,12 +765,12 @@ open class AnalyticsTest {
 
     @Test
     fun setSingletonInstanceAfterWithFails() {
-        Analytics.singleton = null
-        Analytics.setSingletonInstance(Analytics.Builder(RuntimeEnvironment.application, "foo").build())
+        Snapyr.singleton = null
+        Snapyr.setSingletonInstance(Snapyr.Builder(RuntimeEnvironment.application, "foo").build())
 
-        val analytics = Analytics.Builder(RuntimeEnvironment.application, "bar").build()
+        val analytics = Snapyr.Builder(RuntimeEnvironment.application, "bar").build()
         try {
-            Analytics.setSingletonInstance(analytics)
+            Snapyr.setSingletonInstance(analytics)
             fail("Can't set singleton instance after with().")
         } catch (e: IllegalStateException) {
             assertThat(e).hasMessage("Singleton instance already exists.")
@@ -779,18 +779,18 @@ open class AnalyticsTest {
 
     @Test
     fun setSingleInstanceReturnedFromWith() {
-        Analytics.singleton = null
-        val analytics = Analytics.Builder(RuntimeEnvironment.application, "foo").build()
-        Analytics.setSingletonInstance(analytics)
-        assertThat(Analytics.with(RuntimeEnvironment.application)).isSameAs(analytics)
+        Snapyr.singleton = null
+        val analytics = Snapyr.Builder(RuntimeEnvironment.application, "foo").build()
+        Snapyr.setSingletonInstance(analytics)
+        assertThat(Snapyr.with(RuntimeEnvironment.application)).isSameAs(analytics)
     }
 
     @Test
     @Throws(Exception::class)
     fun multipleInstancesWithSameTagThrows() {
-        Analytics.Builder(RuntimeEnvironment.application, "foo").build()
+        Snapyr.Builder(RuntimeEnvironment.application, "foo").build()
         try {
-            Analytics.Builder(RuntimeEnvironment.application, "bar").tag("foo").build()
+            Snapyr.Builder(RuntimeEnvironment.application, "bar").tag("foo").build()
             fail("Creating client with duplicate should throw.")
         } catch (expected: IllegalStateException) {
             assertThat(expected)
@@ -801,8 +801,8 @@ open class AnalyticsTest {
     @Test
     @Throws(Exception::class)
     fun multipleInstancesWithSameTagIsAllowedAfterShutdown() {
-        Analytics.Builder(RuntimeEnvironment.application, "foo").build().shutdown()
-        Analytics.Builder(RuntimeEnvironment.application, "bar").tag("foo").build()
+        Snapyr.Builder(RuntimeEnvironment.application, "foo").build().shutdown()
+        Snapyr.Builder(RuntimeEnvironment.application, "bar").tag("foo").build()
     }
 
     @Test
@@ -829,7 +829,7 @@ open class AnalyticsTest {
     @Test
     @Throws(NameNotFoundException::class)
     fun trackApplicationLifecycleEventsInstalled() {
-        Analytics.INSTANCES.clear()
+        Snapyr.INSTANCES.clear()
         val callback = AtomicReference<DefaultLifecycleObserver>()
         doNothing()
             .whenever(lifecycle)
@@ -845,14 +845,14 @@ open class AnalyticsTest {
 
         val mockLifecycleOwner = Mockito.mock(LifecycleOwner::class.java)
 
-        analytics = Analytics(
+        analytics = Snapyr(
             application,
             networkExecutor,
             stats,
             traitsCache,
             analyticsContext,
             defaultOptions,
-            Logger.with(Analytics.LogLevel.NONE),
+            Logger.with(Snapyr.LogLevel.NONE),
             "qaz", listOf(factory),
             client,
             Cartographer.INSTANCE,
@@ -899,7 +899,7 @@ open class AnalyticsTest {
     @Test
     @Throws(NameNotFoundException::class)
     fun trackApplicationLifecycleEventsUpdated() {
-        Analytics.INSTANCES.clear()
+        Snapyr.INSTANCES.clear()
 
         val packageInfo = PackageInfo()
         packageInfo.versionCode = 101
@@ -934,14 +934,14 @@ open class AnalyticsTest {
 
         val mockLifecycleOwner = Mockito.mock(LifecycleOwner::class.java)
 
-        analytics = Analytics(
+        analytics = Snapyr(
             application,
             networkExecutor,
             stats,
             traitsCache,
             analyticsContext,
             defaultOptions,
-            Logger.with(Analytics.LogLevel.NONE),
+            Logger.with(Snapyr.LogLevel.NONE),
             "qaz", listOf(factory),
             client,
             Cartographer.INSTANCE,
@@ -989,7 +989,7 @@ open class AnalyticsTest {
     @Test
     @Throws(NameNotFoundException::class)
     fun recordScreenViews() {
-        Analytics.INSTANCES.clear()
+        Snapyr.INSTANCES.clear()
 
         val callback = AtomicReference<ActivityLifecycleCallbacks>()
         doNothing()
@@ -1004,14 +1004,14 @@ open class AnalyticsTest {
                     })
             )
 
-        analytics = Analytics(
+        analytics = Snapyr(
             application,
             networkExecutor,
             stats,
             traitsCache,
             analyticsContext,
             defaultOptions,
-            Logger.with(Analytics.LogLevel.NONE),
+            Logger.with(Snapyr.LogLevel.NONE),
             "qaz", listOf(factory),
             client,
             Cartographer.INSTANCE,
@@ -1060,7 +1060,7 @@ open class AnalyticsTest {
 
     @Test
     fun trackDeepLinks() {
-        Analytics.INSTANCES.clear()
+        Snapyr.INSTANCES.clear()
 
         val callback =
             AtomicReference<ActivityLifecycleCallbacks>()
@@ -1076,14 +1076,14 @@ open class AnalyticsTest {
                     })
             )
 
-        analytics = Analytics(
+        analytics = Snapyr(
             application,
             networkExecutor,
             stats,
             traitsCache,
             analyticsContext,
             defaultOptions,
-            Logger.with(Analytics.LogLevel.NONE),
+            Logger.with(Snapyr.LogLevel.NONE),
             "qaz", listOf(factory),
             client,
             Cartographer.INSTANCE,
@@ -1136,7 +1136,7 @@ open class AnalyticsTest {
 
     @Test
     fun trackDeepLinks_disabled() {
-        Analytics.INSTANCES.clear()
+        Snapyr.INSTANCES.clear()
 
         val callback =
             AtomicReference<ActivityLifecycleCallbacks>()
@@ -1153,14 +1153,14 @@ open class AnalyticsTest {
                     })
             )
 
-        analytics = Analytics(
+        analytics = Snapyr(
             application,
             networkExecutor,
             stats,
             traitsCache,
             analyticsContext,
             defaultOptions,
-            Logger.with(Analytics.LogLevel.NONE),
+            Logger.with(Snapyr.LogLevel.NONE),
             "qaz", listOf(factory),
             client,
             Cartographer.INSTANCE,
@@ -1211,7 +1211,7 @@ open class AnalyticsTest {
 
     @Test
     fun trackDeepLinks_null() {
-        Analytics.INSTANCES.clear()
+        Snapyr.INSTANCES.clear()
 
         val callback =
             AtomicReference<ActivityLifecycleCallbacks>()
@@ -1228,14 +1228,14 @@ open class AnalyticsTest {
                     })
             )
 
-        analytics = Analytics(
+        analytics = Snapyr(
             application,
             networkExecutor,
             stats,
             traitsCache,
             analyticsContext,
             defaultOptions,
-            Logger.with(Analytics.LogLevel.NONE),
+            Logger.with(Snapyr.LogLevel.NONE),
             "qaz", listOf(factory),
             client,
             Cartographer.INSTANCE,
@@ -1277,7 +1277,7 @@ open class AnalyticsTest {
 
     @Test
     fun trackDeepLinks_nullData() {
-        Analytics.INSTANCES.clear()
+        Snapyr.INSTANCES.clear()
 
         val callback =
             AtomicReference<ActivityLifecycleCallbacks>()
@@ -1294,14 +1294,14 @@ open class AnalyticsTest {
                     })
             )
 
-        analytics = Analytics(
+        analytics = Snapyr(
             application,
             networkExecutor,
             stats,
             traitsCache,
             analyticsContext,
             defaultOptions,
-            Logger.with(Analytics.LogLevel.NONE),
+            Logger.with(Snapyr.LogLevel.NONE),
             "qaz", listOf(factory),
             client,
             Cartographer.INSTANCE,
@@ -1347,7 +1347,7 @@ open class AnalyticsTest {
     @Test
     @Throws(NameNotFoundException::class)
     fun registerActivityLifecycleCallbacks() {
-        Analytics.INSTANCES.clear()
+        Snapyr.INSTANCES.clear()
 
         val callback =
             AtomicReference<ActivityLifecycleCallbacks>()
@@ -1364,14 +1364,14 @@ open class AnalyticsTest {
                     })
             )
 
-        analytics = Analytics(
+        analytics = Snapyr(
             application,
             networkExecutor,
             stats,
             traitsCache,
             analyticsContext,
             defaultOptions,
-            Logger.with(Analytics.LogLevel.NONE),
+            Logger.with(Snapyr.LogLevel.NONE),
             "qaz", listOf(factory),
             client,
             Cartographer.INSTANCE,
@@ -1424,7 +1424,7 @@ open class AnalyticsTest {
     @Test
     @Throws(NameNotFoundException::class)
     fun trackApplicationLifecycleEventsApplicationOpened() {
-        Analytics.INSTANCES.clear()
+        Snapyr.INSTANCES.clear()
 
         val callback =
             AtomicReference<DefaultLifecycleObserver>()
@@ -1443,14 +1443,14 @@ open class AnalyticsTest {
 
         val mockLifecycleOwner = Mockito.mock(LifecycleOwner::class.java)
 
-        analytics = Analytics(
+        analytics = Snapyr(
             application,
             networkExecutor,
             stats,
             traitsCache,
             analyticsContext,
             defaultOptions,
-            Logger.with(Analytics.LogLevel.NONE),
+            Logger.with(Snapyr.LogLevel.NONE),
             "qaz", listOf(factory),
             client,
             Cartographer.INSTANCE,
@@ -1493,7 +1493,7 @@ open class AnalyticsTest {
     @Test
     @Throws(NameNotFoundException::class)
     fun trackApplicationLifecycleEventsApplicationBackgrounded() {
-        Analytics.INSTANCES.clear()
+        Snapyr.INSTANCES.clear()
 
         val callback =
             AtomicReference<DefaultLifecycleObserver>()
@@ -1512,14 +1512,14 @@ open class AnalyticsTest {
 
         val mockLifecycleOwner = Mockito.mock(LifecycleOwner::class.java)
 
-        analytics = Analytics(
+        analytics = Snapyr(
             application,
             networkExecutor,
             stats,
             traitsCache,
             analyticsContext,
             defaultOptions,
-            Logger.with(Analytics.LogLevel.NONE),
+            Logger.with(Snapyr.LogLevel.NONE),
             "qaz", listOf(factory),
             client,
             Cartographer.INSTANCE,
@@ -1564,7 +1564,7 @@ open class AnalyticsTest {
     @Test
     @Throws(NameNotFoundException::class)
     fun trackApplicationLifecycleEventsApplicationForegrounded() {
-        Analytics.INSTANCES.clear()
+        Snapyr.INSTANCES.clear()
 
         val callback =
             AtomicReference<DefaultLifecycleObserver>()
@@ -1583,14 +1583,14 @@ open class AnalyticsTest {
 
         val mockLifecycleOwner = Mockito.mock(LifecycleOwner::class.java)
 
-        analytics = Analytics(
+        analytics = Snapyr(
             application,
             networkExecutor,
             stats,
             traitsCache,
             analyticsContext,
             defaultOptions,
-            Logger.with(Analytics.LogLevel.NONE),
+            Logger.with(Snapyr.LogLevel.NONE),
             "qaz", listOf(factory),
             client,
             Cartographer.INSTANCE,
@@ -1644,7 +1644,7 @@ open class AnalyticsTest {
     @Test
     @Throws(NameNotFoundException::class)
     open fun trackApplicationLifecycleEventsApplicationOpenedOldFlow() {
-        Analytics.INSTANCES.clear()
+        Snapyr.INSTANCES.clear()
         // need to reset bcos we interact with mock in our setUp function (implicitly via analytics
         // constructor)
         Mockito.reset(lifecycle)
@@ -1660,14 +1660,14 @@ open class AnalyticsTest {
                         }
                     })
             )
-        analytics = Analytics(
+        analytics = Snapyr(
             application,
             networkExecutor,
             stats,
             traitsCache,
             analyticsContext,
             defaultOptions,
-            Logger.with(Analytics.LogLevel.NONE),
+            Logger.with(Snapyr.LogLevel.NONE),
             "qaz",
             listOf(factory),
             client,
@@ -1714,7 +1714,7 @@ open class AnalyticsTest {
     @Test
     @Throws(NameNotFoundException::class)
     open fun trackApplicationLifecycleEventsApplicationBackgroundedOldFlow() {
-        Analytics.INSTANCES.clear()
+        Snapyr.INSTANCES.clear()
         // need to reset bcos we interact with mock in our setUp function (implicitly via analytics
         // constructor)
         Mockito.reset(lifecycle)
@@ -1730,14 +1730,14 @@ open class AnalyticsTest {
                         }
                     })
             )
-        analytics = Analytics(
+        analytics = Snapyr(
             application,
             networkExecutor,
             stats,
             traitsCache,
             analyticsContext,
             defaultOptions,
-            Logger.with(Analytics.LogLevel.NONE),
+            Logger.with(Snapyr.LogLevel.NONE),
             "qaz",
             listOf(factory),
             client,
@@ -1784,7 +1784,7 @@ open class AnalyticsTest {
     @Test
     @Throws(NameNotFoundException::class)
     open fun trackApplicationLifecycleEventsApplicationForegroundedOldFlow() {
-        Analytics.INSTANCES.clear()
+        Snapyr.INSTANCES.clear()
         // need to reset bcos we interact with mock in our setUp function (implicitly via analytics
         // constructor)
         Mockito.reset(lifecycle)
@@ -1800,14 +1800,14 @@ open class AnalyticsTest {
                         }
                     })
             )
-        analytics = Analytics(
+        analytics = Snapyr(
             application,
             networkExecutor,
             stats,
             traitsCache,
             analyticsContext,
             defaultOptions,
-            Logger.with(Analytics.LogLevel.NONE),
+            Logger.with(Snapyr.LogLevel.NONE),
             "qaz",
             listOf(factory),
             client,
@@ -1865,7 +1865,7 @@ open class AnalyticsTest {
     @Test
     @Throws(NameNotFoundException::class)
     fun unregisterActivityLifecycleCallbacks() {
-        Analytics.INSTANCES.clear()
+        Snapyr.INSTANCES.clear()
 
         val registeredCallback = AtomicReference<ActivityLifecycleCallbacks>()
         val unregisteredCallback = AtomicReference<ActivityLifecycleCallbacks>()
@@ -1893,14 +1893,14 @@ open class AnalyticsTest {
                     })
             )
 
-        analytics = Analytics(
+        analytics = Snapyr(
             application,
             networkExecutor,
             stats,
             traitsCache,
             analyticsContext,
             defaultOptions,
-            Logger.with(Analytics.LogLevel.NONE),
+            Logger.with(Snapyr.LogLevel.NONE),
             "qaz", listOf(factory),
             client,
             Cartographer.INSTANCE,
@@ -1961,7 +1961,7 @@ open class AnalyticsTest {
     @Test
     @Throws(NameNotFoundException::class)
     fun removeLifecycleObserver() {
-        Analytics.INSTANCES.clear()
+        Snapyr.INSTANCES.clear()
 
         val registeredCallback = AtomicReference<DefaultLifecycleObserver>()
         val unregisteredCallback = AtomicReference<DefaultLifecycleObserver>()
@@ -1990,14 +1990,14 @@ open class AnalyticsTest {
             )
         val mockLifecycleOwner = Mockito.mock(LifecycleOwner::class.java)
 
-        analytics = Analytics(
+        analytics = Snapyr(
             application,
             networkExecutor,
             stats,
             traitsCache,
             analyticsContext,
             defaultOptions,
-            Logger.with(Analytics.LogLevel.NONE),
+            Logger.with(Snapyr.LogLevel.NONE),
             "qaz", listOf(factory),
             client,
             Cartographer.INSTANCE,
@@ -2043,7 +2043,7 @@ open class AnalyticsTest {
     @Test
     @Throws(IOException::class)
     fun loadNonEmptyDefaultProjectSettingsOnNetworkError() {
-        Analytics.INSTANCES.clear()
+        Snapyr.INSTANCES.clear()
         // Make project download empty map and thus use default settings
         whenever(projectSettingsCache.get()).thenReturn(null)
         whenever(client.fetchSettings()).thenThrow(IOException::class.java) // Simulate network error
@@ -2061,14 +2061,14 @@ open class AnalyticsTest {
                         )
                 )
 
-        analytics = Analytics(
+        analytics = Snapyr(
             application,
             networkExecutor,
             stats,
             traitsCache,
             analyticsContext,
             defaultOptions,
-            Logger.with(Analytics.LogLevel.NONE),
+            Logger.with(Snapyr.LogLevel.NONE),
             "qaz", listOf(factory),
             client,
             Cartographer.INSTANCE,
@@ -2101,20 +2101,20 @@ open class AnalyticsTest {
     @Test
     @Throws(IOException::class)
     fun loadEmptyDefaultProjectSettingsOnNetworkError() {
-        Analytics.INSTANCES.clear()
+        Snapyr.INSTANCES.clear()
         // Make project download empty map and thus use default settings
         whenever(projectSettingsCache.get()).thenReturn(null)
         whenever(client.fetchSettings()).thenThrow(IOException::class.java) // Simulate network error
 
         val defaultProjectSettings = ValueMap()
-        analytics = Analytics(
+        analytics = Snapyr(
             application,
             networkExecutor,
             stats,
             traitsCache,
             analyticsContext,
             defaultOptions,
-            Logger.with(Analytics.LogLevel.NONE),
+            Logger.with(Snapyr.LogLevel.NONE),
             "qaz", listOf(factory),
             client,
             Cartographer.INSTANCE,
@@ -2146,7 +2146,7 @@ open class AnalyticsTest {
     @Test
     @Throws(IOException::class)
     fun overwriteSnapyrIoIntegration() {
-        Analytics.INSTANCES.clear()
+        Snapyr.INSTANCES.clear()
         // Make project download empty map and thus use default settings
         whenever(projectSettingsCache.get()).thenReturn(null)
         whenever(client.fetchSettings()).thenThrow(IOException::class.java) // Simulate network error
@@ -2162,14 +2162,14 @@ open class AnalyticsTest {
                             .putValue("trackAttributionData", true)
                     )
             )
-        analytics = Analytics(
+        analytics = Snapyr(
             application,
             networkExecutor,
             stats,
             traitsCache,
             analyticsContext,
             defaultOptions,
-            Logger.with(Analytics.LogLevel.NONE),
+            Logger.with(Snapyr.LogLevel.NONE),
             "qaz", listOf(factory),
             client,
             Cartographer.INSTANCE,
@@ -2228,15 +2228,15 @@ open class AnalyticsTest {
 
     @Test
     fun enableExperimentalNanosecondResolutionTimestamps() {
-        Analytics.INSTANCES.clear()
-        analytics = Analytics(
+        Snapyr.INSTANCES.clear()
+        analytics = Snapyr(
             application,
             networkExecutor,
             stats,
             traitsCache,
             analyticsContext,
             defaultOptions,
-            Logger.with(Analytics.LogLevel.NONE),
+            Logger.with(Snapyr.LogLevel.NONE),
             "qaz", listOf(factory),
             client,
             Cartographer.INSTANCE,
@@ -2268,15 +2268,15 @@ open class AnalyticsTest {
 
     @Test
     fun disableExperimentalNanosecondResolutionTimestamps() {
-        Analytics.INSTANCES.clear()
-        analytics = Analytics(
+        Snapyr.INSTANCES.clear()
+        analytics = Snapyr(
             application,
             networkExecutor,
             stats,
             traitsCache,
             analyticsContext,
             defaultOptions,
-            Logger.with(Analytics.LogLevel.NONE),
+            Logger.with(Snapyr.LogLevel.NONE),
             "qaz", listOf(factory),
             client,
             Cartographer.INSTANCE,

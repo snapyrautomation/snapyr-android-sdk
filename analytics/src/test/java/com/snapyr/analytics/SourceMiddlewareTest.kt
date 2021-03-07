@@ -44,15 +44,15 @@ import org.robolectric.annotation.Config
 @Config(manifest = Config.NONE)
 class SourceMiddlewareTest {
 
-    lateinit var builder: Analytics.Builder
+    lateinit var builder: Snapyr.Builder
 
     @Before
     fun setUp() {
         initMocks(this)
-        Analytics.INSTANCES.clear()
+        Snapyr.INSTANCES.clear()
         TestUtils.grantPermission(RuntimeEnvironment.application, INTERNET)
         builder =
-            Analytics.Builder(RuntimeEnvironment.application, "write_key")
+            Snapyr.Builder(RuntimeEnvironment.application, "write_key")
                 .executor(MoreExecutors.newDirectExecutorService())
     }
 
@@ -60,7 +60,7 @@ class SourceMiddlewareTest {
     @Test
     fun middlewareCanShortCircuit() {
         val payloadRef = AtomicReference<TrackPayload>()
-        val analytics: Analytics =
+        val analytics: Snapyr =
             builder
                 .useSourceMiddleware {
                     chain ->

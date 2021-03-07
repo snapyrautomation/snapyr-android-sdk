@@ -105,7 +105,7 @@ class WearDispatcher {
                     wearDispatcher.performDispatch(payload);
                     break;
                 default:
-                    Analytics.HANDLER.post(
+                    Snapyr.HANDLER.post(
                             new Runnable() {
                                 @Override
                                 public void run() {

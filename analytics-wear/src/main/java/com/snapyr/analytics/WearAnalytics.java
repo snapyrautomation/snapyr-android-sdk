@@ -29,7 +29,7 @@ import android.content.Context;
 import com.snapyr.analytics.integrations.BasePayload;
 
 /**
- * The counterpart to {@link Analytics} for Android Wear. This class will simply forward all events
+ * The counterpart to {@link Snapyr} for Android Wear. This class will simply forward all events
  * to the host. The host app must register {@link PhoneAnalyticsListenerService} (or a subclass) to
  * be able to receive the events.
  *
@@ -69,7 +69,7 @@ public class WearAnalytics {
      * @param properties {@link Properties} to add extra information to this call
      * @throws IllegalArgumentException if event name is null or an empty string
      * @see <a href="https://segment.com/docs/tracking-api/track/">Track Documentation</a>
-     * @see Analytics#track(String, Properties)
+     * @see Snapyr#track(String, Properties)
      */
     public void track(String event, Properties properties) {
         if (isNullOrEmpty(event)) {
@@ -94,7 +94,7 @@ public class WearAnalytics {
      * @param name A name for the screen
      * @param properties {@link Properties} to add extra information to this call
      * @see <a href="http://segment.com/docs/tracking-api/page-and-screen/">Screen Documentation</a>
-     * @see Analytics#screen(String, String, Properties)
+     * @see Snapyr#screen(String, String, Properties)
      */
     public void screen(String category, String name, Properties properties) {
         if (isNullOrEmpty(category) && isNullOrEmpty(name)) {

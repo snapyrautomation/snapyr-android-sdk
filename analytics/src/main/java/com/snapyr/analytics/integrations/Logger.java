@@ -23,12 +23,12 @@
  */
 package com.snapyr.analytics.integrations;
 
-import static com.snapyr.analytics.Analytics.LogLevel.DEBUG;
-import static com.snapyr.analytics.Analytics.LogLevel.INFO;
-import static com.snapyr.analytics.Analytics.LogLevel.VERBOSE;
+import static com.snapyr.analytics.Snapyr.LogLevel.DEBUG;
+import static com.snapyr.analytics.Snapyr.LogLevel.INFO;
+import static com.snapyr.analytics.Snapyr.LogLevel.VERBOSE;
 
 import android.util.Log;
-import com.snapyr.analytics.Analytics.LogLevel;
+import com.snapyr.analytics.Snapyr.LogLevel;
 
 /** An abstraction for logging messages. */
 public final class Logger {

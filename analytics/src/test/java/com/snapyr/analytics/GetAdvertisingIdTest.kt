@@ -48,7 +48,7 @@ class GetAdvertisingIdTest {
         val context: AnalyticsContext =
             AnalyticsContext.create(RuntimeEnvironment.application, traits, true)
         val task =
-            GetAdvertisingIdTask(context, latch, Logger.with(Analytics.LogLevel.VERBOSE))
+            GetAdvertisingIdTask(context, latch, Logger.with(Snapyr.LogLevel.VERBOSE))
         task.execute(RuntimeEnvironment.application)
         latch.await()
         assertThat(context.device()).doesNotContainKey("advertisingId")
@@ -67,7 +67,7 @@ class GetAdvertisingIdTest {
             AnalyticsContext.create(RuntimeEnvironment.application, traits, true)
 
         val task =
-            GetAdvertisingIdTask(analyticsContext, latch, Logger.with(Analytics.LogLevel.VERBOSE))
+            GetAdvertisingIdTask(analyticsContext, latch, Logger.with(Snapyr.LogLevel.VERBOSE))
         task.execute(context)
         latch.await()
 
@@ -89,7 +89,7 @@ class GetAdvertisingIdTest {
         val analyticsContext =
             AnalyticsContext.create(RuntimeEnvironment.application, traits, true)
 
-        val task = GetAdvertisingIdTask(analyticsContext, latch, Logger.with(Analytics.LogLevel.VERBOSE))
+        val task = GetAdvertisingIdTask(analyticsContext, latch, Logger.with(Snapyr.LogLevel.VERBOSE))
         task.execute(context)
         latch.await()
 

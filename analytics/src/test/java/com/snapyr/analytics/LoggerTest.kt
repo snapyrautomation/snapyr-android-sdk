@@ -40,7 +40,7 @@ class LoggerTest {
 
     @Test
     fun verboseLevelLogsEverything() {
-        val logger = Logger.with(Analytics.LogLevel.VERBOSE)
+        val logger = Logger.with(Snapyr.LogLevel.VERBOSE)
 
         logger.debug("foo")
         logger.info("bar")
@@ -52,7 +52,7 @@ class LoggerTest {
 
     @Test
     fun verboseMessagesShowInLog() {
-        val logger = Logger.with(Analytics.LogLevel.VERBOSE)
+        val logger = Logger.with(Snapyr.LogLevel.VERBOSE)
         logger.verbose("some message with an %s", "argument")
         assertThat(ShadowLog.getLogs())
             .containsExactly(
@@ -65,7 +65,7 @@ class LoggerTest {
 
     @Test
     fun debugMessagesShowInLog() {
-        val logger = Logger.with(Analytics.LogLevel.DEBUG)
+        val logger = Logger.with(Snapyr.LogLevel.DEBUG)
 
         logger.debug("some message with an %s", "argument")
 
@@ -80,7 +80,7 @@ class LoggerTest {
 
     @Test
     fun infoMessagesShowInLog() {
-        val logger = Logger.with(Analytics.LogLevel.INFO)
+        val logger = Logger.with(Snapyr.LogLevel.INFO)
 
         logger.info("some message with an %s", "argument")
 
@@ -96,7 +96,7 @@ class LoggerTest {
     @Test
     @Throws(Exception::class)
     fun errorMessagesShowInLog() {
-        val logger = Logger.with(Analytics.LogLevel.DEBUG)
+        val logger = Logger.with(Snapyr.LogLevel.DEBUG)
 
         val throwable = AssertionError("testing")
         logger.error(throwable, "some message with an %s", "argument")
@@ -113,7 +113,7 @@ class LoggerTest {
     @Test
     @Throws(Exception::class)
     fun subLog() {
-        val logger = Logger.with(Analytics.LogLevel.DEBUG).subLog("foo")
+        val logger = Logger.with(Snapyr.LogLevel.DEBUG).subLog("foo")
 
         logger.debug("some message with an %s", "argument")
 

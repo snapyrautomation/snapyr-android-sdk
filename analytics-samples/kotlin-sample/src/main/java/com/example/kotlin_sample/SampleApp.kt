@@ -26,7 +26,7 @@ package com.example.kotlin_sample
 import android.app.Application
 import android.util.Log
 import android.widget.Toast
-import com.snapyr.analytics.Analytics
+import com.snapyr.analytics.Snapyr
 import com.snapyr.analytics.Middleware
 import com.snapyr.analytics.ValueMap
 import com.snapyr.analytics.integrations.BasePayload
@@ -55,10 +55,10 @@ class SampleApp : Application() {
         )
 
         // Initialize a new instance of the Analytics client.
-        val builder = Analytics.Builder(this, ANALYTICS_WRITE_KEY)
+        val builder = Snapyr.Builder(this, ANALYTICS_WRITE_KEY)
             .experimentalNanosecondTimestamps()
             .trackApplicationLifecycleEvents()
-            .logLevel(Analytics.LogLevel.DEBUG)
+            .logLevel(Snapyr.LogLevel.DEBUG)
             .defaultProjectSettings(
                 ValueMap()
                     .putValue(
@@ -106,16 +106,16 @@ class SampleApp : Application() {
             )
             .flushQueueSize(1)
             .recordScreenViews()
-            .actionHandler { Toast.makeText(this, "Action received: ${it.action}", Toast.LENGTH_SHORT).show() }
+            .actionHandler { Toast.makeText(this, "Action received: ${it.getString("action")}", Toast.LENGTH_SHORT).show() }
             .build()
 
-        Analytics.setSingletonInstance(builder)
+        Snapyr.setSingletonInstance(builder)
 
-        val analytics = Analytics.with(this)
+        val analytics = Snapyr.with(this)
 
         analytics.onIntegrationReady(
             "Snapyr",
-            Analytics.Callback<Any?> {
+            Snapyr.Callback<Any?> {
                 Log.d("Snapyr Sample", "Snapyr integration ready.")
             }
         )

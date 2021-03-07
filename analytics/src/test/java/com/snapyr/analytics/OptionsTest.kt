@@ -60,14 +60,14 @@ class OptionsTest {
     fun setIntegration() {
         options.setIntegration("Mixpanel", true)
         options.setIntegration("All", false)
-        options.setIntegration(Analytics.BundledIntegration.BUGSNAG, false)
+        options.setIntegration(Snapyr.BundledIntegration.BUGSNAG, false)
         options.setIntegrationOptions(
             "Amplitude",
             ImmutableMap.Builder<String, Any>().put("email", "foo").build()
         )
 
         options.setIntegrationOptions(
-            Analytics.BundledIntegration.TAPSTREAM,
+            Snapyr.BundledIntegration.TAPSTREAM,
             ImmutableMap.Builder<String, Any>().put("appId", "bar").build()
         )
 

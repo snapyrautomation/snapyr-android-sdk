@@ -25,7 +25,7 @@ package com.snapyr.analytics.sample;
 
 import android.app.Application;
 import android.util.Log;
-import com.snapyr.analytics.Analytics;
+import com.snapyr.analytics.Snapyr;
 import com.snapyr.analytics.Middleware;
 import com.snapyr.analytics.ValueMap;
 import com.snapyr.analytics.integrations.BasePayload;
@@ -54,8 +54,8 @@ public class SampleApp extends Application {
                         .build());
 
         // Initialize a new instance of the Analytics client.
-        Analytics.Builder builder =
-                new Analytics.Builder(this, ANALYTICS_WRITE_KEY)
+        Snapyr.Builder builder =
+                new Snapyr.Builder(this, ANALYTICS_WRITE_KEY)
                         .experimentalNanosecondTimestamps()
                         .trackApplicationLifecycleEvents()
                         .defaultProjectSettings(
@@ -105,16 +105,16 @@ public class SampleApp extends Application {
                         .recordScreenViews();
 
         // Set the initialized instance as a globally accessible instance.
-        Analytics.setSingletonInstance(builder.build());
+        Snapyr.setSingletonInstance(builder.build());
 
         // Now anytime you call Analytics.with, the custom instance will be returned.
-        Analytics analytics = Analytics.with(this);
+        Snapyr analytics = Snapyr.with(this);
 
         // If you need to know when integrations have been initialized, use the onIntegrationReady
         // listener.
         analytics.onIntegrationReady(
                 "Snapyr",
-                new Analytics.Callback() {
+                new Snapyr.Callback() {
                     @Override
                     public void onReady(Object instance) {
                         Log.d("Snapyr Sample", "Snapyr integration ready.");

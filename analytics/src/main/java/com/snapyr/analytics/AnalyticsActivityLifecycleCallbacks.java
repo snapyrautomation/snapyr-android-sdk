@@ -40,7 +40,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 class AnalyticsActivityLifecycleCallbacks
         implements Application.ActivityLifecycleCallbacks, DefaultLifecycleObserver {
-    private Analytics analytics;
+    private Snapyr analytics;
     private ExecutorService analyticsExecutor;
     private Boolean shouldTrackApplicationLifecycleEvents;
     private Boolean trackDeepLinks;
@@ -85,7 +85,7 @@ class AnalyticsActivityLifecycleCallbacks
             };
 
     private AnalyticsActivityLifecycleCallbacks(
-            Analytics analytics,
+            Snapyr analytics,
             ExecutorService analyticsExecutor,
             Boolean shouldTrackApplicationLifecycleEvents,
             Boolean trackDeepLinks,
@@ -231,7 +231,7 @@ class AnalyticsActivityLifecycleCallbacks
     }
 
     public static class Builder {
-        private Analytics analytics;
+        private Snapyr analytics;
         private ExecutorService analyticsExecutor;
         private Boolean shouldTrackApplicationLifecycleEvents;
         private Boolean trackDeepLinks;
@@ -241,7 +241,7 @@ class AnalyticsActivityLifecycleCallbacks
 
         public Builder() {}
 
-        public Builder analytics(Analytics analytics) {
+        public Builder analytics(Snapyr analytics) {
             this.analytics = analytics;
             return this;
         }

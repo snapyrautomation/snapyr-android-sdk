@@ -555,7 +555,7 @@ class SnapyrIntegrationTest {
         var integrations: Map<String, Boolean>? = null
         var flushInterval = DEFAULT_FLUSH_INTERVAL
         var flushSize = DEFAULT_FLUSH_QUEUE_SIZE
-        var logger = with(Analytics.LogLevel.NONE)
+        var logger = with(Snapyr.LogLevel.NONE)
         var networkExecutor: ExecutorService? = null
         var actionHandler: SnapyrActionHandler? = null
 

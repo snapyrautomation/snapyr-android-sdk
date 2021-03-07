@@ -46,7 +46,7 @@ import org.robolectric.annotation.Config
 @Config(manifest = Config.NONE)
 class EdgeFunctionMiddlewareTest {
 
-    lateinit var builder: Analytics.Builder
+    lateinit var builder: Snapyr.Builder
 
     @Mock
     lateinit var integrationFoo: Integration<Void>
@@ -57,7 +57,7 @@ class EdgeFunctionMiddlewareTest {
     @Before
     fun setUp() {
         initMocks(this)
-        Analytics.INSTANCES.clear()
+        Snapyr.INSTANCES.clear()
         TestUtils.grantPermission(RuntimeEnvironment.application, Manifest.permission.INTERNET)
         val projectSettings =
             ValueMap()
@@ -73,11 +73,11 @@ class EdgeFunctionMiddlewareTest {
                         )
                 )
         builder =
-            Analytics.Builder(RuntimeEnvironment.application, "write_key")
+            Snapyr.Builder(RuntimeEnvironment.application, "write_key")
                 .defaultProjectSettings(projectSettings)
                 .use(
                     object : Integration.Factory {
-                        override fun create(settings: ValueMap, analytics: Analytics): Integration<*>? {
+                        override fun create(settings: ValueMap, analytics: Snapyr): Integration<*>? {
                             return integrationFoo
                         }
 
@@ -87,7 +87,7 @@ class EdgeFunctionMiddlewareTest {
                     })
                 .use(
                     object : Integration.Factory {
-                        override fun create(settings: ValueMap, analytics: Analytics): Integration<*>? {
+                        override fun create(settings: ValueMap, analytics: Snapyr): Integration<*>? {
                             return integrationBar
                         }
 
@@ -109,7 +109,7 @@ class EdgeFunctionMiddlewareTest {
 
         analytics.track("foo")
 
-        val privateEdgeFunctions: Field = Analytics::class.java.getDeclaredField("edgeFunctionMiddleware")
+        val privateEdgeFunctions: Field = Snapyr::class.java.getDeclaredField("edgeFunctionMiddleware")
         assertThat(privateEdgeFunctions).isNotNull()
     }
 

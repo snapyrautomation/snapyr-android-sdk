@@ -52,7 +52,7 @@ import org.robolectric.annotation.Config
 @Config(manifest = Config.NONE)
 class DestinationMiddlewareTest {
 
-    lateinit var builder: Analytics.Builder
+    lateinit var builder: Snapyr.Builder
 
     @Mock
     lateinit var integrationFoo: Integration<Void>
@@ -63,7 +63,7 @@ class DestinationMiddlewareTest {
     @Before
     fun setUp() {
         initMocks(this)
-        Analytics.INSTANCES.clear()
+        Snapyr.INSTANCES.clear()
         TestUtils.grantPermission(RuntimeEnvironment.application, Manifest.permission.INTERNET)
         val projectSettings =
             ValueMap()
@@ -79,11 +79,11 @@ class DestinationMiddlewareTest {
                         )
                 )
         builder =
-            Analytics.Builder(RuntimeEnvironment.application, "write_key")
+            Snapyr.Builder(RuntimeEnvironment.application, "write_key")
                 .defaultProjectSettings(projectSettings)
                 .use(
                     object : Integration.Factory {
-                        override fun create(settings: ValueMap, analytics: Analytics): Integration<*>? {
+                        override fun create(settings: ValueMap, analytics: Snapyr): Integration<*>? {
                             return integrationFoo
                         }
 
@@ -93,7 +93,7 @@ class DestinationMiddlewareTest {
                     })
                 .use(
                     object : Integration.Factory {
-                        override fun create(settings: ValueMap, analytics: Analytics): Integration<*>? {
+                        override fun create(settings: ValueMap, analytics: Snapyr): Integration<*>? {
                             return integrationBar
                         }
 

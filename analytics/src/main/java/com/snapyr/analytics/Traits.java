@@ -99,7 +99,7 @@ public class Traits extends ValueMap {
     }
 
     /**
-     * Private API, users should call {@link Analytics#identify(String)} instead. Note that this is
+     * Private API, users should call {@link Snapyr#identify(String)} instead. Note that this is
      * unable to enforce it, users can easily do traits.put(id, ..);
      */
     Traits putUserId(String id) {

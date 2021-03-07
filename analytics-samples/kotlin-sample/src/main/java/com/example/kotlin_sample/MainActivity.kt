@@ -34,7 +34,7 @@ import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.kotlin_sample.databinding.ActivityMainBinding
-import com.snapyr.analytics.Analytics
+import com.snapyr.analytics.Snapyr
 import com.snapyr.analytics.Properties
 import com.snapyr.analytics.Traits
 import kotlinx.android.synthetic.main.activity_main.*
@@ -70,7 +70,7 @@ class MainActivity : AppCompatActivity() {
                 true
             }
             R.id.reset -> {
-                Analytics.with(this).reset()
+                Snapyr.with(this).reset()
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -83,12 +83,12 @@ class MainActivity : AppCompatActivity() {
         props.put("move", "exd6")
         props.put("orgId", "f95991da-ea9c-4e44-998d-5ff5f4ca04d3")
         props.put("workspaceId", "d00f0649-c6a4-475c-8eeb-518ae5f29768")
-        Analytics.with(this).track("capture", props)
+        Snapyr.with(this).track("capture", props)
         Toast.makeText(this, "Button A clicked", Toast.LENGTH_SHORT).show()
     }
 
     private fun onBButtonClick() {
-        Analytics.with(this).track("Button B clicked")
+        Snapyr.with(this).track("Button B clicked")
         Toast.makeText(this, "Button B clicked", Toast.LENGTH_SHORT).show()
     }
 
@@ -102,10 +102,10 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "At least one field must be filled in", Toast.LENGTH_SHORT).show()
         } else {
             if (!isNullOrEmpty(userId)) {
-                Analytics.with(this).identify(userId)
+                Snapyr.with(this).identify(userId)
             }
-            if (!isNullOrEmpty(name)) { Analytics.with(this).identify(Traits().putName(name)) }
-            if (!isNullOrEmpty(email)) { Analytics.with(this).identify(Traits().putEmail(email)) }
+            if (!isNullOrEmpty(name)) { Snapyr.with(this).identify(Traits().putName(name)) }
+            if (!isNullOrEmpty(email)) { Snapyr.with(this).identify(Traits().putEmail(email)) }
 
             Toast.makeText(this, "Identification acknowledged", Toast.LENGTH_SHORT).show()
         }
@@ -117,7 +117,7 @@ class MainActivity : AppCompatActivity() {
         if (isNullOrEmpty(groupId)) {
             Toast.makeText(this, "Cannot have an empty group id", Toast.LENGTH_SHORT).show()
         } else {
-            Analytics.with(this).group(groupId)
+            Snapyr.with(this).group(groupId)
             Toast.makeText(this, "Group acknowledged", Toast.LENGTH_SHORT).show()
         }
     }
@@ -134,14 +134,14 @@ class MainActivity : AppCompatActivity() {
         if (isNullOrEmpty(aliasCopy)) {
             Toast.makeText(this, "Cannot have an empty alias", Toast.LENGTH_SHORT).show()
         } else {
-            Analytics.with(this).alias(aliasCopy)
-            Analytics.with(this).identify(aliasCopy)
+            Snapyr.with(this).alias(aliasCopy)
+            Snapyr.with(this).identify(aliasCopy)
             Toast.makeText(this, "Alias acknowledged", Toast.LENGTH_SHORT).show()
         }
     }
 
     private fun onFlushClick() {
-        Analytics.with(this).flush()
+        Snapyr.with(this).flush()
         Toast.makeText(this, "Events flushed", Toast.LENGTH_SHORT).show()
     }
 
