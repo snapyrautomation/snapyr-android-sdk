@@ -25,8 +25,8 @@ package com.snapyr.analytics.sample;
 
 import android.app.Application;
 import android.util.Log;
-import com.snapyr.analytics.Snapyr;
 import com.snapyr.analytics.Middleware;
+import com.snapyr.analytics.Snapyr;
 import com.snapyr.analytics.ValueMap;
 import com.snapyr.analytics.integrations.BasePayload;
 import com.snapyr.analytics.integrations.TrackPayload;

@@ -486,7 +486,9 @@ class SnapyrIntegration extends Integration<Void> {
                                         actionHandler.handleAction(action);
                                     } catch (Exception e) {
                                         logger.error(
-                                                e, "error handling action: " + action.getString("action"));
+                                                e,
+                                                "error handling action: "
+                                                        + action.getString("action"));
                                     }
                                 }
                             });

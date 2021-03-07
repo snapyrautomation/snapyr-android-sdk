@@ -23,11 +23,10 @@
  */
 package com.snapyr.analytics;
 
-import com.snapyr.analytics.internal.Private;
-
-import java.util.Map;
-
 import static java.util.Collections.unmodifiableMap;
+
+import com.snapyr.analytics.internal.Private;
+import java.util.Map;
 
 public class SnapyrAction extends ValueMap {
 

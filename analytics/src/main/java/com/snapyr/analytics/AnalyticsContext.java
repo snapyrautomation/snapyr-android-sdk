@@ -188,8 +188,8 @@ public class AnalyticsContext extends ValueMap {
 
     /**
      * Note: Not for public use. Clients should modify the user's traits with {@link
-     * Snapyr#identify(String, Traits, Options)}. Modifying this instance will not reflect
-     * changes to the user's information that is passed onto bundled integrations.
+     * Snapyr#identify(String, Traits, Options)}. Modifying this instance will not reflect changes
+     * to the user's information that is passed onto bundled integrations.
      *
      * <p>Return the {@link Traits} attached to this instance.
      */

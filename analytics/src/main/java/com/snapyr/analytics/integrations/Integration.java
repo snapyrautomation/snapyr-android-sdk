@@ -26,9 +26,9 @@ package com.snapyr.analytics.integrations;
 import android.app.Activity;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
-import com.snapyr.analytics.Snapyr;
 import com.snapyr.analytics.Options;
 import com.snapyr.analytics.Properties;
+import com.snapyr.analytics.Snapyr;
 import com.snapyr.analytics.Traits;
 import com.snapyr.analytics.ValueMap;
 

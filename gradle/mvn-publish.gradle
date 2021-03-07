@@ -4,20 +4,7 @@ apply from: rootProject.file('gradle/versioning.gradle')
 
 def getReleaseRepositoryUrl() {
     return hasProperty('RELEASE_REPOSITORY_URL') ? RELEASE_REPOSITORY_URL
-            : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-}
-
-def getSnapshotRepositoryUrl() {
-    return hasProperty('SNAPSHOT_REPOSITORY_URL') ? SNAPSHOT_REPOSITORY_URL
-            : "https://oss.sonatype.org/content/repositories/snapshots/"
-}
-
-if (!hasProperty("signing.keyId")) {
-    ext["signing.keyId"] = System.getenv('SIGNING_KEY_ID')
-    ext["signing.password"] = System.getenv('SIGNING_KEY_PASSWORD')
-    ext["signing.secretKeyRingFile"] = System.getenv('SIGNING_SECRET_KEY_RING_FILE')
-    ext["NEXUS_USERNAME"] = System.getenv('NEXUS_USERNAME')
-    ext["NEXUS_PASSWORD"] = System.getenv('NEXUS_PASSWORD')
+            : "https://maven.pkg.github.com/snapyrautomation/snapyr-android-sdk"
 }
 
 task androidJavadocs(type: Javadoc) {
@@ -99,17 +86,12 @@ publishing {
     }
     repositories {
         maven {
-            name = "sonatype"
-
-            // You only need this if you want to publish snapshots, otherwise just set the URL
-            // to the release repo directly
-            url = version.endsWith('SNAPSHOT') ? getSnapshotRepositoryUrl() : getReleaseRepositoryUrl()
-
-            // The username and password we've fetched earlier
+            name = "GitHubPackages"
+            url = getReleaseRepositoryUrl()
             if (!getUrl().toString().startsWith("file:/")) {
                 credentials {
-                    username NEXUS_USERNAME
-                    password NEXUS_PASSWORD
+                    username = System.getenv("GITHUB_ACTOR")
+                    password = System.getenv("GITHUB_TOKEN")
                 }
             }
         }

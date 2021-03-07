@@ -537,8 +537,8 @@ public final class Utils {
     }
 
     /**
-     * A {@link ThreadPoolExecutor} implementation by {@link Snapyr} instances. Exists as a
-     * custom type so that we can differentiate the use of defaults versus a user-supplied instance.
+     * A {@link ThreadPoolExecutor} implementation by {@link Snapyr} instances. Exists as a custom
+     * type so that we can differentiate the use of defaults versus a user-supplied instance.
      */
     public static class AnalyticsNetworkExecutorService extends ThreadPoolExecutor {
 

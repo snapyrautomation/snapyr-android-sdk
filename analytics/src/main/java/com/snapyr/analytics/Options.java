@@ -90,8 +90,7 @@ public class Options {
      * @return This options object for chaining
      * @see #setIntegration(String, boolean)
      */
-    public Options setIntegration(
-        Snapyr.BundledIntegration bundledIntegration, boolean enabled) {
+    public Options setIntegration(Snapyr.BundledIntegration bundledIntegration, boolean enabled) {
         setIntegration(bundledIntegration.key, enabled);
         return this;
     }
@@ -117,14 +116,14 @@ public class Options {
      * @return This options object for chaining
      */
     public Options setIntegrationOptions(
-        Snapyr.BundledIntegration bundledIntegration, Map<String, Object> options) {
+            Snapyr.BundledIntegration bundledIntegration, Map<String, Object> options) {
         integrations.put(bundledIntegration.key, options);
         return this;
     }
 
     /**
-     * Attach some additional context information. Unlike with {@link
-     * Snapyr#getAnalyticsContext()}, this only has effect for this call.
+     * Attach some additional context information. Unlike with {@link Snapyr#getAnalyticsContext()},
+     * this only has effect for this call.
      *
      * @param key The key of the extra context data
      * @param value The value of the extra context data
