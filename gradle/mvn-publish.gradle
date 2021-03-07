@@ -7,22 +7,6 @@ def getReleaseRepositoryUrl() {
             : "https://maven.pkg.github.com/snapyrautomation/snapyr-android-sdk"
 }
 
-task androidJavadocs(type: Javadoc) {
-    source = android.sourceSets.main.java.source
-    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-    android.libraryVariants.all { variant ->
-        if (variant.name == 'release') {
-            owner.classpath += variant.javaCompileProvider.get().classpath
-        }
-    }
-    exclude '**/R.html', '**/R.*.html', '**/index.html'
-}
-
-task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
-    classifier = 'javadoc'
-    from androidJavadocs.destinationDir
-}
-
 task androidSourcesJar(type: Jar) {
     classifier = 'sources'
     from android.sourceSets.main.java.source
@@ -40,7 +24,6 @@ publishing {
             // Two artifacts, the `aar` and the sources
             artifact("$buildDir/outputs/aar/${project.getName()}-release.aar")
             artifact androidSourcesJar
-            artifact androidJavadocsJar
 
             // Self-explanatory metadata for the most part
             pom {
@@ -100,10 +83,6 @@ publishing {
 
 signing {
     sign publishing.publications
-}
-
-afterEvaluate {
-    androidJavadocs.classpath += project.android.libraryVariants.toList().first().javaCompile.classpath
 }
 
 publish.dependsOn build
