@@ -1,3 +1,0 @@
--keepclassmembers class com.snapyr.analytics.** extends com.snapyr.analytics.ValueMap {
-  <init>(java.util.Map);
-}
