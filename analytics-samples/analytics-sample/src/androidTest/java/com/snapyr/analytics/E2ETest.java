@@ -29,7 +29,6 @@ import static org.junit.Assert.fail;
 import androidx.test.rule.ActivityTestRule;
 import androidx.test.runner.AndroidJUnit4;
 import com.segment.backo.Backo;
-import com.snapyr.analytics.sample.BuildConfig;
 import com.snapyr.analytics.sample.MainActivity;
 import com.snapyr.analytics.webhook.WebhookService;
 import java.io.IOException;
@@ -77,7 +76,7 @@ public class E2ETest {
     /** Webhook bucket that is connected to the Segment project. */
     private static final String WEBHOOK_BUCKET = "android";
     /** Credentials to retrieve data from the webhook. */
-    private static final String WEBHOOK_AUTH_USERNAME = BuildConfig.WEBHOOK_AUTH_USERNAME;
+    private static final String WEBHOOK_AUTH_USERNAME = "";
 
     private static final Backo BACKO =
             Backo.builder().base(TimeUnit.SECONDS, 1).cap(TimeUnit.MINUTES, 5).build();
@@ -201,9 +200,6 @@ public class E2ETest {
                 @Override
                 public void evaluate() throws Throwable {
                     // Skip the test if End to End tests are disabled (e.g. contributor PRs).
-                    if (!BuildConfig.RUN_E2E_TESTS) {
-                        return;
-                    }
                     base.evaluate();
                 }
             };

@@ -543,6 +543,19 @@ public class Snapyr {
         track(event, properties, null);
     }
 
+    public void setPushNotificationToken(final @NonNull String token) {
+        assertNotShutdown();
+        if (Utils.isNullOrEmpty(token)) {
+            throw new IllegalArgumentException("token must not be null or empty.");
+        }
+        track("snapyr.internal.apnTokenSet",new Properties().putValue("token",token));
+    }
+
+    public void pushNotificationReceived(final @Nullable Properties properties) {
+        assertNotShutdown();
+        track("snapyr.feedback.push.opened",properties);
+    }
+
     /**
      * The track method is how you record any actions your users perform. Each action is known by a
      * name, like 'Purchased a T-Shirt'. You can also record properties specific to those actions.
