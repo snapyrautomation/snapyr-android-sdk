@@ -1,0 +1,3 @@
+-keepclassmembers class com.snapyr.sdk.** extends com.snapyr.sdk.ValueMap {
+  <init>(java.util.Map);
+}
