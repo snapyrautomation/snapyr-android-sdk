@@ -548,12 +548,12 @@ public class Snapyr {
         if (Utils.isNullOrEmpty(token)) {
             throw new IllegalArgumentException("token must not be null or empty.");
         }
-        track("snapyr.internal.apnTokenSet",new Properties().putValue("token",token));
+        track("snapyr.internal.apnTokenSet", new Properties().putValue("token", token));
     }
 
     public void pushNotificationReceived(final @Nullable Properties properties) {
         assertNotShutdown();
-        track("snapyr.feedback.push.opened",properties);
+        track("snapyr.feedback.push.opened", properties);
     }
 
     /**
