@@ -4,7 +4,15 @@ apply from: rootProject.file('gradle/versioning.gradle')
 
 def getReleaseRepositoryUrl() {
     return hasProperty('RELEASE_REPOSITORY_URL') ? RELEASE_REPOSITORY_URL
-            : "https://maven.pkg.github.com/snapyrautomation/snapyr-android-sdk"
+            : "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+}
+
+if (!hasProperty("signing.keyId")) {
+    ext["signing.keyId"] = System.getenv('SIGNING_KEY_ID')
+    ext["signing.password"] = System.getenv('SIGNING_KEY_PASSWORD')
+    ext["signing.secretKeyRingFile"] = System.getenv('SIGNING_SECRET_KEY_RING_FILE')
+    ext["MAVEN_USERNAME"] = System.getenv('MAVEN_USERNAME')
+    ext["MAVEN_PASSWORD"] = System.getenv('MAVEN_PASSWORD')
 }
 
 task androidSourcesJar(type: Jar) {
@@ -69,16 +77,20 @@ publishing {
     }
     repositories {
         maven {
-            name = "GitHubPackages"
+            name = "sonatype"
             url = getReleaseRepositoryUrl()
             if (!getUrl().toString().startsWith("file:/")) {
                 credentials {
-                    username = System.getenv("GITHUB_ACTOR")
-                    password = System.getenv("GITHUB_TOKEN")
+                    username = System.getenv("MAVEN_USERNAME")
+                    password = System.getenv("MAVEN_PASSWORD")
                 }
             }
         }
     }
+}
+
+signing {
+    sign publishing.publications
 }
 
 publish.dependsOn build

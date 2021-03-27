@@ -16,6 +16,10 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 1.8
+      - name: Configure
+        run: |
+          echo ${SIGNING_SECRET_KEY_RING_FILE_DATA} | base64 --decode > /tmp/key_ring.gpg
+          export SIGNING_SECRET_KEY_RING_FILE=/tmp/key_ring.gpg
       - name: Publish snapshot
         run: ./gradlew publish -Prelease
         env:
