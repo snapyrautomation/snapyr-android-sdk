@@ -24,7 +24,7 @@ jobs:
         env:
           SIGNING_KEY_ID: ${{ secrets.SIGNING_KEY_ID }}
           SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
-          SIGNING_SECRET_KEY_RING_FILE: ~/.gnupg/secret_key.gpg
+          SIGNING_SECRET_KEY_RING_FILE: /tmp/secret_key.gpg
           MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
 
