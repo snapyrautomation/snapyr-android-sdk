@@ -18,7 +18,7 @@ jobs:
           java-version: 1.8
       - name: Publish snapshot
         run: |
-          echo $SIGNING_SECRET_KEY_RING_FILE_DATA | base64 -d > $SIGNING_SECRET_KEY_RING_FILE
+          echo $SIGNING_SECRET_KEY_RING_FILE_DATA | base64 --decode --ignore-garbage > $SIGNING_SECRET_KEY_RING_FILE
           gpg --import $SIGNING_SECRET_KEY_RING_FILE
           gpg --list-keys
         env:
