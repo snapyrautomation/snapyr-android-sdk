@@ -19,11 +19,12 @@ jobs:
       - name: Publish snapshot
         run: |
           echo $SIGNING_SECRET_KEY_RING_FILE_DATA | base64 -d > $SIGNING_SECRET_KEY_RING_FILE
-          ./gradlew publish -Prelease
+          gpg --import $SIGNING_SECRET_KEY_RING_FILE
+          gpg --list-keys
         env:
           SIGNING_KEY_ID: ${{ secrets.SIGNING_KEY_ID }}
           SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
-          SIGNING_SECRET_KEY_RING_FILE: /tmp/key_ring.gpg
+          SIGNING_SECRET_KEY_RING_FILE: ~/.gnupg/secret_key.gpg
           MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
 
