@@ -7,6 +7,7 @@ Releasing
  4. Update the `CHANGELOG.md` for the impending release.
  5. `git commit -am "Create release X.Y.Z."` (where X.Y.Z is the new version)
  6. `git push`
+ 7. Merge release/X.Y.Z back to main branch
 
 Example (stable release)
 ========
@@ -16,3 +17,4 @@ Example (stable release)
  4. Update CHANGELOG.md
  5. `git commit -am "Create release 0.10.1"`
  6. `git push`
+ 7. Merge release/0.10.1 back to main branch
