@@ -2,7 +2,7 @@ name: Snapyr Publish Artifact
 
 on:
   push:
-    branches: [ main ]
+    branches: [ 'release/**' ]
 
 jobs:
 
