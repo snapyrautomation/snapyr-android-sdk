@@ -23,6 +23,7 @@ task androidJavadocs(type: Javadoc) {
             owner.classpath += variant.javaCompileProvider.get().classpath
         }
     }
+    failOnError = false
     exclude '**/R.html', '**/R.*.html', '**/index.html'
 }
 
