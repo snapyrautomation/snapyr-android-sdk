@@ -1,0 +1,14 @@
+apply plugin: 'io.codearte.nexus-staging'
+
+if (!hasProperty("SONATYPE_STAGING_PROFILE_ID")) {
+    ext["NEXUS_USERNAME"] = System.getenv('MAVEN_USERNAME')
+    ext["NEXUS_PASSWORD"] = System.getenv('MAVEN_PASSWORD')
+    ext["SONATYPE_STAGING_PROFILE_ID"] = System.getenv('SONATYPE_STAGING_PROFILE_ID')
+}
+
+nexusStaging {
+    packageGroup = "com.snapyr.sdk.android"
+    stagingProfileId = SONATYPE_STAGING_PROFILE_ID
+    username = NEXUS_USERNAME
+    password = NEXUS_PASSWORD
+}
