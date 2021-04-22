@@ -32,7 +32,7 @@ import com.snapyr.sdk.Snapyr.LogLevel;
 
 /** An abstraction for logging messages. */
 public final class Logger {
-    private static final String DEFAULT_TAG = "Analytics";
+    private static final String DEFAULT_TAG = "Snapyr";
     public final LogLevel logLevel;
     private final String tag;
 
