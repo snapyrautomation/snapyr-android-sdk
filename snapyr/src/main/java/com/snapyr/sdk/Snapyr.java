@@ -270,16 +270,7 @@ public class Snapyr {
                         if (isNullOrEmpty(projectSettings)) {
                             // Backup mode - Enable the Snapyr integration and load the provided
                             // defaultProjectSettings
-                            // {
-                            //   ...defaultProjectSettings
-                            //   integrations: {
-                            //     ...defaultProjectSettings.integrations
-                            //     Snapyr: {
-                            //       ...defaultProjectSettings.integrations.Snapyr
-                            //       apiKey: "{writeKey}"
-                            //     }
-                            //   }
-                            // }
+
                             if (!defaultProjectSettings.containsKey("integrations")) {
                                 defaultProjectSettings.put("integrations", new ValueMap());
                             }
@@ -309,7 +300,7 @@ public class Snapyr {
                                 new Runnable() {
                                     @Override
                                     public void run() {
-                                        performInitializeIntegrations(projectSettings);
+                                        performInitializeSnapyrIntegration();
                                     }
                                 });
                     }
@@ -1638,6 +1629,16 @@ public class Snapyr {
             }
         }
         factories = null;
+    }
+
+    void performInitializeSnapyrIntegration() {
+        ValueMap snapyrSettings = new ValueMap();
+        snapyrSettings.put("Snapyr", new ValueMap());
+        snapyrSettings.getValueMap("Snapyr").putValue("apiKey", writeKey);
+
+        Integration integration = SnapyrIntegration.FACTORY.create(snapyrSettings, this);
+        integrations = new LinkedHashMap<>(1);
+        integrations.put("Snapyr", integration);
     }
 
     /** Runs the given operation on all integrations. */
