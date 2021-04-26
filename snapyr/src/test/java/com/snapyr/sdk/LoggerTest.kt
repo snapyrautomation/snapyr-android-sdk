@@ -119,7 +119,7 @@ class LoggerTest {
 
         assertThat(ShadowLog.getLogs()).containsExactly(
             LogItemBuilder()
-                .tag("Analytics-foo")
+                .tag("Snapyr-foo")
                 .type(Log.DEBUG)
                 .msg("some message with an argument")
                 .build()
@@ -128,7 +128,7 @@ class LoggerTest {
 
     class LogItemBuilder {
         private var type: Int = 0
-        private var tag: String = "Analytics"
+        private var tag: String = "Snapyr"
         private var msg: String = ""
         private var throwable: Throwable? = null
 

@@ -38,7 +38,7 @@ public class ConnectionFactory {
 
     private static final int DEFAULT_READ_TIMEOUT_MILLIS = 20 * 1000; // 20s
     private static final int DEFAULT_CONNECT_TIMEOUT_MILLIS = 15 * 1000; // 15s
-    static final String USER_AGENT = "analytics-android/" + BuildConfig.VERSION_NAME;
+    static final String USER_AGENT = "snapyr-android/" + BuildConfig.VERSION_NAME;
 
     private String authorizationHeader(String writeKey) {
         return "Basic " + Base64.encodeToString((writeKey + ":").getBytes(), Base64.NO_WRAP);
@@ -54,7 +54,7 @@ public class ConnectionFactory {
      * https://dev-engine.snapyr.com/v1/import}.
      */
     public HttpURLConnection upload(String writeKey) throws IOException {
-        HttpURLConnection connection = openConnection("https://dev-engine.snapyr.com/v1/batch");
+        HttpURLConnection connection = openConnection("https://engine.snapyr.com/v1/batch");
         connection.setRequestProperty("Authorization", authorizationHeader(writeKey));
         // connection.setRequestProperty("Content-Encoding", "gzip");
         connection.setDoOutput(true);

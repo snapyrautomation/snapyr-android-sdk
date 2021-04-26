@@ -270,16 +270,7 @@ public class Snapyr {
                         if (isNullOrEmpty(projectSettings)) {
                             // Backup mode - Enable the Snapyr integration and load the provided
                             // defaultProjectSettings
-                            // {
-                            //   ...defaultProjectSettings
-                            //   integrations: {
-                            //     ...defaultProjectSettings.integrations
-                            //     Snapyr: {
-                            //       ...defaultProjectSettings.integrations.Snapyr
-                            //       apiKey: "{writeKey}"
-                            //     }
-                            //   }
-                            // }
+
                             if (!defaultProjectSettings.containsKey("integrations")) {
                                 defaultProjectSettings.put("integrations", new ValueMap());
                             }
@@ -1556,6 +1547,17 @@ public class Snapyr {
                                                 Map<String, Object> map =
                                                         cartographer.fromJson(
                                                                 Utils.buffer(connection.is));
+                                                if (!map.containsKey("integrations")) {
+                                                    map.put(
+                                                            "integrations",
+                                                            new ValueMap()
+                                                                    .putValue(
+                                                                            "Snapyr",
+                                                                            new ValueMap()
+                                                                                    .putValue(
+                                                                                            "apiKey",
+                                                                                            writeKey)));
+                                                }
                                                 return ProjectSettings.create(map);
                                             } finally {
                                                 Utils.closeQuietly(connection);
