@@ -300,7 +300,7 @@ public class Snapyr {
                                 new Runnable() {
                                     @Override
                                     public void run() {
-                                        performInitializeSnapyrIntegration();
+                                        performInitializeIntegrations(projectSettings);
                                     }
                                 });
                     }
@@ -1547,6 +1547,17 @@ public class Snapyr {
                                                 Map<String, Object> map =
                                                         cartographer.fromJson(
                                                                 Utils.buffer(connection.is));
+                                                if (!map.containsKey("integrations")) {
+                                                    map.put(
+                                                            "integrations",
+                                                            new ValueMap()
+                                                                    .putValue(
+                                                                            "Snapyr",
+                                                                            new ValueMap()
+                                                                                    .putValue(
+                                                                                            "apiKey",
+                                                                                            writeKey)));
+                                                }
                                                 return ProjectSettings.create(map);
                                             } finally {
                                                 Utils.closeQuietly(connection);
@@ -1629,16 +1640,6 @@ public class Snapyr {
             }
         }
         factories = null;
-    }
-
-    void performInitializeSnapyrIntegration() {
-        ValueMap snapyrSettings = new ValueMap();
-        snapyrSettings.put("Snapyr", new ValueMap());
-        snapyrSettings.getValueMap("Snapyr").putValue("apiKey", writeKey);
-
-        Integration integration = SnapyrIntegration.FACTORY.create(snapyrSettings, this);
-        integrations = new LinkedHashMap<>(1);
-        integrations.put("Snapyr", integration);
     }
 
     /** Runs the given operation on all integrations. */

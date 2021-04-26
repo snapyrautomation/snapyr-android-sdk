@@ -16,5 +16,5 @@ To build the sdk you should have JDK 1.8, Android SDK (android-28) installed.
 ./gradlew check build assembleAndroidTest
 ```
 
-This will create two files, `snapyr-debug.aar` and `snapyr-release.aar`, in the directory `snapyr/build/output/aar`.
+This will create two files, `snapyr-debug.aar` and `snapyr-release.aar`, in the directory `snapyr/build/outputs/aar`.
 
