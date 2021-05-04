@@ -46,15 +46,15 @@ public class ConnectionFactory {
 
     /** Return a {@link HttpURLConnection} that reads JSON formatted project settings. */
     public HttpURLConnection projectSettings(String writeKey) throws IOException {
-        return openConnection("https://api.snapyr.com/sdk/" + writeKey);
+        return openConnection("https://dev-api.snapyr.com/sdk/" + writeKey);
     }
 
     /**
      * Return a {@link HttpURLConnection} that writes batched payloads to {@code
-     * https://dev-engine.snapyr.com/v1/import}.
+     * https://engine.snapyr.com/v1/import}.
      */
     public HttpURLConnection upload(String writeKey) throws IOException {
-        HttpURLConnection connection = openConnection("https://engine.snapyr.com/v1/batch");
+        HttpURLConnection connection = openConnection("https://dev-engine.snapyr.com/v1/batch");
         connection.setRequestProperty("Authorization", authorizationHeader(writeKey));
         // connection.setRequestProperty("Content-Encoding", "gzip");
         connection.setDoOutput(true);
