@@ -64,9 +64,9 @@ public class SampleApp extends Application {
                                                 "integrations",
                                                 new ValueMap()
                                                         .putValue(
-                                                                "Adjust",
+                                                                "Snapyr",
                                                                 new ValueMap()
-                                                                        .putValue("appToken", "<>")
+                                                                        .putValue("apiKey", ANALYTICS_WRITE_KEY)
                                                                         .putValue(
                                                                                 "trackAttributionData",
                                                                                 true))))
