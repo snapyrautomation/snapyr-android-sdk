@@ -7,7 +7,8 @@ apply from: rootProject.file('gradle/android.gradle')
 android {
 	defaultConfig {
 		consumerProguardFiles 'proguard-rules-lib.txt'
-	}
+        buildConfigField 'String', 'VERSION_NAME', "\"$VERSION_NAME\""
+    }
 }
 
 dependencies {
