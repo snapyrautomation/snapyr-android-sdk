@@ -37,7 +37,7 @@ import io.github.inflationx.viewpump.ViewPump;
 public class SampleApp extends Application {
 
     // https://segment.com/segment-engineering/sources/android-test/settings/keys
-    private static final String ANALYTICS_WRITE_KEY = "HO63Z36e0Ufa8AAgbjDomDuKxFuUICqI";
+    private static final String ANALYTICS_WRITE_KEY = "AAJfSynhNipgCqmCQJBWqNSrl4BhSTXi";
 
     @Override
     public void onCreate() {
@@ -107,7 +107,7 @@ public class SampleApp extends Application {
         // Set the initialized instance as a globally accessible instance.
         Snapyr.setSingletonInstance(builder.build());
 
-        // Now anytime you call Analytics.with, the custom instance will be returned.
+        // Now anytime you call Snapyr.with, the custom instance will be returned.
         Snapyr analytics = Snapyr.with(this);
 
         // If you need to know when integrations have been initialized, use the onIntegrationReady
