@@ -38,11 +38,14 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import com.snapyr.sdk.Snapyr;
+import com.snapyr.sdk.notifications.SnapyrNotificationHandler;
+
 import io.github.inflationx.viewpump.ViewPumpContextWrapper;
 
 public class MainActivity extends Activity {
     @BindView(R.id.user_id)
     EditText userId;
+    SnapyrNotificationHandler notificationHandler;
 
     /** Returns true if the string is null, or empty (when trimmed). */
     public static boolean isNullOrEmpty(String text) {
@@ -55,6 +58,7 @@ public class MainActivity extends Activity {
 
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+        notificationHandler = new SnapyrNotificationHandler(this);
     }
 
     @OnClick(R.id.action_track_a)
@@ -65,6 +69,11 @@ public class MainActivity extends Activity {
     @OnClick(R.id.action_track_b)
     void onButtonBClicked() {
         Snapyr.with(this).track("Button B Clicked");
+    }
+
+    @OnClick(R.id.action_show_notification)
+    void onShowNotifClicked() {
+        notificationHandler.showNotification();
     }
 
     @OnClick(R.id.action_identify)
