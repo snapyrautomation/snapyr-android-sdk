@@ -553,7 +553,12 @@ public class Snapyr {
 
     public void pushNotificationReceived(final @Nullable Properties properties) {
         assertNotShutdown();
-        track("snapyr.feedback.push.opened", properties);
+        track("snapyr.feedback.push.received", properties);
+    }
+
+    public void pushNotificationClicked(final @Nullable Properties properties) {
+        assertNotShutdown();
+        track("snapyr.feedback.push.clicked", properties);
     }
 
     /**
