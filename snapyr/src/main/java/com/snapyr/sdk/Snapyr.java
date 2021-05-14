@@ -290,8 +290,17 @@ public class Snapyr {
                                         .getValueMap("Snapyr")
                                         .putValue("apiKey", Snapyr.this.writeKey);
                             }
+                            if (!defaultProjectSettings.containsKey("metadata")) {
+                                defaultProjectSettings.put("metadata", new ValueMap());
+                            }
+                            if (!defaultProjectSettings.getValueMap("metadata")
+                                    .containsKey("platform")) {
+                                defaultProjectSettings.getValueMap("metadata").put("platform", "Android");
+                            }
                             projectSettings = ProjectSettings.create(defaultProjectSettings);
                         }
+                        analyticsContext.putSdkMeta(projectSettings.getValueMap("metadata"));
+
                         if (edgeFunctionMiddleware != null) {
                             edgeFunctionMiddleware.setEdgeFunctionData(
                                     projectSettings.edgeFunctions());
@@ -1557,6 +1566,11 @@ public class Snapyr {
                                                                                     .putValue(
                                                                                             "apiKey",
                                                                                             writeKey)));
+                                                }
+                                                if (!map.containsKey("metadata")) {
+                                                    map.put("metadata",
+                                                            new ValueMap()
+                                                                    .putValue("platform", "Android"));
                                                 }
                                                 return ProjectSettings.create(map);
                                             } finally {

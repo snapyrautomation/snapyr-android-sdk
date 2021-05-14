@@ -114,6 +114,9 @@ public class AnalyticsContext extends ValueMap {
     private static final String SCREEN_HEIGHT_KEY = "height";
     private static final String SCREEN_WIDTH_KEY = "width";
 
+    // Snapyr SDK Meta
+    private static final String SDK_META_KEY = "sdkMeta";
+
     /**
      * Create a new {@link AnalyticsContext} instance filled in with information from the given
      * {@link Context}. The {@link Snapyr} client can be called from anywhere, so the returned
@@ -305,6 +308,11 @@ public class AnalyticsContext extends ValueMap {
         os.put(OS_NAME_KEY, "Android");
         os.put(OS_VERSION_KEY, Build.VERSION.RELEASE);
         put(OS_KEY, os);
+    }
+
+    /** Set the SDK metadata retrieved from the SDK write key config endpoint. */
+    void putSdkMeta(Map<String, Object> meta) {
+        put(SDK_META_KEY, meta);
     }
 
     /** Set the referrer for this session. */
