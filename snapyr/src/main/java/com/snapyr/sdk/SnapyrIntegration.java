@@ -31,6 +31,8 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
 import android.util.JsonWriter;
+import android.util.Log;
+
 import com.snapyr.sdk.integrations.AliasPayload;
 import com.snapyr.sdk.integrations.BasePayload;
 import com.snapyr.sdk.integrations.GroupPayload;
@@ -393,6 +395,7 @@ class SnapyrIntegration extends Integration<Void> {
             int responseCode = connection.connection.getResponseCode();
             InputStream inputStream = Utils.getInputStream(connection.connection);
             String responseBody = null;
+            Log.e("Paul", "flush code: " + responseCode);
             if (responseCode >= 300) {
                 if (inputStream != null) {
                     try {
@@ -411,6 +414,7 @@ class SnapyrIntegration extends Integration<Void> {
                         responseCode, connection.connection.getResponseMessage(), responseBody);
             } else if (inputStream != null) {
                 responseBody = Utils.readFully(inputStream);
+//                Log.e("Paul", "flush response: " + responseBody);
                 logger.info("flush response: " + responseBody);
                 handleActionsIfAny(responseBody);
             }

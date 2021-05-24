@@ -51,10 +51,19 @@
         android:windowSoftInputMode="stateHidden">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
+        <action android:name="android.intent.action.VIEW"/>
         <category android:name="android.intent.category.LAUNCHER"/>
         <category android:name="android.intent.category.DEFAULT"/>
+        <data android:scheme="snapyrsample" android:host="test" />
       </intent-filter>
     </activity>
+    <service android:name="com.snapyr.sdk.notifications.SnapyrFirebaseMessagingService" android:exported="false">
+      <intent-filter>
+        <action android:name="com.google.firebase.MESSAGING_EVENT" />
+      </intent-filter>
+    </service>
+
+    <service android:name="com.snapyr.sdk.notifications.SnapyrActionService" />
 
   </application>
 

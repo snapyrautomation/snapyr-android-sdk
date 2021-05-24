@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "983718517902",
+    "project_id": "paul-unity-push",
+    "storage_bucket": "paul-unity-push.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:983718517902:android:8f096a1d68e3612140bddf",
+        "android_client_info": {
+          "package_name": "com.snapyr.sdk.sample"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "983718517902-tpcrb2t8epqd5v04i7gd4mmltc9oc5hb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDVLGOoeCIaDTS7WT2K5ziefHauhetCjYA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "983718517902-tpcrb2t8epqd5v04i7gd4mmltc9oc5hb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:983718517902:android:0ad3162f6583db7640bddf",
+        "android_client_info": {
+          "package_name": "com.unity3d.player"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "983718517902-tpcrb2t8epqd5v04i7gd4mmltc9oc5hb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDVLGOoeCIaDTS7WT2K5ziefHauhetCjYA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "983718517902-tpcrb2t8epqd5v04i7gd4mmltc9oc5hb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

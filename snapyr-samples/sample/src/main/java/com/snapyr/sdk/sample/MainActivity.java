@@ -30,22 +30,31 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.installations.FirebaseInstallations;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.snapyr.sdk.Snapyr;
-import com.snapyr.sdk.notifications.SnapyrNotificationHandler;
+
+import java.util.List;
 
 import io.github.inflationx.viewpump.ViewPumpContextWrapper;
 
 public class MainActivity extends Activity {
     @BindView(R.id.user_id)
     EditText userId;
-    SnapyrNotificationHandler notificationHandler;
 
     /** Returns true if the string is null, or empty (when trimmed). */
     public static boolean isNullOrEmpty(String text) {
@@ -56,9 +65,53 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        Intent intent = getIntent();
+        if (intent != null) {
+            handleOpenIntent(intent);
+        }
+
+        FirebaseInstallations.getInstance().delete();
+
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        notificationHandler = new SnapyrNotificationHandler(this);
+
+        setPushToken();
+    }
+
+    public void handleOpenIntent(Intent intent) {
+        String action = intent.getAction();
+        Uri data = intent.getData();
+        if (data == null) {
+            Toast.makeText(this, "No deep link info provided", Toast.LENGTH_LONG).show();
+            return;
+        }
+        List<String> paths = data.getPathSegments();
+//        String linkPath = data.getPath();
+        String response = paths.get(0);
+        String text = paths.get(1);
+        Toast.makeText(this, text, Toast.LENGTH_LONG).show();
+        Log.e("Paul", String.valueOf(data));
+
+        com.snapyr.sdk.Properties properties = new com.snapyr.sdk.Properties();
+        properties.put("response", response);
+        properties.put("extraText", text);
+        Snapyr.with(this).pushNotificationClicked(properties);
+    }
+
+    public void setPushToken() {
+        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(new OnCompleteListener<String>() {
+            @Override
+            public void onComplete(@NonNull Task<String> task) {
+                if(!task.isSuccessful()){
+                    return;
+                }
+
+                // Get new Instance ID token
+                String token = task.getResult();
+                Log.e("Paul", "PAUL: applying FB token: " + token);
+                Snapyr.with(getApplicationContext()).setPushNotificationToken(token);
+            }
+        });
     }
 
     @OnClick(R.id.action_track_a)
@@ -73,7 +126,7 @@ public class MainActivity extends Activity {
 
     @OnClick(R.id.action_show_notification)
     void onShowNotifClicked() {
-        notificationHandler.showNotification();
+        Snapyr.with(this).getNotificationHandler().showSampleNotification();
     }
 
     @OnClick(R.id.action_identify)
@@ -83,6 +136,7 @@ public class MainActivity extends Activity {
             Toast.makeText(this, R.string.id_required, Toast.LENGTH_LONG).show();
         } else {
             Snapyr.with(this).identify(id);
+            setPushToken();
         }
     }
 

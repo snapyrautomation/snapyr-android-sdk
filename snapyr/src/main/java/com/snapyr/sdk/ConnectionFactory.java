@@ -54,7 +54,7 @@ public class ConnectionFactory {
      * https://engine.snapyr.com/v1/import}.
      */
     public HttpURLConnection upload(String writeKey) throws IOException {
-        HttpURLConnection connection = openConnection("https://dev-engine.snapyr.com/v1/batch");
+        HttpURLConnection connection = openConnection("https://dev-engine.snapyr.com/v1/batch?deets=true");
         connection.setRequestProperty("Authorization", authorizationHeader(writeKey));
         // connection.setRequestProperty("Content-Encoding", "gzip");
         connection.setDoOutput(true);

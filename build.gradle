@@ -14,7 +14,7 @@ buildscript {
 
     dependencies {
         classpath 'com.android.tools.build:gradle:4.1.3'
-        classpath 'com.google.gms:google-services:4.3.3'
+        classpath 'com.google.gms:google-services:4.3.5'
         classpath 'com.vanniktech:gradle-android-junit-jacoco-plugin:0.16.0'
         classpath 'com.diffplug.spotless:spotless-plugin-gradle:3.29.0'
         classpath 'com.getkeepsafe.dexcount:dexcount-gradle-plugin:2.0.0'
@@ -72,4 +72,3 @@ ext.deps = [
 ]
 
 apply from: rootProject.file('gradle/promote.gradle')
-apply plugin: 'com.google.gms.google-services'

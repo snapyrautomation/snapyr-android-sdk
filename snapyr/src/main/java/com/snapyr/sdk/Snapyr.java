@@ -53,6 +53,8 @@ import com.snapyr.sdk.integrations.TrackPayload;
 import com.snapyr.sdk.internal.NanoDate;
 import com.snapyr.sdk.internal.Private;
 import com.snapyr.sdk.internal.Utils;
+import com.snapyr.sdk.notifications.SnapyrNotificationHandler;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -108,6 +110,7 @@ public class Snapyr {
     private static final String TRAITS_KEY = "traits";
 
     private final Application application;
+    private SnapyrNotificationHandler notificationHandler;
     final ExecutorService networkExecutor;
     final Stats stats;
     private final @NonNull List<Middleware> sourceMiddleware;
@@ -260,6 +263,8 @@ public class Snapyr {
         this.useNewLifecycleMethods = useNewLifecycleMethods;
         this.actionHandler = actionHandler;
 
+        this.notificationHandler = new SnapyrNotificationHandler(application);
+
         namespaceSharedPreferences();
 
         analyticsExecutor.submit(
@@ -333,6 +338,10 @@ public class Snapyr {
         if (useNewLifecycleMethods) {
             lifecycle.addObserver(activityLifecycleCallback);
         }
+    }
+
+    public SnapyrNotificationHandler getNotificationHandler() {
+        return notificationHandler;
     }
 
     @Private
