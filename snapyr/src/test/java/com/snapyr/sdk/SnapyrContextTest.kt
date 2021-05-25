@@ -43,9 +43,9 @@ import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE)
-class AnalyticsContextTest {
+class SnapyrContextTest {
 
-    lateinit var context: AnalyticsContext
+    lateinit var context: SnapyrContext
     lateinit var traits: Traits
 
     @Before
@@ -56,7 +56,7 @@ class AnalyticsContextTest {
 
     @Test
     fun create() {
-        context = AnalyticsContext.create(RuntimeEnvironment.application, traits, true)
+        context = SnapyrContext.create(RuntimeEnvironment.application, traits, true)
         assertThat(context)
             .containsKeys("app", "device", "library", "locale", "network", "os", "screen", "timezone", "traits")
         assertThat(context).containsEntry("userAgent", "undefined")
@@ -104,7 +104,7 @@ class AnalyticsContextTest {
 
     @Test
     fun createWithoutDeviceIdCollection() {
-        context = AnalyticsContext.create(RuntimeEnvironment.application, traits, false)
+        context = SnapyrContext.create(RuntimeEnvironment.application, traits, false)
 
         assertThat(context.getValueMap("device"))
             .containsEntry("id", traits.anonymousId())
@@ -149,7 +149,7 @@ class AnalyticsContextTest {
 
     @Test
     fun campaign() {
-        val campaign = AnalyticsContext.Campaign()
+        val campaign = SnapyrContext.Campaign()
 
         campaign.putName("campaign-name")
         assertThat(campaign.name()).isEqualTo("campaign-name")
@@ -173,7 +173,7 @@ class AnalyticsContextTest {
 
     @Test
     fun device() {
-        val device = AnalyticsContext.Device()
+        val device = SnapyrContext.Device()
 
         device.putAdvertisingInfo("adId", true)
         assertThat(device).containsEntry("advertisingId", "adId")
@@ -182,7 +182,7 @@ class AnalyticsContextTest {
 
     @Test
     fun location() {
-        val location = AnalyticsContext.Location()
+        val location = SnapyrContext.Location()
 
         location.putLatitude(37.7672319)
         assertThat(location.latitude()).isEqualTo(37.7672319)
@@ -202,7 +202,7 @@ class AnalyticsContextTest {
 
     @Test
     fun referrer() {
-        val referrer = AnalyticsContext.Referrer()
+        val referrer = SnapyrContext.Referrer()
 
         referrer.putId("referrer-id")
         assertThat(referrer.id()).isEqualTo("referrer-id")

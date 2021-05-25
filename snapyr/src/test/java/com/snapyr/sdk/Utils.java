@@ -40,9 +40,9 @@ public final class Utils {
         return createTraits().putUserId(userId);
     }
 
-    /** Create an {@link AnalyticsContext} with the given {@code traits}. */
-    public static AnalyticsContext createContext(Traits traits) {
-        AnalyticsContext context = new AnalyticsContext(new LinkedHashMap<String, Object>());
+    /** Create an {@link SnapyrContext} with the given {@code traits}. */
+    public static SnapyrContext createContext(Traits traits) {
+        SnapyrContext context = new SnapyrContext(new LinkedHashMap<String, Object>());
         context.setTraits(traits);
         return context;
     }

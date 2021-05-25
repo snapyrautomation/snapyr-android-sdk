@@ -47,7 +47,7 @@ import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
 @Config(constants = BuildConfig::class, sdk = [18], manifest = Config.NONE)
-class AnalyticsBuilderTest {
+class SnapyrBuilderTest {
 
     lateinit var context: Application
 

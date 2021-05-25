@@ -90,7 +90,7 @@ import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE)
-open class AnalyticsTest {
+open class SnapyrTest {
     private val SETTINGS =
         """
             |{
@@ -132,7 +132,7 @@ open class AnalyticsTest {
     private lateinit var optOut: BooleanPreference
     private lateinit var application: Application
     private lateinit var traits: Traits
-    private lateinit var analyticsContext: AnalyticsContext
+    private lateinit var snapyrContext: SnapyrContext
     private lateinit var analytics: Snapyr
     @Mock
     private lateinit var jsMiddleware: JSMiddleware
@@ -159,7 +159,7 @@ open class AnalyticsTest {
         whenever(application.packageName).thenReturn("com.foo")
         whenever(application.packageManager).thenReturn(packageManager)
 
-        analyticsContext = Utils.createContext(traits)
+        snapyrContext = Utils.createContext(traits)
         factory = object : Integration.Factory {
             override fun create(settings: ValueMap, analytics: Snapyr): Integration<*>? {
                 return integration
@@ -182,7 +182,7 @@ open class AnalyticsTest {
             networkExecutor,
             stats,
             traitsCache,
-            analyticsContext,
+            snapyrContext,
             defaultOptions,
             Logger.with(Snapyr.LogLevel.VERBOSE),
             "qaz", listOf(factory),
@@ -252,8 +252,8 @@ open class AnalyticsTest {
 
         assertThat(traits).contains(MapEntry.entry("userId", "foo"))
         assertThat(traits).contains(MapEntry.entry("bar", "qaz"))
-        assertThat(analyticsContext.traits()).contains(MapEntry.entry("userId", "foo"))
-        assertThat(analyticsContext.traits()).contains(MapEntry.entry("bar", "qaz"))
+        assertThat(snapyrContext.traits()).contains(MapEntry.entry("userId", "foo"))
+        assertThat(snapyrContext.traits()).contains(MapEntry.entry("bar", "qaz"))
         verify(traitsCache).set(traits)
         verify(integration)
             .identify(
@@ -666,7 +666,7 @@ open class AnalyticsTest {
 
     @Test
     fun logoutClearsTraitsAndUpdatesContext() {
-        analyticsContext.setTraits(Traits().putAge(20).putAvatar("bar"))
+        snapyrContext.setTraits(Traits().putAge(20).putAvatar("bar"))
 
         analytics.logout()
 
@@ -682,8 +682,8 @@ open class AnalyticsTest {
                         override fun describeTo(description: Description) {}
                     })
             )
-        assertThat(analyticsContext.traits()).hasSize(1)
-        assertThat(analyticsContext.traits()).containsKey("anonymousId")
+        assertThat(snapyrContext.traits()).hasSize(1)
+        assertThat(snapyrContext.traits()).containsKey("anonymousId")
     }
 
     @Test
@@ -850,7 +850,7 @@ open class AnalyticsTest {
             networkExecutor,
             stats,
             traitsCache,
-            analyticsContext,
+            snapyrContext,
             defaultOptions,
             Logger.with(Snapyr.LogLevel.NONE),
             "qaz", listOf(factory),
@@ -939,7 +939,7 @@ open class AnalyticsTest {
             networkExecutor,
             stats,
             traitsCache,
-            analyticsContext,
+            snapyrContext,
             defaultOptions,
             Logger.with(Snapyr.LogLevel.NONE),
             "qaz", listOf(factory),
@@ -1009,7 +1009,7 @@ open class AnalyticsTest {
             networkExecutor,
             stats,
             traitsCache,
-            analyticsContext,
+            snapyrContext,
             defaultOptions,
             Logger.with(Snapyr.LogLevel.NONE),
             "qaz", listOf(factory),
@@ -1081,7 +1081,7 @@ open class AnalyticsTest {
             networkExecutor,
             stats,
             traitsCache,
-            analyticsContext,
+            snapyrContext,
             defaultOptions,
             Logger.with(Snapyr.LogLevel.NONE),
             "qaz", listOf(factory),
@@ -1158,7 +1158,7 @@ open class AnalyticsTest {
             networkExecutor,
             stats,
             traitsCache,
-            analyticsContext,
+            snapyrContext,
             defaultOptions,
             Logger.with(Snapyr.LogLevel.NONE),
             "qaz", listOf(factory),
@@ -1233,7 +1233,7 @@ open class AnalyticsTest {
             networkExecutor,
             stats,
             traitsCache,
-            analyticsContext,
+            snapyrContext,
             defaultOptions,
             Logger.with(Snapyr.LogLevel.NONE),
             "qaz", listOf(factory),
@@ -1299,7 +1299,7 @@ open class AnalyticsTest {
             networkExecutor,
             stats,
             traitsCache,
-            analyticsContext,
+            snapyrContext,
             defaultOptions,
             Logger.with(Snapyr.LogLevel.NONE),
             "qaz", listOf(factory),
@@ -1369,7 +1369,7 @@ open class AnalyticsTest {
             networkExecutor,
             stats,
             traitsCache,
-            analyticsContext,
+            snapyrContext,
             defaultOptions,
             Logger.with(Snapyr.LogLevel.NONE),
             "qaz", listOf(factory),
@@ -1448,7 +1448,7 @@ open class AnalyticsTest {
             networkExecutor,
             stats,
             traitsCache,
-            analyticsContext,
+            snapyrContext,
             defaultOptions,
             Logger.with(Snapyr.LogLevel.NONE),
             "qaz", listOf(factory),
@@ -1517,7 +1517,7 @@ open class AnalyticsTest {
             networkExecutor,
             stats,
             traitsCache,
-            analyticsContext,
+            snapyrContext,
             defaultOptions,
             Logger.with(Snapyr.LogLevel.NONE),
             "qaz", listOf(factory),
@@ -1588,7 +1588,7 @@ open class AnalyticsTest {
             networkExecutor,
             stats,
             traitsCache,
-            analyticsContext,
+            snapyrContext,
             defaultOptions,
             Logger.with(Snapyr.LogLevel.NONE),
             "qaz", listOf(factory),
@@ -1665,7 +1665,7 @@ open class AnalyticsTest {
             networkExecutor,
             stats,
             traitsCache,
-            analyticsContext,
+            snapyrContext,
             defaultOptions,
             Logger.with(Snapyr.LogLevel.NONE),
             "qaz",
@@ -1735,7 +1735,7 @@ open class AnalyticsTest {
             networkExecutor,
             stats,
             traitsCache,
-            analyticsContext,
+            snapyrContext,
             defaultOptions,
             Logger.with(Snapyr.LogLevel.NONE),
             "qaz",
@@ -1805,7 +1805,7 @@ open class AnalyticsTest {
             networkExecutor,
             stats,
             traitsCache,
-            analyticsContext,
+            snapyrContext,
             defaultOptions,
             Logger.with(Snapyr.LogLevel.NONE),
             "qaz",
@@ -1898,7 +1898,7 @@ open class AnalyticsTest {
             networkExecutor,
             stats,
             traitsCache,
-            analyticsContext,
+            snapyrContext,
             defaultOptions,
             Logger.with(Snapyr.LogLevel.NONE),
             "qaz", listOf(factory),
@@ -1995,7 +1995,7 @@ open class AnalyticsTest {
             networkExecutor,
             stats,
             traitsCache,
-            analyticsContext,
+            snapyrContext,
             defaultOptions,
             Logger.with(Snapyr.LogLevel.NONE),
             "qaz", listOf(factory),
@@ -2066,7 +2066,7 @@ open class AnalyticsTest {
             networkExecutor,
             stats,
             traitsCache,
-            analyticsContext,
+            snapyrContext,
             defaultOptions,
             Logger.with(Snapyr.LogLevel.NONE),
             "qaz", listOf(factory),
@@ -2112,7 +2112,7 @@ open class AnalyticsTest {
             networkExecutor,
             stats,
             traitsCache,
-            analyticsContext,
+            snapyrContext,
             defaultOptions,
             Logger.with(Snapyr.LogLevel.NONE),
             "qaz", listOf(factory),
@@ -2167,7 +2167,7 @@ open class AnalyticsTest {
             networkExecutor,
             stats,
             traitsCache,
-            analyticsContext,
+            snapyrContext,
             defaultOptions,
             Logger.with(Snapyr.LogLevel.NONE),
             "qaz", listOf(factory),
@@ -2213,7 +2213,7 @@ open class AnalyticsTest {
         verify(integration).track(payload.capture())
         assertThat(payload.value.context()).containsKey("testProp")
         assertThat(payload.value.context()["testProp"]).isEqualTo(true)
-        assertThat(analytics.analyticsContext).doesNotContainKey("testProp")
+        assertThat(analytics.snapyrContext).doesNotContainKey("testProp")
     }
 
     @Test
@@ -2223,7 +2223,7 @@ open class AnalyticsTest {
         verify(integration).track(payload.capture())
         assertThat(payload.value.context()).containsKey("testProp")
         assertThat(payload.value.context()["testProp"]).isEqualTo(true)
-        assertThat(analytics.analyticsContext).doesNotContainKey("testProp")
+        assertThat(analytics.snapyrContext).doesNotContainKey("testProp")
     }
 
     @Test
@@ -2234,7 +2234,7 @@ open class AnalyticsTest {
             networkExecutor,
             stats,
             traitsCache,
-            analyticsContext,
+            snapyrContext,
             defaultOptions,
             Logger.with(Snapyr.LogLevel.NONE),
             "qaz", listOf(factory),
@@ -2274,7 +2274,7 @@ open class AnalyticsTest {
             networkExecutor,
             stats,
             traitsCache,
-            analyticsContext,
+            snapyrContext,
             defaultOptions,
             Logger.with(Snapyr.LogLevel.NONE),
             "qaz", listOf(factory),
