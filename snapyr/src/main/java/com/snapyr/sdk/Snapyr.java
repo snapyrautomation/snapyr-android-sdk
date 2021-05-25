@@ -304,7 +304,7 @@ public class Snapyr {
                             }
                             projectSettings = ProjectSettings.create(defaultProjectSettings);
                         }
-                        analyticsContext.putSdkMeta(projectSettings.getValueMap("metadata"));
+                        snapyrContext.putSdkMeta(projectSettings.getValueMap("metadata"));
 
                         if (edgeFunctionMiddleware != null) {
                             edgeFunctionMiddleware.setEdgeFunctionData(
@@ -822,7 +822,7 @@ public class Snapyr {
 
     /** Get the {@link SnapyrContext} used by this instance. */
     @SuppressWarnings("UnusedDeclaration")
-    public SnapyrContext getAnalyticsContext() {
+    public SnapyrContext getSnapyrContext() {
         // TODO (major version change) hide internals (don't give out working copy), expose a better
         // API
         //  for modifying the global context

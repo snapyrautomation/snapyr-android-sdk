@@ -122,7 +122,7 @@ public class Options {
     }
 
     /**
-     * Attach some additional context information. Unlike with {@link Snapyr#getAnalyticsContext()},
+     * Attach some additional context information. Unlike with {@link Snapyr#getSnapyrContext()},
      * this only has effect for this call.
      *
      * @param key The key of the extra context data
