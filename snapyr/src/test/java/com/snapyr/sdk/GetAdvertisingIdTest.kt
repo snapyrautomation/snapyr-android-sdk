@@ -45,8 +45,8 @@ class GetAdvertisingIdTest {
     fun getAdvertisingId() {
         val latch = CountDownLatch(1)
         val traits: Traits = Traits.create()
-        val context: AnalyticsContext =
-            AnalyticsContext.create(RuntimeEnvironment.application, traits, true)
+        val context: SnapyrContext =
+            SnapyrContext.create(RuntimeEnvironment.application, traits, true)
         val task =
             GetAdvertisingIdTask(context, latch, Logger.with(Snapyr.LogLevel.VERBOSE))
         task.execute(RuntimeEnvironment.application)
@@ -64,7 +64,7 @@ class GetAdvertisingIdTest {
 
         val traits = Traits.create()
         val analyticsContext =
-            AnalyticsContext.create(RuntimeEnvironment.application, traits, true)
+            SnapyrContext.create(RuntimeEnvironment.application, traits, true)
 
         val task =
             GetAdvertisingIdTask(analyticsContext, latch, Logger.with(Snapyr.LogLevel.VERBOSE))
@@ -87,7 +87,7 @@ class GetAdvertisingIdTest {
 
         val traits = Traits.create()
         val analyticsContext =
-            AnalyticsContext.create(RuntimeEnvironment.application, traits, true)
+            SnapyrContext.create(RuntimeEnvironment.application, traits, true)
 
         val task = GetAdvertisingIdTask(analyticsContext, latch, Logger.with(Snapyr.LogLevel.VERBOSE))
         task.execute(context)

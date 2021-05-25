@@ -33,16 +33,16 @@ import java.util.concurrent.CountDownLatch;
 
 /**
  * An {@link AsyncTask} that fetches the advertising info and attaches it to the given {@link
- * AnalyticsContext} instance.
+ * SnapyrContext} instance.
  */
 class GetAdvertisingIdTask extends AsyncTask<Context, Void, Pair<String, Boolean>> {
 
-    private final AnalyticsContext analyticsContext;
+    private final SnapyrContext snapyrContext;
     private final CountDownLatch latch;
     private final Logger logger;
 
-    GetAdvertisingIdTask(AnalyticsContext analyticsContext, CountDownLatch latch, Logger logger) {
-        this.analyticsContext = analyticsContext;
+    GetAdvertisingIdTask(SnapyrContext snapyrContext, CountDownLatch latch, Logger logger) {
+        this.snapyrContext = snapyrContext;
         this.latch = latch;
         this.logger = logger;
     }
@@ -114,7 +114,7 @@ class GetAdvertisingIdTask extends AsyncTask<Context, Void, Pair<String, Boolean
             if (info == null) {
                 return;
             }
-            AnalyticsContext.Device device = analyticsContext.device();
+            SnapyrContext.Device device = snapyrContext.device();
             if (device == null) {
                 logger.debug("Not collecting advertising ID because context.device is null.");
                 return;
