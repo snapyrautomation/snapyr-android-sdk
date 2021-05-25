@@ -115,9 +115,9 @@ public class SnapyrContext extends ValueMap {
     private static final String SCREEN_WIDTH_KEY = "width";
 
     /**
-     * Create a new {@link SnapyrContext} instance filled in with information from the given
-     * {@link Context}. The {@link Snapyr} client can be called from anywhere, so the returned
-     * instances is thread safe.
+     * Create a new {@link SnapyrContext} instance filled in with information from the given {@link
+     * Context}. The {@link Snapyr} client can be called from anywhere, so the returned instances is
+     * thread safe.
      */
     static synchronized SnapyrContext create(
             Context context, Traits traits, boolean collectDeviceId) {

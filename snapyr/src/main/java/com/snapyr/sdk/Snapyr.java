@@ -732,8 +732,7 @@ public class Snapyr {
         }
 
         // Create a new working copy
-        SnapyrContext contextCopy =
-                new SnapyrContext(new LinkedHashMap<>(snapyrContext.size()));
+        SnapyrContext contextCopy = new SnapyrContext(new LinkedHashMap<>(snapyrContext.size()));
         contextCopy.putAll(snapyrContext);
         contextCopy.putAll(finalOptions.context());
         contextCopy = contextCopy.unmodifiableCopy();
