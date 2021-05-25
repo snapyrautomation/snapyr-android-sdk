@@ -34,7 +34,7 @@ import static com.snapyr.sdk.internal.Utils.toISO8601String;
 import androidx.annotation.CheckResult;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import com.snapyr.sdk.AnalyticsContext;
+import com.snapyr.sdk.SnapyrContext;
 import com.snapyr.sdk.ValueMap;
 import com.snapyr.sdk.internal.NanoDate;
 import java.util.Collections;
@@ -148,8 +148,8 @@ public abstract class BasePayload extends ValueMap {
      *
      * @see <a href="https://segment.com/docs/spec/common/#context">Context fields</a>
      */
-    public AnalyticsContext context() {
-        return getValueMap(CONTEXT_KEY, AnalyticsContext.class);
+    public SnapyrContext context() {
+        return getValueMap(CONTEXT_KEY, SnapyrContext.class);
     }
 
     @Override

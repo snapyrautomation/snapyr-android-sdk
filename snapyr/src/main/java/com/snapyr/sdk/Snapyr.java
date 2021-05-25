@@ -115,7 +115,7 @@ public class Snapyr {
     private JSMiddleware edgeFunctionMiddleware;
     @Private final Options defaultOptions;
     @Private final Traits.Cache traitsCache;
-    @Private final AnalyticsContext analyticsContext;
+    @Private final SnapyrContext snapyrContext;
     private final Logger logger;
     final String tag;
     final Client client;
@@ -207,7 +207,7 @@ public class Snapyr {
             ExecutorService networkExecutor,
             Stats stats,
             Traits.Cache traitsCache,
-            AnalyticsContext analyticsContext,
+            SnapyrContext snapyrContext,
             Options defaultOptions,
             @NonNull Logger logger,
             String tag,
@@ -237,7 +237,7 @@ public class Snapyr {
         this.networkExecutor = networkExecutor;
         this.stats = stats;
         this.traitsCache = traitsCache;
-        this.analyticsContext = analyticsContext;
+        this.snapyrContext = snapyrContext;
         this.defaultOptions = defaultOptions;
         this.logger = logger;
         this.tag = tag;
@@ -459,7 +459,7 @@ public class Snapyr {
                         }
 
                         traitsCache.set(traits); // Save the new traits
-                        analyticsContext.setTraits(traits); // Update the references
+                        snapyrContext.setTraits(traits); // Update the references
 
                         IdentifyPayload.Builder builder =
                                 new IdentifyPayload.Builder()
@@ -701,7 +701,7 @@ public class Snapyr {
                                 new AliasPayload.Builder()
                                         .timestamp(timestamp)
                                         .userId(newId)
-                                        .previousId(analyticsContext.traits().currentId());
+                                        .previousId(snapyrContext.traits().currentId());
                         fillAndEnqueue(builder, options);
                     }
                 });
@@ -732,9 +732,9 @@ public class Snapyr {
         }
 
         // Create a new working copy
-        AnalyticsContext contextCopy =
-                new AnalyticsContext(new LinkedHashMap<>(analyticsContext.size()));
-        contextCopy.putAll(analyticsContext);
+        SnapyrContext contextCopy =
+                new SnapyrContext(new LinkedHashMap<>(snapyrContext.size()));
+        contextCopy.putAll(snapyrContext);
         contextCopy.putAll(finalOptions.context());
         contextCopy = contextCopy.unmodifiableCopy();
 
@@ -798,13 +798,13 @@ public class Snapyr {
         return edgeFunctionMiddleware;
     }
 
-    /** Get the {@link AnalyticsContext} used by this instance. */
+    /** Get the {@link SnapyrContext} used by this instance. */
     @SuppressWarnings("UnusedDeclaration")
-    public AnalyticsContext getAnalyticsContext() {
+    public SnapyrContext getAnalyticsContext() {
         // TODO (major version change) hide internals (don't give out working copy), expose a better
         // API
         //  for modifying the global context
-        return analyticsContext;
+        return snapyrContext;
     }
 
     /** Get a copy of the default {@link Options} used by this instance */
@@ -872,7 +872,7 @@ public class Snapyr {
 
         traitsCache.delete();
         traitsCache.set(Traits.create());
-        analyticsContext.setTraits(traitsCache.get());
+        snapyrContext.setTraits(traitsCache.get());
         runOnMainThread(IntegrationOperation.RESET);
     }
 
@@ -1084,6 +1084,8 @@ public class Snapyr {
         private Crypto crypto;
         private ValueMap defaultProjectSettings = new ValueMap();
         private boolean useNewLifecycleMethods = true; // opt-out feature
+        private ConnectionFactory.Environment snapyrEnvironment =
+                ConnectionFactory.Environment.PROD;
 
         /** Start building a new {@link Snapyr} instance. */
         public Builder(Context context, String writeKey) {
@@ -1234,6 +1236,12 @@ public class Snapyr {
                 throw new IllegalArgumentException("ConnectionFactory must not be null.");
             }
             this.connectionFactory = connectionFactory;
+            return this;
+        }
+
+        /** Configure Snapyr to use the Snapyr dev environment - internal use only */
+        public Builder enableDevEnvironment() {
+            this.snapyrEnvironment = ConnectionFactory.Environment.DEV;
             return this;
         }
 
@@ -1433,7 +1441,7 @@ public class Snapyr {
                 networkExecutor = new Utils.AnalyticsNetworkExecutorService();
             }
             if (connectionFactory == null) {
-                connectionFactory = new ConnectionFactory();
+                connectionFactory = new ConnectionFactory(snapyrEnvironment);
             }
             if (crypto == null) {
                 crypto = Crypto.none();
@@ -1459,10 +1467,10 @@ public class Snapyr {
             }
 
             Logger logger = Logger.with(logLevel);
-            AnalyticsContext analyticsContext =
-                    AnalyticsContext.create(application, traitsCache.get(), collectDeviceID);
+            SnapyrContext snapyrContext =
+                    SnapyrContext.create(application, traitsCache.get(), collectDeviceID);
             CountDownLatch advertisingIdLatch = new CountDownLatch(1);
-            analyticsContext.attachAdvertisingId(application, advertisingIdLatch, logger);
+            snapyrContext.attachAdvertisingId(application, advertisingIdLatch, logger);
 
             List<Integration.Factory> factories = new ArrayList<>(1 + this.factories.size());
             factories.add(SnapyrIntegration.FACTORY);
@@ -1500,7 +1508,7 @@ public class Snapyr {
                     networkExecutor,
                     stats,
                     traitsCache,
-                    analyticsContext,
+                    snapyrContext,
                     defaultOptions,
                     logger,
                     tag,

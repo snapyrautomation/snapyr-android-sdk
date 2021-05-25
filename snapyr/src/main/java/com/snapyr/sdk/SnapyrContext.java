@@ -74,7 +74,7 @@ import java.util.concurrent.CountDownLatch;
  * mitigated by deep rather than shallow copying (e.g. via de-serialiation and re-serialisation),
  * however this would contribute a performance penalty.
  */
-public class AnalyticsContext extends ValueMap {
+public class SnapyrContext extends ValueMap {
 
     private static final String LOCALE_KEY = "locale";
     private static final String TRAITS_KEY = "traits";
@@ -115,27 +115,27 @@ public class AnalyticsContext extends ValueMap {
     private static final String SCREEN_WIDTH_KEY = "width";
 
     /**
-     * Create a new {@link AnalyticsContext} instance filled in with information from the given
+     * Create a new {@link SnapyrContext} instance filled in with information from the given
      * {@link Context}. The {@link Snapyr} client can be called from anywhere, so the returned
      * instances is thread safe.
      */
-    static synchronized AnalyticsContext create(
+    static synchronized SnapyrContext create(
             Context context, Traits traits, boolean collectDeviceId) {
-        AnalyticsContext analyticsContext =
-                new AnalyticsContext(new Utils.NullableConcurrentHashMap<String, Object>());
-        analyticsContext.putApp(context);
-        analyticsContext.setTraits(traits);
-        analyticsContext.putDevice(context, collectDeviceId);
-        analyticsContext.putLibrary();
-        analyticsContext.put(
+        SnapyrContext snapyrContext =
+                new SnapyrContext(new Utils.NullableConcurrentHashMap<String, Object>());
+        snapyrContext.putApp(context);
+        snapyrContext.setTraits(traits);
+        snapyrContext.putDevice(context, collectDeviceId);
+        snapyrContext.putLibrary();
+        snapyrContext.put(
                 LOCALE_KEY,
                 Locale.getDefault().getLanguage() + "-" + Locale.getDefault().getCountry());
-        analyticsContext.putNetwork(context);
-        analyticsContext.putOs();
-        analyticsContext.putScreen(context);
-        putUndefinedIfNull(analyticsContext, USER_AGENT_KEY, System.getProperty("http.agent"));
-        putUndefinedIfNull(analyticsContext, TIMEZONE_KEY, TimeZone.getDefault().getID());
-        return analyticsContext;
+        snapyrContext.putNetwork(context);
+        snapyrContext.putOs();
+        snapyrContext.putScreen(context);
+        putUndefinedIfNull(snapyrContext, USER_AGENT_KEY, System.getProperty("http.agent"));
+        putUndefinedIfNull(snapyrContext, TIMEZONE_KEY, TimeZone.getDefault().getID());
+        return snapyrContext;
     }
 
     static void putUndefinedIfNull(Map<String, Object> target, String key, CharSequence value) {
@@ -147,7 +147,7 @@ public class AnalyticsContext extends ValueMap {
     }
 
     // For deserialization and wrapping
-    AnalyticsContext(Map<String, Object> delegate) {
+    SnapyrContext(Map<String, Object> delegate) {
         super(delegate);
     }
 
@@ -167,15 +167,15 @@ public class AnalyticsContext extends ValueMap {
     }
 
     @Override
-    public AnalyticsContext putValue(String key, Object value) {
+    public SnapyrContext putValue(String key, Object value) {
         super.putValue(key, value);
         return this;
     }
 
     /** Returns an unmodifiable shallow copy of the values in this map. */
-    public AnalyticsContext unmodifiableCopy() {
+    public SnapyrContext unmodifiableCopy() {
         LinkedHashMap<String, Object> map = new LinkedHashMap<>(this);
-        return new AnalyticsContext(unmodifiableMap(map));
+        return new SnapyrContext(unmodifiableMap(map));
     }
 
     /**
@@ -219,7 +219,7 @@ public class AnalyticsContext extends ValueMap {
     }
 
     /** Set information about the campaign that resulted in the API call. */
-    public AnalyticsContext putCampaign(Campaign campaign) {
+    public SnapyrContext putCampaign(Campaign campaign) {
         return putValue(CAMPAIGN_KEY, campaign);
     }
 
@@ -244,7 +244,7 @@ public class AnalyticsContext extends ValueMap {
     }
 
     /** Set a device token. Convenience method for {@link Device#putDeviceToken(String)} */
-    public AnalyticsContext putDeviceToken(String token) {
+    public SnapyrContext putDeviceToken(String token) {
         device().putDeviceToken(token);
         return this;
     }
@@ -258,7 +258,7 @@ public class AnalyticsContext extends ValueMap {
     }
 
     /** Set location information about the device. */
-    public AnalyticsContext putLocation(Location location) {
+    public SnapyrContext putLocation(Location location) {
         return putValue(LOCATION_KEY, location);
     }
 
@@ -308,7 +308,7 @@ public class AnalyticsContext extends ValueMap {
     }
 
     /** Set the referrer for this session. */
-    public AnalyticsContext putReferrer(Referrer referrer) {
+    public SnapyrContext putReferrer(Referrer referrer) {
         return putValue(REFERRER_KEY, referrer);
     }
 
