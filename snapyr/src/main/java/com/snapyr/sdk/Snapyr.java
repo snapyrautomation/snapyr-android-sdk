@@ -1084,6 +1084,8 @@ public class Snapyr {
         private Crypto crypto;
         private ValueMap defaultProjectSettings = new ValueMap();
         private boolean useNewLifecycleMethods = true; // opt-out feature
+        private ConnectionFactory.Environment snapyrEnvironment =
+                ConnectionFactory.Environment.PROD;
 
         /** Start building a new {@link Snapyr} instance. */
         public Builder(Context context, String writeKey) {
@@ -1234,6 +1236,12 @@ public class Snapyr {
                 throw new IllegalArgumentException("ConnectionFactory must not be null.");
             }
             this.connectionFactory = connectionFactory;
+            return this;
+        }
+
+        /** Configure Snapyr to use the Snapyr dev environment - internal use only */
+        public Builder enableDevEnvironment() {
+            this.snapyrEnvironment = ConnectionFactory.Environment.DEV;
             return this;
         }
 
@@ -1433,7 +1441,7 @@ public class Snapyr {
                 networkExecutor = new Utils.AnalyticsNetworkExecutorService();
             }
             if (connectionFactory == null) {
-                connectionFactory = new ConnectionFactory();
+                connectionFactory = new ConnectionFactory(snapyrEnvironment);
             }
             if (crypto == null) {
                 crypto = Crypto.none();

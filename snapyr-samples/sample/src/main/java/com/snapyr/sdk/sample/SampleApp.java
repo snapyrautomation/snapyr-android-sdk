@@ -56,6 +56,7 @@ public class SampleApp extends Application {
         // Initialize a new instance of the Analytics client.
         Snapyr.Builder builder =
                 new Snapyr.Builder(this, ANALYTICS_WRITE_KEY)
+                        // .enableDevEnvironment()
                         .experimentalNanosecondTimestamps()
                         .trackApplicationLifecycleEvents()
                         .defaultProjectSettings(
@@ -66,7 +67,9 @@ public class SampleApp extends Application {
                                                         .putValue(
                                                                 "Snapyr",
                                                                 new ValueMap()
-                                                                        .putValue("apiKey", ANALYTICS_WRITE_KEY)
+                                                                        .putValue(
+                                                                                "apiKey",
+                                                                                ANALYTICS_WRITE_KEY)
                                                                         .putValue(
                                                                                 "trackAttributionData",
                                                                                 true))))
