@@ -4,8 +4,6 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.Service;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -19,15 +17,38 @@ import androidx.core.app.NotificationManagerCompat;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Map;
-
-//import androidx.navigation.NavDeepLinkBuilder;
+import java.util.Random;
 
 public class SnapyrNotificationHandler {
+    public static final String NOTIF_TITLE_KEY = "title";
+    public static final String NOTIF_SUBTITLE_KEY = "subtitle";
+    public static final String NOTIF_CONTENT_KEY = "contentText";
+    public static final String NOTIF_DEEP_LINK_KEY = "deepLinkUrl";
+    public static final String NOTIF_IMAGE_URL_KEY = "imageUrl";
+    public static final String NOTIF_TOKEN_KEY = "actionToken";
+    public static final String NOTIF_CHANNEL_ID_KEY = "categoryId";
+    public static final String NOTIF_CHANNEL_NAME_KEY = "categoryName"; // TODO (@paulwsmith): get from config?
+    public static final String NOTIF_CHANNEL_DESCRIPTION_KEY = "categoryDescription"; // TODO (@paulwsmith): get from config?
+
+    public static final String ACTION_BUTTONS_KEY = "actionButtons";
+    public static final String ACTION_ID_KEY = "actionId";
+    public static final String ACTION_TITLE_KEY = "title";
+    public static final String ACTION_DEEP_LINK_KEY = "deepLinkUrl";
+    public static final String ACTION_TOKEN_KEY = "behaviorToken";
+
+    public static final String INTERACTION_KEY = "interactionType";
+
+    public enum INTERACTION_TYPE {
+        NOTIFICATION_PRESS,
+        ACTION_BUTTON_PRESS
+    }
+
     private final Context context;
     private final Context applicationContext;
     private final NotificationManagerCompat notificationMgr;
@@ -35,10 +56,10 @@ public class SnapyrNotificationHandler {
     public String defaultChannelId = "channel1";
     public String defaultChannelName = "General Notifications";
     public String defaultChannelDescription = "Displays all Snapyr-managed notifications by default";
-    public int defaultChannelImportance = NotificationManager.IMPORTANCE_DEFAULT;
+    public int defaultChannelImportance = NotificationManagerCompat.IMPORTANCE_DEFAULT;
 
     public SnapyrNotificationHandler(Context ctx) {
-        Log.d("SnapyrSample", "Notification handler constructor");
+        Log.d("Snapyr", "Notification handler constructor");
         context = ctx;
         applicationContext = context.getApplicationContext();
         notificationMgr = NotificationManagerCompat.from(applicationContext);
@@ -46,9 +67,9 @@ public class SnapyrNotificationHandler {
     }
 
     public void registerChannel(String channelId, String name, String description, int importance) {
-        Log.d("SnapyrSample", "Notification registerChannel");
+        Log.d("Snapyr", "Notification registerChannel");
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            Log.d("SnapyrSample", "Notification registerChannel: registering...");
+            Log.d("Snapyr", "Notification registerChannel: registering...");
             NotificationChannel channel = new NotificationChannel(channelId, name, importance);
             channel.setDescription(description);
             notificationMgr.createNotificationChannel(channel);
@@ -64,42 +85,59 @@ public class SnapyrNotificationHandler {
     }
 
     public void showRemoteNotification(Map<String, String> data) {
-        String channelId = getOrDefault(data, "channelId", defaultChannelId);
-        String channelName = getOrDefault(data, "channelName", defaultChannelName);
-        String channelDescription = getOrDefault(data, "channelDescription", defaultChannelDescription);
-        registerChannel(channelId, channelName, channelDescription, NotificationManager.IMPORTANCE_DEFAULT);
+        String channelId = getOrDefault(data, NOTIF_CHANNEL_ID_KEY, defaultChannelId);
+        String channelName = getOrDefault(data, NOTIF_CHANNEL_NAME_KEY, defaultChannelName);
+        String channelDescription = getOrDefault(data, NOTIF_CHANNEL_DESCRIPTION_KEY, defaultChannelDescription);
+        registerChannel(channelId, channelName, channelDescription, NotificationManagerCompat.IMPORTANCE_DEFAULT);
+
+        int notificationId = ++nextMessageId;
+        Random r = new Random();
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this.context, channelId);
         builder.setSmallIcon(androidx.core.R.drawable.notification_icon_background)
-                .setContentTitle(getOrDefault(data, "title", "Default Title"))
-                .setContentText(getOrDefault(data, "contentText", "Default content text"))
-                .setColor(Color.BLUE)
-                .setAutoCancel(true);
-        String deepLinkUrl = data.get("deepLinkUrl");
-        // previously working good version below....
-//        if (deepLinkUrl != null) {
-//            Intent deepLinkIntent = new Intent(Intent.ACTION_MAIN, Uri.parse(deepLinkUrl));
-//            builder.setContentIntent(PendingIntent.getActivity(applicationContext, 0, deepLinkIntent, 0));
-//        }
-        // new version we're experimenting with...
+                // .setContentTitle(getOrDefault(data, NOTIF_TITLE_KEY, "Default Title"))
+                // .setContentText(getOrDefault(data, NOTIF_CONTENT_KEY, "Default content text"))
+                .setContentTitle(data.get(NOTIF_TITLE_KEY))
+                .setContentText(data.get(NOTIF_CONTENT_KEY))
+                .setSubText(data.get(NOTIF_SUBTITLE_KEY))
+                .setColor(Color.BLUE) // TODO (@paulwsmith): make configurable
+                .setAutoCancel(true); // true means notification auto dismissed after tapping. TODO (@paulwsmith): make configurable?
+
+        String deepLinkUrl = data.get(NOTIF_DEEP_LINK_KEY);
         if (deepLinkUrl != null) {
             Intent serviceIntent = new Intent(applicationContext, SnapyrActionService.class);
-            serviceIntent.putExtra("snapyrDeepLink", deepLinkUrl);
-            serviceIntent.putExtra("actionId", "action1");
-            builder.setContentIntent(PendingIntent.getService(applicationContext, 0, serviceIntent, 0));
+
+            serviceIntent.putExtra(ACTION_ID_KEY, data.get(ACTION_ID_KEY));
+            serviceIntent.putExtra(NOTIF_DEEP_LINK_KEY, deepLinkUrl);
+            serviceIntent.putExtra(NOTIF_TOKEN_KEY, data.get(NOTIF_TOKEN_KEY));
+            serviceIntent.putExtra(INTERACTION_KEY, INTERACTION_TYPE.NOTIFICATION_PRESS);
+            serviceIntent.putExtra("notificationId", notificationId);
+
+            builder.setContentIntent(PendingIntent.getService(applicationContext, r.nextInt(), serviceIntent, 0));
         }
 
 
-        String actionButtonsJson = data.get("actionButtons");
+        String actionButtonsJson = data.get(ACTION_BUTTONS_KEY);
         if (actionButtonsJson != null) {
             JSONArray actionButtonsList;
             try {
                 actionButtonsList = new JSONArray(actionButtonsJson);
                 for (int i = 0; i < actionButtonsList.length(); i++) {
-                    String title = actionButtonsList.getJSONObject(i).getString("title");
-                    String uri = actionButtonsList.getJSONObject(i).getString("deepLinkUrl");
-                    Intent buttonDeepLinkIntent = new Intent(Intent.ACTION_MAIN, Uri.parse(uri));
-                    PendingIntent buttonAction = PendingIntent.getActivity(applicationContext, 0, buttonDeepLinkIntent, 0);
+                    JSONObject actionButton = actionButtonsList.getJSONObject(i);
+                    String title = actionButton.getString(ACTION_TITLE_KEY);
+                    String buttonDeepLinkUrl = actionButton.getString(ACTION_DEEP_LINK_KEY);
+                    String buttonToken = actionButton.getString(ACTION_TOKEN_KEY);
+
+                    // Create intent to open service, which tracks interaction and then triggers original intent
+                    Intent buttonIntent = new Intent(applicationContext, SnapyrActionService.class);
+
+                    buttonIntent.putExtra(ACTION_ID_KEY, actionButton.getString(ACTION_ID_KEY));
+                    buttonIntent.putExtra(NOTIF_DEEP_LINK_KEY, buttonDeepLinkUrl);
+                    buttonIntent.putExtra(ACTION_TOKEN_KEY, buttonToken);
+                    buttonIntent.putExtra(INTERACTION_KEY, INTERACTION_TYPE.ACTION_BUTTON_PRESS);
+                    buttonIntent.putExtra("notificationId", notificationId);
+
+                    PendingIntent buttonAction = PendingIntent.getService(applicationContext, r.nextInt(), buttonIntent, 0);
                     builder.addAction(androidx.core.R.drawable.notification_icon_background,
                             title, buttonAction);
                 }
@@ -109,18 +147,9 @@ public class SnapyrNotificationHandler {
             }
         }
 
-        Intent testIntent = new Intent(applicationContext, this.getClass());
-//        testIntent.setAction()
-//        PendingIntent.getService()
-        Intent serviceIntent = new Intent(applicationContext, SnapyrActionService.class);
-        serviceIntent.putExtra("snapyrDeepLink", "snapyrsample://test/Alice/option%20number%20one");
-        serviceIntent.putExtra("actionId", "action1");
-
-        ComponentName componentName = applicationContext.startService(serviceIntent);
-
-
         // Image handling - fetch from URL
-        String imageUrl = data.get("imageUrl");
+        // TODO (@paulwsmith): move off-thread?
+        String imageUrl = data.get(NOTIF_IMAGE_URL_KEY);
         if (imageUrl != null) {
             InputStream inputStream = null;
             Bitmap image = null;
@@ -134,21 +163,18 @@ public class SnapyrNotificationHandler {
             }
         }
 
-
-
-
         Notification notification = builder.build();
-        notificationMgr.notify(nextMessageId++, notification);
+        notificationMgr.notify(notificationId, notification);
     }
 
     public void showSampleNotification() {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this.context, this.defaultChannelId);
         builder.setSmallIcon(androidx.core.R.drawable.notification_icon_background)
-                .setContentTitle("Hello world 2")
-                .setSubText("THIS IS THE SUBTEXT")
-                .setContentText("Now is the time for all good men to come to the aid of their country")
+                .setContentTitle("Snapyr: Title")
+                .setSubText("Snapyr: Subtext")
+                .setContentText("Snapyr: Content text")
                 .setAutoCancel(true);
-//        builder.setContentIntent(this.getDefaultIntent());
+
         builder.setContentIntent(this.getDeepLinkIntent("test%20builtin"));
         Notification notification = builder.build();
         notificationMgr.notify(nextMessageId++, notification);
@@ -157,15 +183,5 @@ public class SnapyrNotificationHandler {
     public PendingIntent getDeepLinkIntent(String extra) {
         Intent deepLinkIntent = new Intent(Intent.ACTION_MAIN, Uri.parse("snapyrsample://test/Alice/" + extra));
         return PendingIntent.getActivity(applicationContext, 0, deepLinkIntent, 0);
-    }
-
-    /**
-     * @return an intent that launches the default activity for the app, i.e. "open the app"
-     * when the notification is clicked.
-     */
-    public PendingIntent getDefaultIntent() {
-        String packageName = context.getPackageName();
-        Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(packageName);
-        return PendingIntent.getActivity(applicationContext, 0, launchIntent, 0);
     }
 }
