@@ -85,6 +85,10 @@ public class SnapyrNotificationHandler {
     }
 
     public void showRemoteNotification(Map<String, String> data) {
+        // TODO (@paulwsmith): remove following lines! :)
+        Log.e("Snapyr", "showRemoteNotification payload:");
+        Log.e("Snapyr", String.valueOf(data));
+
         String channelId = getOrDefault(data, NOTIF_CHANNEL_ID_KEY, defaultChannelId);
         String channelName = getOrDefault(data, NOTIF_CHANNEL_NAME_KEY, defaultChannelName);
         String channelDescription = getOrDefault(data, NOTIF_CHANNEL_DESCRIPTION_KEY, defaultChannelDescription);
@@ -127,7 +131,6 @@ public class SnapyrNotificationHandler {
                     String title = actionButton.getString(ACTION_TITLE_KEY);
                     String buttonDeepLinkUrl = actionButton.getString(ACTION_DEEP_LINK_KEY);
                     String buttonToken = actionButton.getString(ACTION_TOKEN_KEY);
-
                     // Create intent to open service, which tracks interaction and then triggers original intent
                     Intent buttonIntent = new Intent(applicationContext, SnapyrActionService.class);
 
