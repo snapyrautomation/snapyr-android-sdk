@@ -31,6 +31,8 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
 import android.util.JsonWriter;
+import android.util.Log;
+
 import com.snapyr.sdk.integrations.AliasPayload;
 import com.snapyr.sdk.integrations.BasePayload;
 import com.snapyr.sdk.integrations.GroupPayload;
@@ -412,7 +414,7 @@ class SnapyrIntegration extends Integration<Void> {
                         responseCode, connection.connection.getResponseMessage(), responseBody);
             } else if (inputStream != null) {
                 responseBody = Utils.readFully(inputStream);
-                // Log.e("Snapyr", "flush response: " + responseBody);
+                Log.e("Snapyr", "flush response: " + responseBody);
                 logger.info("flush response: " + responseBody);
                 handleActionsIfAny(responseBody);
             }
@@ -538,11 +540,15 @@ class SnapyrIntegration extends Integration<Void> {
     /** A wrapper that emits a JSON formatted batch payload to the underlying writer. */
     static class BatchPayloadWriter implements Closeable {
 
+        public static final boolean DEBUG_MODE = true;
+
         private final JsonWriter jsonWriter;
         /** Keep around for writing payloads as Strings. */
         private final BufferedWriter bufferedWriter;
 
         private boolean needsComma = false;
+
+        StringBuilder debugString = new StringBuilder();
 
         BatchPayloadWriter(OutputStream stream) {
             bufferedWriter = new BufferedWriter(new OutputStreamWriter(stream));
@@ -551,12 +557,18 @@ class SnapyrIntegration extends Integration<Void> {
 
         BatchPayloadWriter beginObject() throws IOException {
             jsonWriter.beginObject();
+            if (DEBUG_MODE) {
+                debugString.append("{");
+            }
             return this;
         }
 
         BatchPayloadWriter beginBatchArray() throws IOException {
             jsonWriter.name("batch").beginArray();
             needsComma = false;
+            if (DEBUG_MODE) {
+                debugString.append("\"batch\":[");
+            }
             return this;
         }
 
@@ -565,10 +577,16 @@ class SnapyrIntegration extends Integration<Void> {
             // deserializing them.
             if (needsComma) {
                 bufferedWriter.write(',');
+                if (DEBUG_MODE) {
+                    debugString.append(",");
+                }
             } else {
                 needsComma = true;
             }
             bufferedWriter.write(payload);
+            if (DEBUG_MODE) {
+                debugString.append(payload);
+            }
             return this;
         }
 
@@ -577,6 +595,9 @@ class SnapyrIntegration extends Integration<Void> {
                 throw new IOException("At least one payload must be provided.");
             }
             jsonWriter.endArray();
+            if (DEBUG_MODE) {
+                debugString.append("]");
+            }
             return this;
         }
 
@@ -589,11 +610,18 @@ class SnapyrIntegration extends Integration<Void> {
              * the local clock skew.
              */
             jsonWriter.name("sentAt").value(Utils.toISO8601Date(new Date())).endObject();
+            if (DEBUG_MODE) {
+                debugString.append(",\"sentAt\":\"" + Utils.toISO8601Date(new Date()) + "\"}");
+            }
             return this;
         }
 
         @Override
         public void close() throws IOException {
+            if (DEBUG_MODE) {
+                Log.e("Snapyr", "Payload sent to Snapyr engine:");
+                Log.e("Snapyr", debugString.toString());
+            }
             jsonWriter.close();
         }
     }
