@@ -68,20 +68,20 @@ class SnapyrIntegration extends Integration<Void> {
     static final Integration.Factory FACTORY =
             new Integration.Factory() {
                 @Override
-                public Integration<?> create(ValueMap settings, Snapyr analytics) {
+                public Integration<?> create(ValueMap settings, Snapyr snapyr) {
                     return SnapyrIntegration.create(
-                            analytics.getApplication(),
-                            analytics.client,
-                            analytics.cartographer,
-                            analytics.networkExecutor,
-                            analytics.stats,
-                            Collections.unmodifiableMap(analytics.bundledIntegrations),
-                            analytics.tag,
-                            analytics.flushIntervalInMillis,
-                            analytics.flushQueueSize,
-                            analytics.getLogger(),
-                            analytics.crypto,
-                            analytics.actionHandler);
+                            snapyr.getApplication(),
+                            snapyr.client,
+                            snapyr.cartographer,
+                            snapyr.networkExecutor,
+                            snapyr.stats,
+                            Collections.unmodifiableMap(snapyr.bundledIntegrations),
+                            snapyr.tag,
+                            snapyr.flushIntervalInMillis,
+                            snapyr.flushQueueSize,
+                            snapyr.getLogger(),
+                            snapyr.crypto,
+                            snapyr.actionHandler);
                 }
 
                 @Override
@@ -395,7 +395,7 @@ class SnapyrIntegration extends Integration<Void> {
             int responseCode = connection.connection.getResponseCode();
             InputStream inputStream = Utils.getInputStream(connection.connection);
             String responseBody = null;
-            Log.e("Paul", "flush code: " + responseCode);
+            // Log.e("Snapyr", "flush code: " + responseCode);
             if (responseCode >= 300) {
                 if (inputStream != null) {
                     try {
@@ -414,7 +414,7 @@ class SnapyrIntegration extends Integration<Void> {
                         responseCode, connection.connection.getResponseMessage(), responseBody);
             } else if (inputStream != null) {
                 responseBody = Utils.readFully(inputStream);
-//                Log.e("Paul", "flush response: " + responseBody);
+                // Log.e("Snapyr", "flush response: " + responseBody);
                 logger.info("flush response: " + responseBody);
                 handleActionsIfAny(responseBody);
             }

@@ -130,6 +130,7 @@ public class Snapyr {
     @Private final SnapyrActionHandler actionHandler;
     ProjectSettings projectSettings; // todo: make final (non-final for testing).
     @Private final String writeKey;
+    private String pushToken;
     final int flushQueueSize;
     final long flushIntervalInMillis;
     // Retrieving the advertising ID is asynchronous. This latch helps us wait to ensure the
@@ -486,6 +487,10 @@ public class Snapyr {
                         fillAndEnqueue(builder, options);
                     }
                 });
+
+        if (pushToken != null) {
+            track("snapyr.hidden.fcmTokenSet", new Properties().putValue("token", pushToken));
+        }
     }
 
     /** @see #group(String, Traits, Options) */
@@ -557,6 +562,7 @@ public class Snapyr {
         if (Utils.isNullOrEmpty(token)) {
             throw new IllegalArgumentException("token must not be null or empty.");
         }
+        this.pushToken = token;
         track("snapyr.hidden.fcmTokenSet", new Properties().putValue("token", token));
     }
 
@@ -567,7 +573,7 @@ public class Snapyr {
 
     public void pushNotificationClicked(final @Nullable Properties properties) {
         assertNotShutdown();
-        track("snapyr.feedback.push.clicked", properties);
+        track("snapyr.feedback.Behavior", properties);
     }
 
     /**

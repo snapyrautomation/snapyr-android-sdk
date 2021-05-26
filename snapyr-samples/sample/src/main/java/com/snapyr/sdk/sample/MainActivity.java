@@ -86,16 +86,12 @@ public class MainActivity extends Activity {
             return;
         }
         List<String> paths = data.getPathSegments();
-//        String linkPath = data.getPath();
+
         String response = paths.get(0);
         String text = paths.get(1);
         Toast.makeText(this, text, Toast.LENGTH_LONG).show();
-        Log.e("Paul", String.valueOf(data));
+        Log.e("Snapyr", "Sample app open intent data: " + String.valueOf(data));
 
-        com.snapyr.sdk.Properties properties = new com.snapyr.sdk.Properties();
-        properties.put("response", response);
-        properties.put("extraText", text);
-        Snapyr.with(this).pushNotificationClicked(properties);
     }
 
     public void setPushToken() {
