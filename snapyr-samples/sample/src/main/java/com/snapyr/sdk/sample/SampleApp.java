@@ -113,9 +113,6 @@ public class SampleApp extends Application {
         // Now anytime you call Snapyr.with, the custom instance will be returned.
         Snapyr snapyr = Snapyr.with(this);
 
-//        snapyr.identify("paul-514-d2");
-//        snapyr.identify("paul-demo-514");
-
         // If you need to know when integrations have been initialized, use the onIntegrationReady
         // listener.
         snapyr.onIntegrationReady(

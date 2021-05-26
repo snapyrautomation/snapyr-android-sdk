@@ -1,8 +1,30 @@
+/**
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2014 Segment.io, Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 package com.snapyr.sdk.notifications;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -11,19 +33,16 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.util.Log;
-
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Map;
 import java.util.Random;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class SnapyrNotificationHandler {
     public static final String NOTIF_TITLE_KEY = "title";
@@ -33,8 +52,10 @@ public class SnapyrNotificationHandler {
     public static final String NOTIF_IMAGE_URL_KEY = "imageUrl";
     public static final String NOTIF_TOKEN_KEY = "actionToken";
     public static final String NOTIF_CHANNEL_ID_KEY = "categoryId";
-    public static final String NOTIF_CHANNEL_NAME_KEY = "categoryName"; // TODO (@paulwsmith): get from config?
-    public static final String NOTIF_CHANNEL_DESCRIPTION_KEY = "categoryDescription"; // TODO (@paulwsmith): get from config?
+    public static final String NOTIF_CHANNEL_NAME_KEY =
+            "categoryName"; // TODO (@paulwsmith): get from config?
+    public static final String NOTIF_CHANNEL_DESCRIPTION_KEY =
+            "categoryDescription"; // TODO (@paulwsmith): get from config?
 
     public static final String ACTION_BUTTONS_KEY = "actionButtons";
     public static final String ACTION_ID_KEY = "actionId";
@@ -55,7 +76,8 @@ public class SnapyrNotificationHandler {
     private int nextMessageId = 0;
     public String defaultChannelId = "channel1";
     public String defaultChannelName = "General Notifications";
-    public String defaultChannelDescription = "Displays all Snapyr-managed notifications by default";
+    public String defaultChannelDescription =
+            "Displays all Snapyr-managed notifications by default";
     public int defaultChannelImportance = NotificationManagerCompat.IMPORTANCE_DEFAULT;
 
     public SnapyrNotificationHandler(Context ctx) {
@@ -63,7 +85,11 @@ public class SnapyrNotificationHandler {
         context = ctx;
         applicationContext = context.getApplicationContext();
         notificationMgr = NotificationManagerCompat.from(applicationContext);
-        registerChannel(defaultChannelId, defaultChannelName, defaultChannelDescription, defaultChannelImportance);
+        registerChannel(
+                defaultChannelId,
+                defaultChannelName,
+                defaultChannelDescription,
+                defaultChannelImportance);
     }
 
     public void registerChannel(String channelId, String name, String description, int importance) {
@@ -91,13 +117,19 @@ public class SnapyrNotificationHandler {
 
         String channelId = getOrDefault(data, NOTIF_CHANNEL_ID_KEY, defaultChannelId);
         String channelName = getOrDefault(data, NOTIF_CHANNEL_NAME_KEY, defaultChannelName);
-        String channelDescription = getOrDefault(data, NOTIF_CHANNEL_DESCRIPTION_KEY, defaultChannelDescription);
-        registerChannel(channelId, channelName, channelDescription, NotificationManagerCompat.IMPORTANCE_DEFAULT);
+        String channelDescription =
+                getOrDefault(data, NOTIF_CHANNEL_DESCRIPTION_KEY, defaultChannelDescription);
+        registerChannel(
+                channelId,
+                channelName,
+                channelDescription,
+                NotificationManagerCompat.IMPORTANCE_DEFAULT);
 
         int notificationId = ++nextMessageId;
         Random r = new Random();
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this.context, channelId);
+        NotificationCompat.Builder builder =
+                new NotificationCompat.Builder(this.context, channelId);
         builder.setSmallIcon(androidx.core.R.drawable.notification_icon_background)
                 // .setContentTitle(getOrDefault(data, NOTIF_TITLE_KEY, "Default Title"))
                 // .setContentText(getOrDefault(data, NOTIF_CONTENT_KEY, "Default content text"))
@@ -105,7 +137,8 @@ public class SnapyrNotificationHandler {
                 .setContentText(data.get(NOTIF_CONTENT_KEY))
                 .setSubText(data.get(NOTIF_SUBTITLE_KEY))
                 .setColor(Color.BLUE) // TODO (@paulwsmith): make configurable
-                .setAutoCancel(true); // true means notification auto dismissed after tapping. TODO (@paulwsmith): make configurable?
+                .setAutoCancel(true); // true means notification auto dismissed after tapping. TODO
+        // (@paulwsmith): make configurable?
 
         String deepLinkUrl = data.get(NOTIF_DEEP_LINK_KEY);
         if (deepLinkUrl != null) {
@@ -117,9 +150,9 @@ public class SnapyrNotificationHandler {
             serviceIntent.putExtra(INTERACTION_KEY, INTERACTION_TYPE.NOTIFICATION_PRESS);
             serviceIntent.putExtra("notificationId", notificationId);
 
-            builder.setContentIntent(PendingIntent.getService(applicationContext, r.nextInt(), serviceIntent, 0));
+            builder.setContentIntent(
+                    PendingIntent.getService(applicationContext, r.nextInt(), serviceIntent, 0));
         }
-
 
         String actionButtonsJson = data.get(ACTION_BUTTONS_KEY);
         if (actionButtonsJson != null) {
@@ -131,7 +164,8 @@ public class SnapyrNotificationHandler {
                     String title = actionButton.getString(ACTION_TITLE_KEY);
                     String buttonDeepLinkUrl = actionButton.getString(ACTION_DEEP_LINK_KEY);
                     String buttonToken = actionButton.getString(ACTION_TOKEN_KEY);
-                    // Create intent to open service, which tracks interaction and then triggers original intent
+                    // Create intent to open service, which tracks interaction and then triggers
+                    // original intent
                     Intent buttonIntent = new Intent(applicationContext, SnapyrActionService.class);
 
                     buttonIntent.putExtra(ACTION_ID_KEY, actionButton.getString(ACTION_ID_KEY));
@@ -140,9 +174,13 @@ public class SnapyrNotificationHandler {
                     buttonIntent.putExtra(INTERACTION_KEY, INTERACTION_TYPE.ACTION_BUTTON_PRESS);
                     buttonIntent.putExtra("notificationId", notificationId);
 
-                    PendingIntent buttonAction = PendingIntent.getService(applicationContext, r.nextInt(), buttonIntent, 0);
-                    builder.addAction(androidx.core.R.drawable.notification_icon_background,
-                            title, buttonAction);
+                    PendingIntent buttonAction =
+                            PendingIntent.getService(
+                                    applicationContext, r.nextInt(), buttonIntent, 0);
+                    builder.addAction(
+                            androidx.core.R.drawable.notification_icon_background,
+                            title,
+                            buttonAction);
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -159,8 +197,7 @@ public class SnapyrNotificationHandler {
             try {
                 inputStream = new URL(imageUrl).openStream();
                 image = BitmapFactory.decodeStream(inputStream);
-                builder.setStyle(new NotificationCompat.BigPictureStyle()
-                        .bigPicture(image));
+                builder.setStyle(new NotificationCompat.BigPictureStyle().bigPicture(image));
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -171,7 +208,8 @@ public class SnapyrNotificationHandler {
     }
 
     public void showSampleNotification() {
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this.context, this.defaultChannelId);
+        NotificationCompat.Builder builder =
+                new NotificationCompat.Builder(this.context, this.defaultChannelId);
         builder.setSmallIcon(androidx.core.R.drawable.notification_icon_background)
                 .setContentTitle("Snapyr: Title")
                 .setSubText("Snapyr: Subtext")
@@ -184,7 +222,8 @@ public class SnapyrNotificationHandler {
     }
 
     public PendingIntent getDeepLinkIntent(String extra) {
-        Intent deepLinkIntent = new Intent(Intent.ACTION_MAIN, Uri.parse("snapyrsample://test/Alice/" + extra));
+        Intent deepLinkIntent =
+                new Intent(Intent.ACTION_MAIN, Uri.parse("snapyrsample://test/Alice/" + extra));
         return PendingIntent.getActivity(applicationContext, 0, deepLinkIntent, 0);
     }
 }

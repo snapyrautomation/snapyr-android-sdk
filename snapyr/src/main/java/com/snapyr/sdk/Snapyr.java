@@ -54,7 +54,6 @@ import com.snapyr.sdk.internal.NanoDate;
 import com.snapyr.sdk.internal.Private;
 import com.snapyr.sdk.internal.Utils;
 import com.snapyr.sdk.notifications.SnapyrNotificationHandler;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -299,9 +298,12 @@ public class Snapyr {
                             if (!defaultProjectSettings.containsKey("metadata")) {
                                 defaultProjectSettings.put("metadata", new ValueMap());
                             }
-                            if (!defaultProjectSettings.getValueMap("metadata")
+                            if (!defaultProjectSettings
+                                    .getValueMap("metadata")
                                     .containsKey("platform")) {
-                                defaultProjectSettings.getValueMap("metadata").put("platform", "Android");
+                                defaultProjectSettings
+                                        .getValueMap("metadata")
+                                        .put("platform", "Android");
                             }
                             projectSettings = ProjectSettings.create(defaultProjectSettings);
                         }
@@ -1595,9 +1597,11 @@ public class Snapyr {
                                                                                             writeKey)));
                                                 }
                                                 if (!map.containsKey("metadata")) {
-                                                    map.put("metadata",
+                                                    map.put(
+                                                            "metadata",
                                                             new ValueMap()
-                                                                    .putValue("platform", "Android"));
+                                                                    .putValue(
+                                                                            "platform", "Android"));
                                                 }
                                                 return ProjectSettings.create(map);
                                             } finally {

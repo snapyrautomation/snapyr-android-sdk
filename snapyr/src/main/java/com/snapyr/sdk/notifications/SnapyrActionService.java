@@ -1,3 +1,26 @@
+/**
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2014 Segment.io, Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 package com.snapyr.sdk.notifications;
 
 import android.app.PendingIntent;
@@ -5,12 +28,8 @@ import android.app.Service;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.IBinder;
-import android.util.Log;
-
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationManagerCompat;
-import androidx.core.content.IntentCompat;
-
 import com.snapyr.sdk.Properties;
 import com.snapyr.sdk.Snapyr;
 
@@ -32,19 +51,22 @@ public class SnapyrActionService extends Service {
         String actionId = intent.getStringExtra(SnapyrNotificationHandler.ACTION_ID_KEY);
         int notificationId = intent.getIntExtra("notificationId", 0);
 
-        SnapyrNotificationHandler.INTERACTION_TYPE interactionType = (SnapyrNotificationHandler.INTERACTION_TYPE) intent.getSerializableExtra(SnapyrNotificationHandler.INTERACTION_KEY);
+        SnapyrNotificationHandler.INTERACTION_TYPE interactionType =
+                (SnapyrNotificationHandler.INTERACTION_TYPE)
+                        intent.getSerializableExtra(SnapyrNotificationHandler.INTERACTION_KEY);
         String token;
 
-        Properties props = new Properties()
-                .putValue("deepLinkUrl", deepLinkUrl)
-                .putValue("actionId", actionId)
-                .putValue("testVersion", 6);
+        Properties props =
+                new Properties()
+                        .putValue("deepLinkUrl", deepLinkUrl)
+                        .putValue("actionId", actionId)
+                        .putValue("testVersion", 6);
 
         switch (interactionType) {
             case NOTIFICATION_PRESS:
                 token = intent.getStringExtra(SnapyrNotificationHandler.NOTIF_TOKEN_KEY);
                 props.putValue(SnapyrNotificationHandler.NOTIF_TOKEN_KEY, token)
-                    .putValue("interactionType", "notificationPressed");
+                        .putValue("interactionType", "notificationPressed");
                 break;
             case ACTION_BUTTON_PRESS:
                 token = intent.getStringExtra(SnapyrNotificationHandler.ACTION_TOKEN_KEY);
@@ -79,8 +101,8 @@ public class SnapyrActionService extends Service {
     }
 
     /**
-     * @return an intent that launches the default activity for the app, i.e. "open the app"
-     * when the notification is clicked.
+     * @return an intent that launches the default activity for the app, i.e. "open the app" when
+     *     the notification is clicked.
      */
     public PendingIntent getDefaultIntent() {
         String packageName = this.getPackageName();

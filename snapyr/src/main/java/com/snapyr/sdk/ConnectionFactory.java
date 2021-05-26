@@ -24,9 +24,7 @@
 package com.snapyr.sdk;
 
 import android.util.Base64;
-
 import com.snapyr.sdk.core.BuildConfig;
-
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;

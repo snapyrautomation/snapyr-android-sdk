@@ -35,22 +35,17 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.installations.FirebaseInstallations;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.snapyr.sdk.Snapyr;
-
-import java.util.List;
-
 import io.github.inflationx.viewpump.ViewPumpContextWrapper;
+import java.util.List;
 
 public class MainActivity extends Activity {
     @BindView(R.id.user_id)
@@ -91,23 +86,26 @@ public class MainActivity extends Activity {
         String text = paths.get(1);
         Toast.makeText(this, text, Toast.LENGTH_LONG).show();
         Log.e("Snapyr", "Sample app open intent data: " + String.valueOf(data));
-
     }
 
     public void setPushToken() {
-        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(new OnCompleteListener<String>() {
-            @Override
-            public void onComplete(@NonNull Task<String> task) {
-                if(!task.isSuccessful()){
-                    return;
-                }
+        FirebaseMessaging.getInstance()
+                .getToken()
+                .addOnCompleteListener(
+                        new OnCompleteListener<String>() {
+                            @Override
+                            public void onComplete(@NonNull Task<String> task) {
+                                if (!task.isSuccessful()) {
+                                    return;
+                                }
 
-                // Get new Instance ID token
-                String token = task.getResult();
-                Log.e("Paul", "PAUL: applying FB token: " + token);
-                Snapyr.with(getApplicationContext()).setPushNotificationToken(token);
-            }
-        });
+                                // Get new Instance ID token
+                                String token = task.getResult();
+                                Log.e("Paul", "PAUL: applying FB token: " + token);
+                                Snapyr.with(getApplicationContext())
+                                        .setPushNotificationToken(token);
+                            }
+                        });
     }
 
     @OnClick(R.id.action_track_a)
