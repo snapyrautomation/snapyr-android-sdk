@@ -35,6 +35,9 @@ import android.net.Uri;
 import android.util.Log;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+
+import com.snapyr.sdk.core.R;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -130,7 +133,8 @@ public class SnapyrNotificationHandler {
 
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(this.context, channelId);
-        builder.setSmallIcon(androidx.core.R.drawable.notification_icon_background)
+        builder.setSmallIcon(R.drawable.ic_snapyr_logo_only)
+//        builder.setSmallIcon(androidx.core.R.drawable.notification_icon_background)
                 // .setContentTitle(getOrDefault(data, NOTIF_TITLE_KEY, "Default Title"))
                 // .setContentText(getOrDefault(data, NOTIF_CONTENT_KEY, "Default content text"))
                 .setContentTitle(data.get(NOTIF_TITLE_KEY))
@@ -178,7 +182,7 @@ public class SnapyrNotificationHandler {
                             PendingIntent.getService(
                                     applicationContext, r.nextInt(), buttonIntent, 0);
                     builder.addAction(
-                            androidx.core.R.drawable.notification_icon_background,
+                            R.drawable.ic_snapyr_logo_only,
                             title,
                             buttonAction);
                 }
@@ -210,7 +214,9 @@ public class SnapyrNotificationHandler {
     public void showSampleNotification() {
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(this.context, this.defaultChannelId);
-        builder.setSmallIcon(androidx.core.R.drawable.notification_icon_background)
+        Log.d("Snapyr", "Circle icon: " + androidx.core.R.drawable.notification_icon_background);
+        Log.d("Snapyr", "Snapyr icon: " + R.drawable.ic_snapyr_logo_only);
+        builder.setSmallIcon(R.drawable.ic_snapyr_logo_only)
                 .setContentTitle("Snapyr: Title")
                 .setSubText("Snapyr: Subtext")
                 .setContentText("Snapyr: Content text")
