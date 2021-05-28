@@ -84,7 +84,6 @@ public class SnapyrNotificationHandler {
     public int defaultChannelImportance = NotificationManagerCompat.IMPORTANCE_DEFAULT;
 
     public SnapyrNotificationHandler(Context ctx) {
-        Log.d("Snapyr", "Notification handler constructor");
         context = ctx;
         applicationContext = context.getApplicationContext();
         notificationMgr = NotificationManagerCompat.from(applicationContext);
@@ -96,9 +95,7 @@ public class SnapyrNotificationHandler {
     }
 
     public void registerChannel(String channelId, String name, String description, int importance) {
-        Log.d("Snapyr", "Notification registerChannel");
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            Log.d("Snapyr", "Notification registerChannel: registering...");
             NotificationChannel channel = new NotificationChannel(channelId, name, importance);
             channel.setDescription(description);
             notificationMgr.createNotificationChannel(channel);
@@ -115,8 +112,8 @@ public class SnapyrNotificationHandler {
 
     public void showRemoteNotification(Map<String, String> data) {
         // TODO (@paulwsmith): remove following lines! :)
-        Log.e("Snapyr", "showRemoteNotification payload:");
-        Log.e("Snapyr", String.valueOf(data));
+        // Log.e("Snapyr", "showRemoteNotification payload:");
+        // Log.e("Snapyr", String.valueOf(data));
 
         String channelId = getOrDefault(data, NOTIF_CHANNEL_ID_KEY, defaultChannelId);
         String channelName = getOrDefault(data, NOTIF_CHANNEL_NAME_KEY, defaultChannelName);
@@ -134,9 +131,6 @@ public class SnapyrNotificationHandler {
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(this.context, channelId);
         builder.setSmallIcon(R.drawable.ic_snapyr_logo_only)
-//        builder.setSmallIcon(androidx.core.R.drawable.notification_icon_background)
-                // .setContentTitle(getOrDefault(data, NOTIF_TITLE_KEY, "Default Title"))
-                // .setContentText(getOrDefault(data, NOTIF_CONTENT_KEY, "Default content text"))
                 .setContentTitle(data.get(NOTIF_TITLE_KEY))
                 .setContentText(data.get(NOTIF_CONTENT_KEY))
                 .setSubText(data.get(NOTIF_SUBTITLE_KEY))
@@ -193,7 +187,7 @@ public class SnapyrNotificationHandler {
         }
 
         // Image handling - fetch from URL
-        // TODO (@paulwsmith): move off-thread?
+        // TODO (@paulwsmith): move off-thread? (maybe not necessary; not part of main thread anyway)
         String imageUrl = data.get(NOTIF_IMAGE_URL_KEY);
         if (imageUrl != null) {
             InputStream inputStream = null;
@@ -214,8 +208,6 @@ public class SnapyrNotificationHandler {
     public void showSampleNotification() {
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(this.context, this.defaultChannelId);
-        Log.d("Snapyr", "Circle icon: " + androidx.core.R.drawable.notification_icon_background);
-        Log.d("Snapyr", "Snapyr icon: " + R.drawable.ic_snapyr_logo_only);
         builder.setSmallIcon(R.drawable.ic_snapyr_logo_only)
                 .setContentTitle("Snapyr: Title")
                 .setSubText("Snapyr: Subtext")
