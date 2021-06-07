@@ -32,7 +32,6 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.JsonWriter;
 import android.util.Log;
-
 import com.snapyr.sdk.integrations.AliasPayload;
 import com.snapyr.sdk.integrations.BasePayload;
 import com.snapyr.sdk.integrations.GroupPayload;
@@ -414,7 +413,6 @@ class SnapyrIntegration extends Integration<Void> {
                         responseCode, connection.connection.getResponseMessage(), responseBody);
             } else if (inputStream != null) {
                 responseBody = Utils.readFully(inputStream);
-                Log.e("Snapyr", "flush response: " + responseBody);
                 logger.info("flush response: " + responseBody);
                 handleActionsIfAny(responseBody);
             }
@@ -540,7 +538,7 @@ class SnapyrIntegration extends Integration<Void> {
     /** A wrapper that emits a JSON formatted batch payload to the underlying writer. */
     static class BatchPayloadWriter implements Closeable {
 
-        public static final boolean DEBUG_MODE = true;
+        public static final boolean DEBUG_MODE = false;
 
         private final JsonWriter jsonWriter;
         /** Keep around for writing payloads as Strings. */

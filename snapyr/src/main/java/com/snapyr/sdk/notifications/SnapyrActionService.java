@@ -23,13 +23,14 @@
  */
 package com.snapyr.sdk.notifications;
 
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.IBinder;
+
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationManagerCompat;
+
 import com.snapyr.sdk.Properties;
 import com.snapyr.sdk.Snapyr;
 
@@ -87,9 +88,6 @@ public class SnapyrActionService extends Service {
         Intent openDeepLinkIntent = new Intent(Intent.ACTION_VIEW, uri);
         openDeepLinkIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         Snapyr.with(this).getApplication().startActivity(openDeepLinkIntent);
-        // Snapyr.with(this.getApplicationContext()).getApplication().startActivity(openDeepLinkIntent);
-        // this.getApplication().startActivity(openDeepLinkIntent);
-        // startActivity(openDeepLinkIntent);
 
         return super.onStartCommand(intent, flags, startId);
     }
