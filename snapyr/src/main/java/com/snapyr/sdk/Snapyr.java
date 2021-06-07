@@ -341,7 +341,19 @@ public class Snapyr {
 
         application.registerActivityLifecycleCallbacks(activityLifecycleCallback);
         if (useNewLifecycleMethods) {
-            lifecycle.addObserver(activityLifecycleCallback);
+            analyticsExecutor.submit(
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            HANDLER.post(
+                                    new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            lifecycle.addObserver(activityLifecycleCallback);
+                                        }
+                                    });
+                        }
+                    });
         }
 
         if (enableSnapyrPushHandling) {
