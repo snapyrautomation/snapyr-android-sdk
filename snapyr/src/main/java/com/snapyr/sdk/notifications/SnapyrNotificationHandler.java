@@ -33,11 +33,16 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.core.R;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -81,7 +86,7 @@ public class SnapyrNotificationHandler {
     public String defaultChannelName = "General Notifications";
     public String defaultChannelDescription =
             "Displays all Snapyr-managed notifications by default";
-    public int defaultChannelImportance = NotificationManagerCompat.IMPORTANCE_DEFAULT;
+    public int defaultChannelImportance = NotificationManagerCompat.IMPORTANCE_HIGH;
 
     public SnapyrNotificationHandler(Context ctx) {
         context = ctx;
@@ -119,11 +124,7 @@ public class SnapyrNotificationHandler {
         String channelName = getOrDefault(data, NOTIF_CHANNEL_NAME_KEY, defaultChannelName);
         String channelDescription =
                 getOrDefault(data, NOTIF_CHANNEL_DESCRIPTION_KEY, defaultChannelDescription);
-        registerChannel(
-                channelId,
-                channelName,
-                channelDescription,
-                NotificationManagerCompat.IMPORTANCE_DEFAULT);
+        registerChannel(channelId, channelName, channelDescription, defaultChannelImportance);
 
         int notificationId = ++nextMessageId;
         Random r = new Random();
@@ -175,10 +176,7 @@ public class SnapyrNotificationHandler {
                     PendingIntent buttonAction =
                             PendingIntent.getService(
                                     applicationContext, r.nextInt(), buttonIntent, 0);
-                    builder.addAction(
-                            R.drawable.ic_snapyr_logo_only,
-                            title,
-                            buttonAction);
+                    builder.addAction(R.drawable.ic_snapyr_logo_only, title, buttonAction);
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -187,7 +185,8 @@ public class SnapyrNotificationHandler {
         }
 
         // Image handling - fetch from URL
-        // TODO (@paulwsmith): move off-thread? (maybe not necessary; not part of main thread anyway)
+        // TODO (@paulwsmith): move off-thread? (maybe not necessary; not part of main thread
+        // anyway)
         String imageUrl = data.get(NOTIF_IMAGE_URL_KEY);
         if (imageUrl != null) {
             InputStream inputStream = null;
@@ -223,5 +222,24 @@ public class SnapyrNotificationHandler {
         Intent deepLinkIntent =
                 new Intent(Intent.ACTION_MAIN, Uri.parse("snapyrsample://test/Alice/" + extra));
         return PendingIntent.getActivity(applicationContext, 0, deepLinkIntent, 0);
+    }
+
+    public void autoRegisterFirebaseToken(Snapyr snapyrInstance) {
+        FirebaseMessaging.getInstance()
+                .getToken()
+                .addOnCompleteListener(
+                        new OnCompleteListener<String>() {
+                            @Override
+                            public void onComplete(@NonNull Task<String> task) {
+                                if (!task.isSuccessful()) {
+                                    return;
+                                }
+
+                                // Get new Instance ID token
+                                String token = task.getResult();
+                                Log.e("Snapyr", "SnapyrFirebaseMessagingService: applying FB token: " + token);
+                                snapyrInstance.setPushNotificationToken(token);
+                            }
+                        });
     }
 }

@@ -235,7 +235,9 @@ public class Snapyr {
             @NonNull final ValueMap defaultProjectSettings,
             @NonNull Lifecycle lifecycle,
             boolean nanosecondTimestamps,
-            boolean useNewLifecycleMethods) {
+            boolean useNewLifecycleMethods,
+            boolean enableSnapyrPushHandling
+            ) {
         this.application = application;
         this.networkExecutor = networkExecutor;
         this.stats = stats;
@@ -340,6 +342,10 @@ public class Snapyr {
         application.registerActivityLifecycleCallbacks(activityLifecycleCallback);
         if (useNewLifecycleMethods) {
             lifecycle.addObserver(activityLifecycleCallback);
+        }
+
+        if (enableSnapyrPushHandling) {
+            notificationHandler.autoRegisterFirebaseToken(this);
         }
     }
 
@@ -1110,6 +1116,7 @@ public class Snapyr {
         private boolean trackApplicationLifecycleEvents = false;
         private boolean recordScreenViews = false;
         private boolean trackDeepLinks = false;
+        private boolean snapyrPush = false;
         private boolean nanosecondTimestamps = false;
         private Crypto crypto;
         private ValueMap defaultProjectSettings = new ValueMap();
@@ -1272,6 +1279,15 @@ public class Snapyr {
         /** Configure Snapyr to use the Snapyr dev environment - internal use only */
         public Builder enableDevEnvironment() {
             this.snapyrEnvironment = ConnectionFactory.Environment.DEV;
+            return this;
+        }
+
+        /**
+         * Enable Snapyr's automatic push handling. This relies on Firebase Messaging and will
+         * attempt to automatically register the device's Firebase token.
+         */
+        public Builder enableSnapyrPushHandling() {
+            this.snapyrPush = true;
             return this;
         }
 
@@ -1563,7 +1579,8 @@ public class Snapyr {
                     defaultProjectSettings,
                     lifecycle,
                     nanosecondTimestamps,
-                    useNewLifecycleMethods);
+                    useNewLifecycleMethods,
+                    snapyrPush);
         }
     }
 

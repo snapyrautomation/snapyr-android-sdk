@@ -89,23 +89,23 @@ public class MainActivity extends Activity {
     }
 
     public void setPushToken() {
-        FirebaseMessaging.getInstance()
-                .getToken()
-                .addOnCompleteListener(
-                        new OnCompleteListener<String>() {
-                            @Override
-                            public void onComplete(@NonNull Task<String> task) {
-                                if (!task.isSuccessful()) {
-                                    return;
-                                }
-
-                                // Get new Instance ID token
-                                String token = task.getResult();
-                                Log.e("Paul", "PAUL: applying FB token: " + token);
-                                Snapyr.with(getApplicationContext())
-                                        .setPushNotificationToken(token);
-                            }
-                        });
+//        FirebaseMessaging.getInstance()
+//                .getToken()
+//                .addOnCompleteListener(
+//                        new OnCompleteListener<String>() {
+//                            @Override
+//                            public void onComplete(@NonNull Task<String> task) {
+//                                if (!task.isSuccessful()) {
+//                                    return;
+//                                }
+//
+//                                // Get new Instance ID token
+//                                String token = task.getResult();
+//                                Log.e("Snapyr", "Snapyr Sample: applying FB token: " + token);
+//                                Snapyr.with(getApplicationContext())
+//                                        .setPushNotificationToken(token);
+//                            }
+//                        });
     }
 
     @OnClick(R.id.action_track_a)
