@@ -49,8 +49,8 @@ public class ConnectionFactory {
     private static final String STAGE_CONFIG_ENDPOINT = "https://stage-api.snapyr.com/sdk/";
     private static final String STAGE_ENGINE_ENDPOINT = "https://stage-engine.snapyr.com/v1/batch";
 
-    private static final String DEV_CONFIG_ENDPOINT = "https://dev-api.snapyr.com/sdk/";
-    private static final String DEV_ENGINE_ENDPOINT = "https://dev-engine.snapyr.com/v1/batch";
+    private static final String DEV_CONFIG_ENDPOINT = "https://dev-api.snapyrdev.net/sdk/";
+    private static final String DEV_ENGINE_ENDPOINT = "https://dev-engine.snapyrdev.net/v1/batch";
 
     public enum Environment {
         PROD,

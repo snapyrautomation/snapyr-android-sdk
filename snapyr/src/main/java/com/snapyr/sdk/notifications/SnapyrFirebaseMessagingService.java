@@ -26,7 +26,6 @@ package com.snapyr.sdk.notifications;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.snapyr.sdk.Snapyr;
-
 import java.util.Map;
 
 public class SnapyrFirebaseMessagingService extends FirebaseMessagingService {

@@ -33,11 +33,9 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.util.Log;
-
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
-
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.messaging.FirebaseMessaging;
@@ -237,7 +235,10 @@ public class SnapyrNotificationHandler {
 
                                 // Get new Instance ID token
                                 String token = task.getResult();
-                                Log.e("Snapyr", "SnapyrFirebaseMessagingService: applying FB token: " + token);
+                                Log.e(
+                                        "Snapyr",
+                                        "SnapyrFirebaseMessagingService: applying FB token: "
+                                                + token);
                                 snapyrInstance.setPushNotificationToken(token);
                             }
                         });

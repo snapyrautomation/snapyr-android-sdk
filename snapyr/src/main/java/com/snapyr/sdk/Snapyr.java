@@ -236,8 +236,7 @@ public class Snapyr {
             @NonNull Lifecycle lifecycle,
             boolean nanosecondTimestamps,
             boolean useNewLifecycleMethods,
-            boolean enableSnapyrPushHandling
-            ) {
+            boolean enableSnapyrPushHandling) {
         this.application = application;
         this.networkExecutor = networkExecutor;
         this.stats = stats;
@@ -264,8 +263,6 @@ public class Snapyr {
         this.nanosecondTimestamps = nanosecondTimestamps;
         this.useNewLifecycleMethods = useNewLifecycleMethods;
         this.actionHandler = actionHandler;
-
-        this.notificationHandler = new SnapyrNotificationHandler(application);
 
         namespaceSharedPreferences();
 
@@ -357,6 +354,7 @@ public class Snapyr {
         }
 
         if (enableSnapyrPushHandling) {
+            this.notificationHandler = new SnapyrNotificationHandler(application);
             notificationHandler.autoRegisterFirebaseToken(this);
         }
     }
