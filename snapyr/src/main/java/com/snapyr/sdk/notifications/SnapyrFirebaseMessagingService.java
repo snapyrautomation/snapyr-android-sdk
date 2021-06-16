@@ -37,7 +37,11 @@ public class SnapyrFirebaseMessagingService extends FirebaseMessagingService {
     @Override
     public void onNewToken(String token) {
         super.onNewToken(token);
-        Snapyr.with(this).setPushNotificationToken(token);
+        try {
+            Snapyr.with(this).setPushNotificationToken(token);
+        } catch (Exception e) {
+            // do nothing if Snapyr is not yet initialized
+        }
     }
 
     @Override
