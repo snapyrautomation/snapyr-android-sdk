@@ -204,7 +204,8 @@ open class SnapyrTest {
             ValueMap(),
             lifecycle,
             false,
-            true
+            true,
+            false
         )
 
         // Used by singleton tests.
@@ -872,7 +873,8 @@ open class SnapyrTest {
             ValueMap(),
             lifecycle,
             false,
-            true
+            true,
+            false
         )
 
         callback.get().onCreate(mockLifecycleOwner)
@@ -961,7 +963,8 @@ open class SnapyrTest {
             ValueMap(),
             lifecycle,
             false,
-            true
+            true,
+            false
         )
 
         callback.get().onCreate(mockLifecycleOwner)
@@ -1031,7 +1034,8 @@ open class SnapyrTest {
             ValueMap(),
             lifecycle,
             false,
-            true
+            true,
+            false
         )
 
         val activity = Mockito.mock(Activity::class.java)
@@ -1103,7 +1107,8 @@ open class SnapyrTest {
             ValueMap(),
             lifecycle,
             false,
-            true
+            true,
+            false
         )
 
         val expectedURL = "app://track.com/open?utm_id=12345&gclid=abcd&nope="
@@ -1180,7 +1185,8 @@ open class SnapyrTest {
             ValueMap(),
             lifecycle,
             false,
-            true
+            true,
+            false
         )
 
         val expectedURL = "app://track.com/open?utm_id=12345&gclid=abcd&nope="
@@ -1255,7 +1261,8 @@ open class SnapyrTest {
             ValueMap(),
             lifecycle,
             false,
-            true
+            true,
+            false
         )
 
         val activity = Mockito.mock(Activity::class.java)
@@ -1321,7 +1328,8 @@ open class SnapyrTest {
             ValueMap(),
             lifecycle,
             false,
-            true
+            true,
+            false
         )
 
         val activity = Mockito.mock(Activity::class.java)
@@ -1391,7 +1399,8 @@ open class SnapyrTest {
             ValueMap(),
             lifecycle,
             false,
-            true
+            true,
+            false
         )
 
         val activity = Mockito.mock(Activity::class.java)
@@ -1470,7 +1479,8 @@ open class SnapyrTest {
             ValueMap(),
             lifecycle,
             false,
-            true
+            true,
+            false
         )
 
         callback.get().onCreate(mockLifecycleOwner)
@@ -1539,7 +1549,8 @@ open class SnapyrTest {
             ValueMap(),
             lifecycle,
             false,
-            true
+            true,
+            false
         )
 
         val backgroundedActivity = Mockito.mock(Activity::class.java)
@@ -1610,7 +1621,8 @@ open class SnapyrTest {
             ValueMap(),
             lifecycle,
             false,
-            true
+            true,
+            false
         )
 
         callback.get().onCreate(mockLifecycleOwner)
@@ -1690,6 +1702,7 @@ open class SnapyrTest {
             ValueMap(),
             lifecycle,
             false,
+            false,
             false
         )
 
@@ -1760,6 +1773,7 @@ open class SnapyrTest {
             ValueMap(),
             lifecycle,
             false,
+            false,
             false
         )
 
@@ -1829,6 +1843,7 @@ open class SnapyrTest {
             jsMiddleware,
             ValueMap(),
             lifecycle,
+            false,
             false,
             false
         )
@@ -1920,7 +1935,8 @@ open class SnapyrTest {
             ValueMap(),
             lifecycle,
             false,
-            true
+            true,
+            false
         )
 
         assertThat(analytics.shutdown).isFalse()
@@ -2017,7 +2033,8 @@ open class SnapyrTest {
             ValueMap(),
             lifecycle,
             false,
-            true
+            true,
+            false
         )
 
         assertThat(analytics.shutdown).isFalse()
@@ -2088,10 +2105,11 @@ open class SnapyrTest {
             defaultProjectSettings,
             lifecycle,
             false,
-            true
+            true,
+            false
         )
 
-        assertThat(analytics.projectSettings).hasSize(2)
+        assertThat(analytics.projectSettings).hasSize(3)
         assertThat(analytics.projectSettings).containsKey("integrations")
         assertThat(analytics.projectSettings.integrations()).hasSize(2)
         assertThat(analytics.projectSettings.integrations()).containsKey("Snapyr")
@@ -2134,10 +2152,11 @@ open class SnapyrTest {
             defaultProjectSettings,
             lifecycle,
             false,
-            true
+            true,
+            false
         )
 
-        assertThat(analytics.projectSettings).hasSize(2)
+        assertThat(analytics.projectSettings).hasSize(3)
         assertThat(analytics.projectSettings).containsKey("integrations")
         assertThat(analytics.projectSettings.integrations()).hasSize(1)
         assertThat(analytics.projectSettings.integrations()).containsKey("Snapyr")
@@ -2189,10 +2208,11 @@ open class SnapyrTest {
             defaultProjectSettings,
             lifecycle,
             false,
-            true
+            true,
+            false
         )
 
-        assertThat(analytics.projectSettings).hasSize(2)
+        assertThat(analytics.projectSettings).hasSize(3)
         assertThat(analytics.projectSettings).containsKey("integrations")
         assertThat(analytics.projectSettings.integrations()).containsKey("Snapyr")
         assertThat(analytics.projectSettings.integrations()).hasSize(1)
@@ -2256,7 +2276,8 @@ open class SnapyrTest {
             ValueMap(),
             lifecycle,
             true,
-            true
+            true,
+            false
         )
 
         analytics.track("event")
@@ -2296,7 +2317,8 @@ open class SnapyrTest {
             ValueMap(),
             lifecycle,
             false,
-            true
+            true,
+            false
         )
 
         analytics.track("event")
