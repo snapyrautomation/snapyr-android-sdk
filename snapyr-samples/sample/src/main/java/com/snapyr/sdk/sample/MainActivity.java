@@ -35,17 +35,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.Toast;
-
-import com.google.firebase.installations.FirebaseInstallations;
-import com.snapyr.sdk.Snapyr;
-import com.snapyr.sdk.Traits;
-
-import java.util.List;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import com.google.firebase.installations.FirebaseInstallations;
+import com.snapyr.sdk.Snapyr;
+import com.snapyr.sdk.Traits;
 import io.github.inflationx.viewpump.ViewPumpContextWrapper;
+import java.util.List;
 
 public class MainActivity extends Activity {
     @BindView(R.id.user_id)
