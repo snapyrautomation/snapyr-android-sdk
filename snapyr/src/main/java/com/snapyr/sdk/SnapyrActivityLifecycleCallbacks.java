@@ -38,9 +38,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-class AnalyticsActivityLifecycleCallbacks
+class SnapyrActivityLifecycleCallbacks
         implements Application.ActivityLifecycleCallbacks, DefaultLifecycleObserver {
-    private Snapyr analytics;
+    private Snapyr snapyr;
     private ExecutorService analyticsExecutor;
     private Boolean shouldTrackApplicationLifecycleEvents;
     private Boolean trackDeepLinks;
@@ -84,8 +84,8 @@ class AnalyticsActivityLifecycleCallbacks
                 }
             };
 
-    private AnalyticsActivityLifecycleCallbacks(
-            Snapyr analytics,
+    private SnapyrActivityLifecycleCallbacks(
+            Snapyr snapyr,
             ExecutorService analyticsExecutor,
             Boolean shouldTrackApplicationLifecycleEvents,
             Boolean trackDeepLinks,
@@ -95,7 +95,7 @@ class AnalyticsActivityLifecycleCallbacks
         this.trackedApplicationLifecycleEvents = new AtomicBoolean(false);
         this.numberOfActivities = new AtomicInteger(1);
         this.firstLaunch = new AtomicBoolean(false);
-        this.analytics = analytics;
+        this.snapyr = snapyr;
         this.analyticsExecutor = analyticsExecutor;
         this.shouldTrackApplicationLifecycleEvents = shouldTrackApplicationLifecycleEvents;
         this.trackDeepLinks = trackDeepLinks;
@@ -111,7 +111,7 @@ class AnalyticsActivityLifecycleCallbacks
         if (shouldTrackApplicationLifecycleEvents
                 && numberOfActivities.decrementAndGet() == 0
                 && !isChangingActivityConfigurations.get()) {
-            analytics.track("Application Backgrounded");
+            snapyr.track("Application Backgrounded");
         }
     }
 
@@ -128,7 +128,7 @@ class AnalyticsActivityLifecycleCallbacks
                         .putValue("build", String.valueOf(packageInfo.versionCode));
             }
             properties.putValue("from_background", !firstLaunch.getAndSet(false));
-            analytics.track("Application Opened", properties);
+            snapyr.track("Application Opened", properties);
         }
     }
 
@@ -139,7 +139,7 @@ class AnalyticsActivityLifecycleCallbacks
                 && shouldTrackApplicationLifecycleEvents) {
             numberOfActivities.set(0);
             firstLaunch.set(true);
-            analytics.trackApplicationLifecycleEvents();
+            snapyr.trackApplicationLifecycleEvents();
         }
     }
 
@@ -154,7 +154,7 @@ class AnalyticsActivityLifecycleCallbacks
 
     @Override
     public void onActivityCreated(Activity activity, Bundle bundle) {
-        analytics.runOnMainThread(IntegrationOperation.onActivityCreated(activity, bundle));
+        snapyr.runOnMainThread(IntegrationOperation.onActivityCreated(activity, bundle));
 
         if (!useNewLifecycleMethods) {
             onCreate(stubOwner);
@@ -181,20 +181,20 @@ class AnalyticsActivityLifecycleCallbacks
         }
 
         properties.put("url", uri.toString());
-        analytics.track("Deep Link Opened", properties);
+        snapyr.track("Deep Link Opened", properties);
     }
 
     @Override
     public void onActivityStarted(Activity activity) {
         if (shouldRecordScreenViews) {
-            analytics.recordScreenViews(activity);
+            snapyr.recordScreenViews(activity);
         }
-        analytics.runOnMainThread(IntegrationOperation.onActivityStarted(activity));
+        snapyr.runOnMainThread(IntegrationOperation.onActivityStarted(activity));
     }
 
     @Override
     public void onActivityResumed(Activity activity) {
-        analytics.runOnMainThread(IntegrationOperation.onActivityResumed(activity));
+        snapyr.runOnMainThread(IntegrationOperation.onActivityResumed(activity));
         if (!useNewLifecycleMethods) {
             onStart(stubOwner);
         }
@@ -202,7 +202,7 @@ class AnalyticsActivityLifecycleCallbacks
 
     @Override
     public void onActivityPaused(Activity activity) {
-        analytics.runOnMainThread(IntegrationOperation.onActivityPaused(activity));
+        snapyr.runOnMainThread(IntegrationOperation.onActivityPaused(activity));
         if (!useNewLifecycleMethods) {
             onPause(stubOwner);
         }
@@ -210,7 +210,7 @@ class AnalyticsActivityLifecycleCallbacks
 
     @Override
     public void onActivityStopped(Activity activity) {
-        analytics.runOnMainThread(IntegrationOperation.onActivityStopped(activity));
+        snapyr.runOnMainThread(IntegrationOperation.onActivityStopped(activity));
         if (!useNewLifecycleMethods) {
             onStop(stubOwner);
         }
@@ -218,20 +218,20 @@ class AnalyticsActivityLifecycleCallbacks
 
     @Override
     public void onActivitySaveInstanceState(Activity activity, Bundle bundle) {
-        analytics.runOnMainThread(
+        snapyr.runOnMainThread(
                 IntegrationOperation.onActivitySaveInstanceState(activity, bundle));
     }
 
     @Override
     public void onActivityDestroyed(Activity activity) {
-        analytics.runOnMainThread(IntegrationOperation.onActivityDestroyed(activity));
+        snapyr.runOnMainThread(IntegrationOperation.onActivityDestroyed(activity));
         if (!useNewLifecycleMethods) {
             onDestroy(stubOwner);
         }
     }
 
     public static class Builder {
-        private Snapyr analytics;
+        private Snapyr snapyr;
         private ExecutorService analyticsExecutor;
         private Boolean shouldTrackApplicationLifecycleEvents;
         private Boolean trackDeepLinks;
@@ -241,8 +241,8 @@ class AnalyticsActivityLifecycleCallbacks
 
         public Builder() {}
 
-        public Builder analytics(Snapyr analytics) {
-            this.analytics = analytics;
+        public Builder snapyr(Snapyr snapyr) {
+            this.snapyr = snapyr;
             return this;
         }
 
@@ -277,9 +277,9 @@ class AnalyticsActivityLifecycleCallbacks
             return this;
         }
 
-        public AnalyticsActivityLifecycleCallbacks build() {
-            return new AnalyticsActivityLifecycleCallbacks(
-                    analytics,
+        public SnapyrActivityLifecycleCallbacks build() {
+            return new SnapyrActivityLifecycleCallbacks(
+                    snapyr,
                     analyticsExecutor,
                     shouldTrackApplicationLifecycleEvents,
                     trackDeepLinks,

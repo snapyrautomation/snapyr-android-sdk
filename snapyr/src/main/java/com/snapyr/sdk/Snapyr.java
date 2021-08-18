@@ -124,7 +124,7 @@ public class Snapyr {
     final Cartographer cartographer;
     private final ProjectSettings.Cache projectSettingsCache;
     final Crypto crypto;
-    @Private final AnalyticsActivityLifecycleCallbacks activityLifecycleCallback;
+    @Private final SnapyrActivityLifecycleCallbacks activityLifecycleCallback;
     @Private final Lifecycle lifecycle;
     @Private final SnapyrActionHandler actionHandler;
     ProjectSettings projectSettings; // todo: make final (non-final for testing).
@@ -325,8 +325,8 @@ public class Snapyr {
         logger.debug("Created analytics client for project with tag:%s.", tag);
 
         activityLifecycleCallback =
-                new AnalyticsActivityLifecycleCallbacks.Builder()
-                        .analytics(this)
+                new SnapyrActivityLifecycleCallbacks.Builder()
+                        .snapyr(this)
                         .analyticsExecutor(analyticsExecutor)
                         .shouldTrackApplicationLifecycleEvents(
                                 shouldTrackApplicationLifecycleEvents)
