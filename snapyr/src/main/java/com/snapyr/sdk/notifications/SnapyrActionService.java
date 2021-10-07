@@ -23,7 +23,6 @@
  */
 package com.snapyr.sdk.notifications;
 
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.net.Uri;
@@ -101,9 +100,12 @@ public class SnapyrActionService extends Service {
      * @return an intent that launches the default activity for the app, i.e. "open the app" when
      *     the notification is clicked.
      */
-    public PendingIntent getDefaultIntent() {
+    public Intent getDefaultIntent() {
         String packageName = this.getPackageName();
         Intent launchIntent = this.getPackageManager().getLaunchIntentForPackage(packageName);
-        return PendingIntent.getActivity(this.getApplicationContext(), 0, launchIntent, 0);
+        return launchIntent;
+        //        String x = launchIntent.getAction();
+        //        return PendingIntent.getActivity(this.getApplicationContext(), 0, launchIntent,
+        // 0);
     }
 }

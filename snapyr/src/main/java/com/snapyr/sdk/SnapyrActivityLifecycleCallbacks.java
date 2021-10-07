@@ -155,7 +155,8 @@ class SnapyrActivityLifecycleCallbacks
     @Override
     public void onActivityCreated(Activity activity, Bundle bundle) {
         snapyr.runOnMainThread(IntegrationOperation.onActivityCreated(activity, bundle));
-
+        Intent launchIntent = activity.getIntent();
+        Bundle x = launchIntent.getExtras();
         if (!useNewLifecycleMethods) {
             onCreate(stubOwner);
         }
@@ -218,8 +219,7 @@ class SnapyrActivityLifecycleCallbacks
 
     @Override
     public void onActivitySaveInstanceState(Activity activity, Bundle bundle) {
-        snapyr.runOnMainThread(
-                IntegrationOperation.onActivitySaveInstanceState(activity, bundle));
+        snapyr.runOnMainThread(IntegrationOperation.onActivitySaveInstanceState(activity, bundle));
     }
 
     @Override
