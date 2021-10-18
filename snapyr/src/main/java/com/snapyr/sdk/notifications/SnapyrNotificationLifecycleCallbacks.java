@@ -10,7 +10,6 @@ import androidx.annotation.NonNull;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.lifecycle.DefaultLifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
-
 import com.snapyr.sdk.Properties;
 import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.integrations.Logger;
@@ -68,7 +67,6 @@ public class SnapyrNotificationLifecycleCallbacks
                 new Properties()
                         .putValue("deepLinkUrl", deepLinkUrl)
                         .putValue("actionId", actionId);
-        //                        .putValue("testVersion", 6);
 
         if (interactionType != null) {
             switch (interactionType) {
@@ -113,8 +111,12 @@ public class SnapyrNotificationLifecycleCallbacks
     @Override
     public void onActivityDestroyed(@NonNull Activity activity) {}
 
-    //    @Override
-    //    public void onCreate(@NonNull LifecycleOwner owner) {
-    //
-    //    }
+    @Override
+    public void onCreate(@NonNull LifecycleOwner owner) {}
+
+    @Override
+    public void onStart(@NonNull LifecycleOwner owner) {}
+
+    @Override
+    public void onResume(@NonNull LifecycleOwner owner) {}
 }
