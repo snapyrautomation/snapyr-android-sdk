@@ -28,6 +28,7 @@ import android.app.NotificationChannel;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -139,16 +140,16 @@ public class SnapyrNotificationHandler {
 
         String deepLinkUrl = data.get(NOTIF_DEEP_LINK_KEY);
         if (deepLinkUrl != null) {
-            Intent serviceIntent = new Intent(applicationContext, SnapyrActionService.class);
+            Intent baseIntent = getLaunchIntent();
 
-            serviceIntent.putExtra(ACTION_ID_KEY, data.get(ACTION_ID_KEY));
-            serviceIntent.putExtra(NOTIF_DEEP_LINK_KEY, deepLinkUrl);
-            serviceIntent.putExtra(NOTIF_TOKEN_KEY, data.get(NOTIF_TOKEN_KEY));
-            serviceIntent.putExtra(INTERACTION_KEY, INTERACTION_TYPE.NOTIFICATION_PRESS);
-            serviceIntent.putExtra("notificationId", notificationId);
+            baseIntent.putExtra(ACTION_ID_KEY, data.get(ACTION_ID_KEY));
+            baseIntent.putExtra(NOTIF_DEEP_LINK_KEY, deepLinkUrl);
+            baseIntent.putExtra(NOTIF_TOKEN_KEY, data.get(NOTIF_TOKEN_KEY));
+            baseIntent.putExtra(INTERACTION_KEY, INTERACTION_TYPE.NOTIFICATION_PRESS);
+            baseIntent.putExtra("notificationId", notificationId);
 
             builder.setContentIntent(
-                    PendingIntent.getService(applicationContext, r.nextInt(), serviceIntent, 0));
+                    PendingIntent.getActivity(applicationContext, r.nextInt(), baseIntent, 0));
         }
 
         String actionButtonsJson = data.get(ACTION_BUTTONS_KEY);
@@ -163,7 +164,7 @@ public class SnapyrNotificationHandler {
                     String buttonToken = actionButton.getString(ACTION_TOKEN_KEY);
                     // Create intent to open service, which tracks interaction and then triggers
                     // original intent
-                    Intent buttonIntent = new Intent(applicationContext, SnapyrActionService.class);
+                    Intent buttonIntent = getLaunchIntent();
 
                     buttonIntent.putExtra(ACTION_ID_KEY, actionButton.getString(ACTION_ID_KEY));
                     buttonIntent.putExtra(NOTIF_DEEP_LINK_KEY, buttonDeepLinkUrl);
@@ -172,8 +173,9 @@ public class SnapyrNotificationHandler {
                     buttonIntent.putExtra("notificationId", notificationId);
 
                     PendingIntent buttonAction =
-                            PendingIntent.getService(
+                            PendingIntent.getActivity(
                                     applicationContext, r.nextInt(), buttonIntent, 0);
+
                     builder.addAction(R.drawable.ic_snapyr_logo_only, title, buttonAction);
                 }
             } catch (JSONException e) {
@@ -202,6 +204,24 @@ public class SnapyrNotificationHandler {
         notificationMgr.notify(notificationId, notification);
     }
 
+    private Intent getLaunchIntent() {
+        try {
+            String packageName = applicationContext.getPackageName();
+            PackageManager packageManager = applicationContext.getPackageManager();
+            Intent launchIntent = packageManager.getLaunchIntentForPackage(packageName);
+
+            if (launchIntent == null) {
+                // No launch intent specified / found for this app. Default to ACTION_MAIN
+                launchIntent = new Intent(Intent.ACTION_MAIN);
+            }
+
+            return launchIntent;
+        } catch (Exception e) {
+            Log.e("Snapyr", "Could not get launch intent", e);
+            return null;
+        }
+    }
+
     public void showSampleNotification() {
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(this.context, this.defaultChannelId);
@@ -210,6 +230,38 @@ public class SnapyrNotificationHandler {
                 .setSubText("Snapyr: Subtext")
                 .setContentText("Snapyr: Content text")
                 .setAutoCancel(true);
+
+        Random r = new Random();
+
+        Intent baseIntent = getLaunchIntent();
+
+        if (baseIntent == null) {
+            Log.e("SnapyrPaul", "Base intent was null, can't continue.");
+            return;
+        }
+
+        //        Intent buttonIntent = new Intent(applicationContext, applicationContext.activ);
+        //        buttonIntent.putExtra(ACTION_ID_KEY, actionButton.getString(ACTION_ID_KEY));
+        //        buttonIntent.putExtra(NOTIF_DEEP_LINK_KEY, buttonDeepLinkUrl);
+        //        buttonIntent.putExtra(ACTION_TOKEN_KEY, buttonToken);
+        //        buttonIntent.putExtra(INTERACTION_KEY, INTERACTION_TYPE.ACTION_BUTTON_PRESS);
+        //        buttonIntent.putExtra("notificationId", 123);
+
+        // Clone base intent retrieved from package, above.
+        Intent buttonIntent = new Intent(baseIntent);
+
+        PendingIntent buttonAction =
+                PendingIntent.getActivity(applicationContext, r.nextInt(), buttonIntent, 0);
+        builder.addAction(R.drawable.ic_snapyr_logo_only, "1", buttonAction);
+
+        buttonIntent = new Intent(baseIntent);
+        buttonAction = PendingIntent.getActivity(applicationContext, r.nextInt(), buttonIntent, 0);
+        builder.addAction(
+                R.drawable.ic_snapyr_logo_only, "2Supercalifragilisticexpalidocious", buttonAction);
+
+        buttonIntent = new Intent(baseIntent);
+        buttonAction = PendingIntent.getActivity(applicationContext, r.nextInt(), buttonIntent, 0);
+        builder.addAction(R.drawable.ic_snapyr_logo_only, "a", buttonAction);
 
         builder.setContentIntent(this.getDeepLinkIntent("test%20builtin"));
         Notification notification = builder.build();

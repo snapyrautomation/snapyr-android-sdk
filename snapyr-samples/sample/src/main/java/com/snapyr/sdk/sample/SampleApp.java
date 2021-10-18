@@ -37,7 +37,8 @@ import io.github.inflationx.viewpump.ViewPump;
 public class SampleApp extends Application {
 
     // https://segment.com/segment-engineering/sources/android-test/settings/keys
-    private static final String ANALYTICS_WRITE_KEY = "HO63Z36e0Ufa8AAgbjDomDuKxFuUICqI";
+    //    private static final String ANALYTICS_WRITE_KEY = "HO63Z36e0Ufa8AAgbjDomDuKxFuUICqI";
+    private static final String ANALYTICS_WRITE_KEY = "AAJfSynhNipgCqmCQJBWqNSrl4BhSTXi";
 
     @Override
     public void onCreate() {
@@ -56,9 +57,10 @@ public class SampleApp extends Application {
         // Initialize a new instance of the Analytics client.
         Snapyr.Builder builder =
                 new Snapyr.Builder(this, ANALYTICS_WRITE_KEY)
-                        // .enableDevEnvironment()
+                        .enableDevEnvironment()
                         .experimentalNanosecondTimestamps()
                         .trackApplicationLifecycleEvents()
+                        .trackDeepLinks()
                         .defaultProjectSettings(
                                 new ValueMap()
                                         .putValue(
@@ -105,6 +107,7 @@ public class SampleApp extends Application {
                                     }
                                 })
                         .flushQueueSize(1)
+                        .enableSnapyrPushHandling()
                         .recordScreenViews();
 
         // Set the initialized instance as a globally accessible instance.

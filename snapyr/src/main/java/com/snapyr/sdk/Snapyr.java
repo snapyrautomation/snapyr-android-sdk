@@ -54,6 +54,7 @@ import com.snapyr.sdk.internal.NanoDate;
 import com.snapyr.sdk.internal.Private;
 import com.snapyr.sdk.internal.Utils;
 import com.snapyr.sdk.notifications.SnapyrNotificationHandler;
+import com.snapyr.sdk.notifications.SnapyrNotificationLifecycleCallbacks;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -124,7 +125,8 @@ public class Snapyr {
     final Cartographer cartographer;
     private final ProjectSettings.Cache projectSettingsCache;
     final Crypto crypto;
-    @Private final AnalyticsActivityLifecycleCallbacks activityLifecycleCallback;
+    @Private final SnapyrActivityLifecycleCallbacks activityLifecycleCallback;
+    @Private final SnapyrNotificationLifecycleCallbacks notificationLifecycleCallbacks;
     @Private final Lifecycle lifecycle;
     @Private final SnapyrActionHandler actionHandler;
     ProjectSettings projectSettings; // todo: make final (non-final for testing).
@@ -325,8 +327,8 @@ public class Snapyr {
         logger.debug("Created analytics client for project with tag:%s.", tag);
 
         activityLifecycleCallback =
-                new AnalyticsActivityLifecycleCallbacks.Builder()
-                        .analytics(this)
+                new SnapyrActivityLifecycleCallbacks.Builder()
+                        .snapyr(this)
                         .analyticsExecutor(analyticsExecutor)
                         .shouldTrackApplicationLifecycleEvents(
                                 shouldTrackApplicationLifecycleEvents)
@@ -353,9 +355,31 @@ public class Snapyr {
                     });
         }
 
+        notificationLifecycleCallbacks =
+                new SnapyrNotificationLifecycleCallbacks(
+                        this, this.logger, enableSnapyrPushHandling);
+        application.registerActivityLifecycleCallbacks(notificationLifecycleCallbacks);
+
         if (enableSnapyrPushHandling) {
             this.notificationHandler = new SnapyrNotificationHandler(application);
             notificationHandler.autoRegisterFirebaseToken(this);
+
+            // Add lifecycle callback observer so we can track user behavior on notifications
+            // (i.e. tapping a notification or tapping an action button on notification)
+
+            analyticsExecutor.submit(
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            HANDLER.post(
+                                    new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            lifecycle.addObserver(notificationLifecycleCallbacks);
+                                        }
+                                    });
+                        }
+                    });
         }
     }
 
@@ -586,12 +610,12 @@ public class Snapyr {
 
     public void pushNotificationReceived(final @Nullable Properties properties) {
         assertNotShutdown();
-        track("snapyr.feedback.push.received", properties);
+        track("snapyr.observation.event.Impression", properties);
     }
 
     public void pushNotificationClicked(final @Nullable Properties properties) {
         assertNotShutdown();
-        track("snapyr.feedback.Behavior", properties);
+        track("snapyr.observation.event.Behavior", properties);
     }
 
     /**
@@ -1027,6 +1051,7 @@ public class Snapyr {
             return;
         }
         application.unregisterActivityLifecycleCallbacks(activityLifecycleCallback);
+        application.unregisterActivityLifecycleCallbacks(notificationLifecycleCallbacks);
         if (useNewLifecycleMethods) {
             // only unregister if feature is enabled
             lifecycle.removeObserver(activityLifecycleCallback);
