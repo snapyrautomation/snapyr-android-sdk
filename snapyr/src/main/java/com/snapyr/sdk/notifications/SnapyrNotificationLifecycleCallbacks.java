@@ -119,4 +119,10 @@ public class SnapyrNotificationLifecycleCallbacks
 
     @Override
     public void onResume(@NonNull LifecycleOwner owner) {}
+
+    @Override
+    public void onPause(@NonNull LifecycleOwner owner) {}
+
+    @Override
+    public void onStop(@NonNull LifecycleOwner owner) {}
 }
