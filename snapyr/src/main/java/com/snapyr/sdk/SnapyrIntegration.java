@@ -540,6 +540,15 @@ class SnapyrIntegration extends Integration<Void> {
 
         public static final boolean DEBUG_MODE = false;
 
+        public static void largeLog(String tag, String content) {
+            if (content.length() > 4000) {
+                Log.e(tag, content.substring(0, 4000));
+                largeLog(tag, content.substring(4000));
+            } else {
+                Log.e(tag, content);
+            }
+        }
+
         private final JsonWriter jsonWriter;
         /** Keep around for writing payloads as Strings. */
         private final BufferedWriter bufferedWriter;
@@ -618,7 +627,7 @@ class SnapyrIntegration extends Integration<Void> {
         public void close() throws IOException {
             if (DEBUG_MODE) {
                 Log.e("Snapyr", "Payload sent to Snapyr engine:");
-                Log.e("Snapyr", debugString.toString());
+                largeLog("Snapyr", debugString.toString());
             }
             jsonWriter.close();
         }
