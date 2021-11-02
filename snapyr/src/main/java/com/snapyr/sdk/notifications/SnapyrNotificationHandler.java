@@ -142,6 +142,14 @@ public class SnapyrNotificationHandler {
         if (deepLinkUrl != null) {
             Intent baseIntent = getLaunchIntent();
 
+            try {
+                Uri uri = Uri.parse(deepLinkUrl);
+                baseIntent.setData(uri);
+                baseIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            } catch (Exception e) {
+                Log.e("Snapyr", "showRemoteNotification: exception setting URI", e);
+            }
+
             baseIntent.putExtra(ACTION_ID_KEY, data.get(ACTION_ID_KEY));
             baseIntent.putExtra(NOTIF_DEEP_LINK_KEY, deepLinkUrl);
             baseIntent.putExtra(NOTIF_TOKEN_KEY, data.get(NOTIF_TOKEN_KEY));
