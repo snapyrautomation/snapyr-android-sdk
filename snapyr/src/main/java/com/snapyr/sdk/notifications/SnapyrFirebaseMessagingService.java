@@ -23,9 +23,17 @@
  */
 package com.snapyr.sdk.notifications;
 
+import android.util.Log;
+
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.snapyr.sdk.Snapyr;
+import com.snapyr.sdk.ValueMap;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.Iterator;
 import java.util.Map;
 
 public class SnapyrFirebaseMessagingService extends FirebaseMessagingService {
@@ -47,14 +55,35 @@ public class SnapyrFirebaseMessagingService extends FirebaseMessagingService {
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
-        Map<String, String> data = remoteMessage.getData();
+        Map<String, String> rawData = remoteMessage.getData();
         // Log.e("Snapyr", "MESSAGE RECEIVED:");
         // Log.e("Snapyr", String.valueOf(remoteMessage));
+
+
+        String snapyrDataJson = rawData.get("snapyr");
+        JSONObject jsonData = null;
+        try {
+            jsonData = new JSONObject(snapyrDataJson);
+        } catch (JSONException e) {
+            Log.e("Snapyr", "onMessageReceived: No 'snapyr' data found on notification payload (not a Snapyr notification?); returning.");
+            return;
+        }
+
+        ValueMap data = new ValueMap();
+
+        for (Iterator<String> it = jsonData.keys(); it.hasNext(); ) {
+            String key = it.next();
+            String value = null;
+            try {
+                value = jsonData.getString(key);
+            } catch (JSONException ignored) { }
+            data.put(key, value);
+        }
 
         com.snapyr.sdk.Properties properties = new com.snapyr.sdk.Properties();
         properties.putAll(data);
         Snapyr.with(this).pushNotificationReceived(properties);
 
-        Snapyr.with(this).getNotificationHandler().showRemoteNotification(data);
+        Snapyr.with(this).getNotificationHandler().showRemoteNotification(data.toStringMap());
     }
 }
