@@ -106,8 +106,13 @@ public class SnapyrNotificationHandler {
         }
     }
 
-    public String getOrDefault(Map<String, String> data, String key, String defaultVal) {
-        String val = data.get(key);
+    public String getOrDefault(JSONObject data, String key, String defaultVal) {
+        String val = null;
+        try {
+            val = data.getString(key);
+        } catch (JSONException e) {
+            // not found or not a string, fall through to defaultVal
+        }
         if (val == null) {
             return defaultVal;
         }
@@ -119,10 +124,19 @@ public class SnapyrNotificationHandler {
         // Log.e("Snapyr", "showRemoteNotification payload:");
         // Log.e("Snapyr", String.valueOf(data));
 
-        String channelId = getOrDefault(data, NOTIF_CHANNEL_ID_KEY, defaultChannelId);
-        String channelName = getOrDefault(data, NOTIF_CHANNEL_NAME_KEY, defaultChannelName);
+        String snapyrDataJson = data.get("snapyr");
+        JSONObject snapyrData = null;
+        try {
+            snapyrData = new JSONObject(snapyrDataJson);
+        } catch (JSONException e) {
+            Log.e("Snapyr", "No 'snapyr' data found on notification payload (not a Snapyr notification?); returning.");
+            return;
+        }
+
+        String channelId = getOrDefault(snapyrData, NOTIF_CHANNEL_ID_KEY, defaultChannelId);
+        String channelName = getOrDefault(snapyrData, NOTIF_CHANNEL_NAME_KEY, defaultChannelName);
         String channelDescription =
-                getOrDefault(data, NOTIF_CHANNEL_DESCRIPTION_KEY, defaultChannelDescription);
+                getOrDefault(snapyrData, NOTIF_CHANNEL_DESCRIPTION_KEY, defaultChannelDescription);
         registerChannel(channelId, channelName, channelDescription, defaultChannelImportance);
 
         int notificationId = ++nextMessageId;
@@ -131,14 +145,14 @@ public class SnapyrNotificationHandler {
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(this.context, channelId);
         builder.setSmallIcon(R.drawable.ic_snapyr_logo_only)
-                .setContentTitle(data.get(NOTIF_TITLE_KEY))
-                .setContentText(data.get(NOTIF_CONTENT_KEY))
-                .setSubText(data.get(NOTIF_SUBTITLE_KEY))
+                .setContentTitle(getOrDefault(snapyrData, NOTIF_TITLE_KEY, null))
+                .setContentText(getOrDefault(snapyrData, NOTIF_CONTENT_KEY, null))
+                .setSubText(getOrDefault(snapyrData, NOTIF_SUBTITLE_KEY, null))
                 .setColor(Color.BLUE) // TODO (@paulwsmith): make configurable
                 .setAutoCancel(true); // true means notification auto dismissed after tapping. TODO
         // (@paulwsmith): make configurable?
 
-        String deepLinkUrl = data.get(NOTIF_DEEP_LINK_KEY);
+        String deepLinkUrl = getOrDefault(snapyrData, NOTIF_DEEP_LINK_KEY, null);
         if (deepLinkUrl != null) {
             Intent baseIntent = getLaunchIntent();
 
@@ -150,9 +164,9 @@ public class SnapyrNotificationHandler {
                 Log.e("Snapyr", "showRemoteNotification: exception setting URI", e);
             }
 
-            baseIntent.putExtra(ACTION_ID_KEY, data.get(ACTION_ID_KEY));
+            baseIntent.putExtra(ACTION_ID_KEY, getOrDefault(snapyrData, ACTION_ID_KEY, null));
             baseIntent.putExtra(NOTIF_DEEP_LINK_KEY, deepLinkUrl);
-            baseIntent.putExtra(NOTIF_TOKEN_KEY, data.get(NOTIF_TOKEN_KEY));
+            baseIntent.putExtra(NOTIF_TOKEN_KEY, getOrDefault(snapyrData, NOTIF_TOKEN_KEY, null));
             baseIntent.putExtra(INTERACTION_KEY, INTERACTION_TYPE.NOTIFICATION_PRESS);
             baseIntent.putExtra("notificationId", notificationId);
 
@@ -160,7 +174,7 @@ public class SnapyrNotificationHandler {
                     PendingIntent.getActivity(applicationContext, r.nextInt(), baseIntent, 0));
         }
 
-        String actionButtonsJson = data.get(ACTION_BUTTONS_KEY);
+        String actionButtonsJson = getOrDefault(snapyrData, ACTION_BUTTONS_KEY, null);
         if (actionButtonsJson != null) {
             JSONArray actionButtonsList;
             try {
@@ -195,7 +209,7 @@ public class SnapyrNotificationHandler {
         // Image handling - fetch from URL
         // TODO (@paulwsmith): move off-thread? (maybe not necessary; not part of main thread
         // anyway)
-        String imageUrl = data.get(NOTIF_IMAGE_URL_KEY);
+        String imageUrl = getOrDefault(snapyrData, NOTIF_IMAGE_URL_KEY, null);
         if (imageUrl != null) {
             InputStream inputStream = null;
             Bitmap image = null;
