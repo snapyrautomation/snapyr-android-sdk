@@ -37,14 +37,18 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.core.app.TaskStackBuilder;
+
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.snapyr.sdk.PushTemplate;
 import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.core.R;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import org.json.JSONArray;
@@ -73,8 +77,7 @@ public class SnapyrNotificationHandler {
     public static final String INTERACTION_KEY = "interactionType";
 
     public enum INTERACTION_TYPE {
-        NOTIFICATION_PRESS,
-        ACTION_BUTTON_PRESS
+        NOTIFICATION_PRESS
     }
 
     private final Context context;
@@ -106,19 +109,15 @@ public class SnapyrNotificationHandler {
         }
     }
 
-    public String getOrDefault(Map<String, String> data, String key, String defaultVal) {
-        String val = data.get(key);
+    public String getOrDefault(Map<String, Object> data, String key, String defaultVal) {
+        String val = (String) data.get(key);
         if (val == null) {
             return defaultVal;
         }
         return val;
     }
 
-    public void showRemoteNotification(Map<String, String> data) {
-        // TODO (@paulwsmith): remove following lines! :)
-        // Log.e("Snapyr", "showRemoteNotification payload:");
-        // Log.e("Snapyr", String.valueOf(data));
-
+    public void showRemoteNotification(Map<String, Object> data) {
         String channelId = getOrDefault(data, NOTIF_CHANNEL_ID_KEY, defaultChannelId);
         String channelName = getOrDefault(data, NOTIF_CHANNEL_NAME_KEY, defaultChannelName);
         String channelDescription =
@@ -131,14 +130,14 @@ public class SnapyrNotificationHandler {
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(this.context, channelId);
         builder.setSmallIcon(R.drawable.ic_snapyr_logo_only)
-                .setContentTitle(data.get(NOTIF_TITLE_KEY))
-                .setContentText(data.get(NOTIF_CONTENT_KEY))
-                .setSubText(data.get(NOTIF_SUBTITLE_KEY))
+                .setContentTitle((String)data.get(NOTIF_TITLE_KEY))
+                .setContentText((String)data.get(NOTIF_CONTENT_KEY))
+                .setSubText((String)data.get(NOTIF_SUBTITLE_KEY))
                 .setColor(Color.BLUE) // TODO (@paulwsmith): make configurable
                 .setAutoCancel(true); // true means notification auto dismissed after tapping. TODO
         // (@paulwsmith): make configurable?
 
-        String deepLinkUrl = data.get(NOTIF_DEEP_LINK_KEY);
+        String deepLinkUrl = (String)data.get(NOTIF_DEEP_LINK_KEY);
         if (deepLinkUrl != null) {
             Intent baseIntent = getLaunchIntent();
 
@@ -150,9 +149,9 @@ public class SnapyrNotificationHandler {
                 Log.e("Snapyr", "showRemoteNotification: exception setting URI", e);
             }
 
-            baseIntent.putExtra(ACTION_ID_KEY, data.get(ACTION_ID_KEY));
+            baseIntent.putExtra((String)ACTION_ID_KEY, (String)data.get(ACTION_ID_KEY));
             baseIntent.putExtra(NOTIF_DEEP_LINK_KEY, deepLinkUrl);
-            baseIntent.putExtra(NOTIF_TOKEN_KEY, data.get(NOTIF_TOKEN_KEY));
+            baseIntent.putExtra((String)NOTIF_TOKEN_KEY, (String)data.get(NOTIF_TOKEN_KEY));
             baseIntent.putExtra(INTERACTION_KEY, INTERACTION_TYPE.NOTIFICATION_PRESS);
             baseIntent.putExtra("notificationId", notificationId);
 
@@ -160,42 +159,34 @@ public class SnapyrNotificationHandler {
                     PendingIntent.getActivity(applicationContext, r.nextInt(), baseIntent, 0));
         }
 
-        String actionButtonsJson = data.get(ACTION_BUTTONS_KEY);
-        if (actionButtonsJson != null) {
-            JSONArray actionButtonsList;
-            try {
-                actionButtonsList = new JSONArray(actionButtonsJson);
-                for (int i = 0; i < actionButtonsList.length(); i++) {
-                    JSONObject actionButton = actionButtonsList.getJSONObject(i);
-                    String title = actionButton.getString(ACTION_TITLE_KEY);
-                    String buttonDeepLinkUrl = actionButton.getString(ACTION_DEEP_LINK_KEY);
-                    String buttonToken = actionButton.getString(ACTION_TOKEN_KEY);
-                    // Create intent to open service, which tracks interaction and then triggers
-                    // original intent
-                    Intent buttonIntent = getLaunchIntent();
+        PushTemplate pushTemplate = (PushTemplate) data.get(ACTION_BUTTONS_KEY);
+        if (pushTemplate != null) {
+            List<PushTemplate.ActionButton> buttons = pushTemplate.getButtons();
+            for (int i = 0; i < buttons.size(); i++) {
+                PushTemplate.ActionButton button = buttons.get(i);
+                // Create intent to open service, which tracks interaction and then triggers
+                // original intent
+                Intent buttonIntent = getLaunchIntent();
+                buttonIntent.setAction(button.actionId);
+                buttonIntent.putExtra(ACTION_ID_KEY, button.actionId);
+                buttonIntent.putExtra(NOTIF_DEEP_LINK_KEY, button.deeplinkURL);
+                buttonIntent.putExtra(INTERACTION_KEY, INTERACTION_TYPE.NOTIFICATION_PRESS);
+                buttonIntent.putExtra("notificationId", notificationId);
 
-                    buttonIntent.putExtra(ACTION_ID_KEY, actionButton.getString(ACTION_ID_KEY));
-                    buttonIntent.putExtra(NOTIF_DEEP_LINK_KEY, buttonDeepLinkUrl);
-                    buttonIntent.putExtra(ACTION_TOKEN_KEY, buttonToken);
-                    buttonIntent.putExtra(INTERACTION_KEY, INTERACTION_TYPE.ACTION_BUTTON_PRESS);
-                    buttonIntent.putExtra("notificationId", notificationId);
+                buttonIntent.setData(button.deeplinkURL);
+                buttonIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
-                    PendingIntent buttonAction =
-                            PendingIntent.getActivity(
-                                    applicationContext, r.nextInt(), buttonIntent, 0);
-
-                    builder.addAction(R.drawable.ic_snapyr_logo_only, title, buttonAction);
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-                return;
+                PendingIntent buttonAction =
+                        PendingIntent.getActivity(
+                                applicationContext, 0, buttonIntent, 0);
+                builder.addAction(R.drawable.ic_snapyr_logo_only, button.title, buttonAction);
             }
         }
 
         // Image handling - fetch from URL
         // TODO (@paulwsmith): move off-thread? (maybe not necessary; not part of main thread
         // anyway)
-        String imageUrl = data.get(NOTIF_IMAGE_URL_KEY);
+        String imageUrl = (String)data.get(NOTIF_IMAGE_URL_KEY);
         if (imageUrl != null) {
             InputStream inputStream = null;
             Bitmap image = null;
@@ -240,7 +231,6 @@ public class SnapyrNotificationHandler {
                 .setAutoCancel(true);
 
         Random r = new Random();
-
         Intent baseIntent = getLaunchIntent();
 
         if (baseIntent == null) {

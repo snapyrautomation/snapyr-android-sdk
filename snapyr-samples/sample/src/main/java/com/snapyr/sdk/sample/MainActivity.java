@@ -94,7 +94,7 @@ public class MainActivity extends Activity {
     }
 
     @OnClick(R.id.action_show_notification)
-    void onShowNotifClicked() {
+    void onShowNotifyClicked() {
         Snapyr.with(this).getNotificationHandler().showSampleNotification();
     }
 

@@ -35,11 +35,13 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.ProcessLifecycleOwner;
 import com.snapyr.sdk.integrations.AliasPayload;
@@ -139,6 +141,7 @@ public class Snapyr {
     private final CountDownLatch advertisingIdLatch;
     private final ExecutorService analyticsExecutor;
     private final BooleanPreference optOut;
+    private Map<String, PushTemplate> PushTemplates;
 
     final Map<String, Boolean> bundledIntegrations = new ConcurrentHashMap<>();
     private List<Integration.Factory> factories;
@@ -265,14 +268,16 @@ public class Snapyr {
         this.nanosecondTimestamps = nanosecondTimestamps;
         this.useNewLifecycleMethods = useNewLifecycleMethods;
         this.actionHandler = actionHandler;
+        this.PushTemplates = null;
 
         namespaceSharedPreferences();
 
         analyticsExecutor.submit(
                 new Runnable() {
+                    @RequiresApi(api = Build.VERSION_CODES.O)
                     @Override
                     public void run() {
-                        projectSettings = getSettings();
+                        RefreshConfiguration(false);
                         if (isNullOrEmpty(projectSettings)) {
                             // Backup mode - Enable the Snapyr integration and load the provided
                             // defaultProjectSettings
@@ -308,8 +313,6 @@ public class Snapyr {
                             }
                             projectSettings = ProjectSettings.create(defaultProjectSettings);
                         }
-                        snapyrContext.putSdkMeta(projectSettings.getValueMap("metadata"));
-
                         if (edgeFunctionMiddleware != null) {
                             edgeFunctionMiddleware.setEdgeFunctionData(
                                     projectSettings.edgeFunctions());
@@ -383,9 +386,21 @@ public class Snapyr {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    public void RefreshConfiguration(boolean force) {
+        ProjectSettings newSettings = getSettings(force);
+        if (!isNullOrEmpty(newSettings)){
+            this.projectSettings = newSettings;
+            ValueMap metadata = projectSettings.getValueMap("metadata");
+            snapyrContext.putSdkMeta(metadata);
+            this.PushTemplates = PushTemplate.ParseTemplate(metadata);
+        }
+    }
+
     public SnapyrNotificationHandler getNotificationHandler() {
         return notificationHandler;
     }
+    public Map<String, PushTemplate> getPushTemplates() { return this.PushTemplates; }
 
     @Private
     void trackApplicationLifecycleEvents() {
@@ -1679,9 +1694,9 @@ public class Snapyr {
      * settings.
      */
     @Private
-    ProjectSettings getSettings() {
+    ProjectSettings getSettings(boolean force) {
         ProjectSettings cachedSettings = projectSettingsCache.get();
-        if (isNullOrEmpty(cachedSettings)) {
+        if (isNullOrEmpty(cachedSettings) || force) {
             return downloadSettings();
         }
 

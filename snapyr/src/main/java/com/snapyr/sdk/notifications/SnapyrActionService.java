@@ -67,11 +67,6 @@ public class SnapyrActionService extends Service {
                 props.putValue(SnapyrNotificationHandler.NOTIF_TOKEN_KEY, token)
                         .putValue("interactionType", "notificationPressed");
                 break;
-            case ACTION_BUTTON_PRESS:
-                token = intent.getStringExtra(SnapyrNotificationHandler.ACTION_TOKEN_KEY);
-                props.putValue(SnapyrNotificationHandler.ACTION_TOKEN_KEY, token)
-                        .putValue("interactionType", "actionButtonPressed");
-                break;
         }
 
         // if autocancel = true....
