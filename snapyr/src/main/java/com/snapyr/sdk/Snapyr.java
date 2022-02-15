@@ -30,6 +30,8 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
@@ -42,8 +44,10 @@ import android.os.Message;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.ProcessLifecycleOwner;
+
 import com.snapyr.sdk.integrations.AliasPayload;
 import com.snapyr.sdk.integrations.BasePayload;
 import com.snapyr.sdk.integrations.GroupPayload;
@@ -55,6 +59,7 @@ import com.snapyr.sdk.integrations.TrackPayload;
 import com.snapyr.sdk.internal.NanoDate;
 import com.snapyr.sdk.internal.Private;
 import com.snapyr.sdk.internal.Utils;
+import com.snapyr.sdk.notifications.SnapyrNotificationListener;
 import com.snapyr.sdk.notifications.SnapyrNotificationHandler;
 import com.snapyr.sdk.notifications.SnapyrNotificationLifecycleCallbacks;
 import java.util.ArrayList;
@@ -113,6 +118,7 @@ public class Snapyr {
 
     private final Application application;
     private SnapyrNotificationHandler notificationHandler;
+    private SnapyrNotificationListener activityHandler;
     final ExecutorService networkExecutor;
     final Stats stats;
     private final @NonNull List<Middleware> sourceMiddleware;
@@ -192,6 +198,7 @@ public class Snapyr {
                     singleton = builder.build();
                 }
             }
+
         }
         return singleton;
     }
@@ -365,7 +372,15 @@ public class Snapyr {
 
         if (enableSnapyrPushHandling) {
             this.notificationHandler = new SnapyrNotificationHandler(application);
+            this.activityHandler = new SnapyrNotificationListener();
             notificationHandler.autoRegisterFirebaseToken(this);
+
+
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(getBroadcastTag(application));
+            //filter.addAction("snooze");
+            application.registerReceiver(activityHandler, filter);
+
 
             // Add lifecycle callback observer so we can track user behavior on notifications
             // (i.e. tapping a notification or tapping an action button on notification)
@@ -445,6 +460,10 @@ public class Snapyr {
         } catch (PackageManager.NameNotFoundException e) {
             throw new AssertionError("Package not found: " + context.getPackageName());
         }
+    }
+
+    public static String getBroadcastTag(Context context) {
+        return getPackageInfo(context).packageName + ".TRACK_BROADCAST";
     }
 
     @Private
@@ -1796,5 +1815,41 @@ public class Snapyr {
             Utils.copySharedPreferences(legacySharedPreferences, newSharedPreferences);
             namespaceSharedPreferences.set(false);
         }
+    }
+
+    public void trackNotificationInteraction(Intent intent) {
+        Context applicationContext = this.getApplication().getApplicationContext();
+
+        String deepLinkUrl = intent.getStringExtra(SnapyrNotificationHandler.NOTIF_DEEP_LINK_KEY);
+        String actionId = intent.getStringExtra(SnapyrNotificationHandler.ACTION_ID_KEY);
+        int notificationId = intent.getIntExtra("notificationId", 0);
+
+        SnapyrNotificationHandler.INTERACTION_TYPE interactionType =
+                (SnapyrNotificationHandler.INTERACTION_TYPE)
+                        intent.getSerializableExtra(SnapyrNotificationHandler.INTERACTION_KEY);
+        String token;
+
+        Properties props =
+                new Properties()
+                        .putValue("deepLinkUrl", deepLinkUrl)
+                        .putValue("actionId", actionId);
+
+        if (interactionType != null) {
+            switch (interactionType) {
+                case NOTIFICATION_PRESS:
+                    token = intent.getStringExtra(SnapyrNotificationHandler.NOTIF_TOKEN_KEY);
+                    props.putValue(SnapyrNotificationHandler.NOTIF_TOKEN_KEY, token)
+                            .putValue("interactionType", "notificationPressed");
+                    break;
+            }
+        }
+
+        // if autocancel = true....
+        // Dismiss source notification
+        NotificationManagerCompat.from(applicationContext).cancel(notificationId);
+        // Close notification drawer (so newly opened activity isn't behind anything)
+        applicationContext.sendBroadcast(new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
+
+        this.pushNotificationClicked(props);
     }
 }
