@@ -23,6 +23,8 @@
  */
 package com.snapyr.sdk.notifications;
 
+import android.app.Application;
+import android.content.IntentFilter;
 import android.os.Build;
 import android.util.Log;
 
@@ -52,9 +54,15 @@ import java.util.Map;
 
 
 public class SnapyrFirebaseMessagingService extends FirebaseMessagingService {
+    private SnapyrNotificationListener activityHandler;
 
     public SnapyrFirebaseMessagingService() {
         super();
+    }
+
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
     }
 
     @Override
@@ -92,6 +100,8 @@ public class SnapyrFirebaseMessagingService extends FirebaseMessagingService {
             } catch (JSONException ignored) { }
             data.put(key, value);
         }
+
+        Snapyr snapyr = Snapyr.with(this);
 
         PushTemplate template = processPushTemplate(data);
         if (template != null){

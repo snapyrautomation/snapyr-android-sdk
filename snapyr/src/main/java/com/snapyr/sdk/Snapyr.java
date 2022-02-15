@@ -118,7 +118,6 @@ public class Snapyr {
 
     private final Application application;
     private SnapyrNotificationHandler notificationHandler;
-    private SnapyrNotificationListener activityHandler;
     final ExecutorService networkExecutor;
     final Stats stats;
     private final @NonNull List<Middleware> sourceMiddleware;
@@ -154,6 +153,7 @@ public class Snapyr {
     // todo: use lightweight map implementation.
     private Map<String, Integration<?>> integrations;
     volatile boolean shutdown;
+    public static String PACKAGE_NAME;
 
     @Private final boolean nanosecondTimestamps;
     @Private final boolean useNewLifecycleMethods;
@@ -173,6 +173,7 @@ public class Snapyr {
      */
     public static Snapyr with(Context context) {
         if (singleton == null) {
+            singleton.PACKAGE_NAME = context.getApplicationContext().getPackageName();
             if (context == null) {
                 throw new IllegalArgumentException("Context must not be null.");
             }
@@ -214,6 +215,7 @@ public class Snapyr {
                 throw new IllegalStateException("Singleton instance already exists.");
             }
             singleton = analytics;
+            singleton.PACKAGE_NAME = analytics.getApplication().getApplicationContext().getPackageName();
         }
     }
 
@@ -372,14 +374,9 @@ public class Snapyr {
 
         if (enableSnapyrPushHandling) {
             this.notificationHandler = new SnapyrNotificationHandler(application);
-            this.activityHandler = new SnapyrNotificationListener();
             notificationHandler.autoRegisterFirebaseToken(this);
 
 
-            IntentFilter filter = new IntentFilter();
-            filter.addAction(getBroadcastTag(application));
-            //filter.addAction("snooze");
-            application.registerReceiver(activityHandler, filter);
 
 
             // Add lifecycle callback observer so we can track user behavior on notifications
@@ -1848,7 +1845,7 @@ public class Snapyr {
         // Dismiss source notification
         NotificationManagerCompat.from(applicationContext).cancel(notificationId);
         // Close notification drawer (so newly opened activity isn't behind anything)
-        applicationContext.sendBroadcast(new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
+        //applicationContext.sendBroadcast(new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
 
         this.pushNotificationClicked(props);
     }

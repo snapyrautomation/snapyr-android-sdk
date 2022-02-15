@@ -27,5 +27,8 @@
     package="com.snapyr.sdk.core">
   <!-- Required for internet. -->
   <uses-permission android:name="android.permission.INTERNET"/>
-  <application/>
+  <application>
+      <receiver android:name="com.snapyr.sdk.notifications.SnapyrNotificationListener" />
+      <activity android:name="com.snapyr.sdk.notifications.SnapyrNotificationListener" />
+  </application>
 </manifest>

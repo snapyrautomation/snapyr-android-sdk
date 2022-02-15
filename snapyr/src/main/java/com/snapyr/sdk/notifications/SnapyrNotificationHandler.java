@@ -37,6 +37,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
@@ -46,6 +47,7 @@ import androidx.core.app.NotificationManagerCompat;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.RemoteMessage;
 import com.snapyr.sdk.ActionButton;
 import com.snapyr.sdk.PushTemplate;
 import com.snapyr.sdk.Snapyr;
@@ -197,16 +199,14 @@ public class SnapyrNotificationHandler {
             String packageName = applicationContext.getPackageName();
             PackageManager packageManager = applicationContext.getPackageManager();
             Intent launchIntent = packageManager.getLaunchIntentForPackage(packageName);
-
             if (launchIntent == null) {
                 // No launch intent specified / found for this app. Default to ACTION_MAIN
                 launchIntent = new Intent(Intent.ACTION_MAIN);
             }
-
             return launchIntent;
         } catch (Exception e) {
             Log.e("Snapyr", "Could not get launch intent", e);
-            return null;
+            return new Intent(Intent.ACTION_MAIN);
         }
     }
 
@@ -214,15 +214,17 @@ public class SnapyrNotificationHandler {
                                     int notificationId, ActionButton template,
                                     INTERACTION_TYPE interaction,
                                     String actionToken){
-        Intent trackIntent = new Intent();
+        Intent trackIntent = new Intent(this.context, SnapyrNotificationListener.class);
         trackIntent.putExtra(ACTION_ID_KEY, template.actionId);
         trackIntent.putExtra(ACTION_DEEP_LINK_KEY, template.deeplinkURL);
         trackIntent.putExtra(INTERACTION_KEY, interaction);
         trackIntent.putExtra(NOTIFICATION_ID, notificationId);
         trackIntent.putExtra(NOTIF_TOKEN_KEY, actionToken);
+        trackIntent.setPackage(Snapyr.PACKAGE_NAME);
 
-        trackIntent.setAction(getBroadcastTag(this.context));
-        PendingIntent pendingIntent =  PendingIntent.getBroadcast(this.context, 0, trackIntent, 0);
+        trackIntent.setAction("com.snapyr.sdk.notifications.TRACK_BROADCAST");
+        PendingIntent pendingIntent =  PendingIntent.getBroadcast(this.context, new Random().nextInt(), trackIntent, 0);
+        //PendingIntent pendingIntent = PendingIntent.getActivity(this.context, 0, trackIntent, 0);
         builder.addAction(R.drawable.ic_snapyr_logo_only, template.title, pendingIntent);
     }
 
@@ -249,8 +251,6 @@ public class SnapyrNotificationHandler {
         Notification notification = builder.build();
         notificationMgr.notify(nextMessageId++, notification);
     }
-
-    SnapyrNotificationListener listener = new SnapyrNotificationListener();
 
     public PendingIntent getDeepLinkIntent(String extra) {
         Intent deepLinkIntent =

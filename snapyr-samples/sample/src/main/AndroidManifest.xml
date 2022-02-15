@@ -37,6 +37,12 @@
   <!-- Allows location to be tracked. -->
   <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+  <uses-permission android:name="owner.custom.permission" />
+
+  <permission
+      android:name="owner.custom.permission"
+      android:protectionLevel="signatureOrSystem">
+  </permission>
 
   <application
       android:allowBackup="true"
@@ -48,7 +54,8 @@
     <activity
         android:name=".MainActivity"
         android:label="@string/app_name"
-        android:windowSoftInputMode="stateHidden">
+        android:windowSoftInputMode="stateHidden"
+        android:exported="true" >
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
         <action android:name="android.intent.action.VIEW"/>
@@ -57,6 +64,13 @@
         <data android:scheme="snapyrsample" android:host="test" />
       </intent-filter>
     </activity>
+
+    <receiver android:name="com.snapyr.sdk.notifications.SnapyrNotificationListener"  android:exported="true">
+      <intent-filter>
+        <action android:name="com.snapyr.sdk.notifications.TRACK_BROADCAST"/>
+      </intent-filter>
+    </receiver>
+
     <service android:name="com.snapyr.sdk.notifications.SnapyrFirebaseMessagingService" android:exported="false">
       <intent-filter>
         <action android:name="com.google.firebase.MESSAGING_EVENT" />
