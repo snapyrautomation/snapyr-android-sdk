@@ -36,14 +36,17 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.snapyr.sdk.ActionButton;
 import com.snapyr.sdk.PushTemplate;
 import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.core.R;
@@ -117,6 +120,7 @@ public class SnapyrNotificationHandler {
         return val;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     public void showRemoteNotification(Map<String, Object> data) {
         String channelId = getOrDefault(data, NOTIF_CHANNEL_ID_KEY, defaultChannelId);
         String channelName = getOrDefault(data, NOTIF_CHANNEL_NAME_KEY, defaultChannelName);
@@ -161,13 +165,11 @@ public class SnapyrNotificationHandler {
 
         PushTemplate pushTemplate = (PushTemplate) data.get(ACTION_BUTTONS_KEY);
         if (pushTemplate != null) {
-            List<PushTemplate.ActionButton> buttons = pushTemplate.getButtons();
-            for (int i = 0; i < buttons.size(); i++) {
-                PushTemplate.ActionButton button = buttons.get(i);
-
-                createActionButton(builder, notificationId, button.title, button.actionId,
-                        button.deeplinkURL, INTERACTION_TYPE.NOTIFICATION_PRESS);
-            }
+            String token = (String) data.get(NOTIF_TOKEN_KEY);
+            pushTemplate.getButtons().forEach((button)->{
+                createActionButton(builder,notificationId, button,
+                        INTERACTION_TYPE.NOTIFICATION_PRESS, token);
+            });
         }
 
         // Image handling - fetch from URL
@@ -208,20 +210,20 @@ public class SnapyrNotificationHandler {
         }
     }
 
-
-
     private void createActionButton(NotificationCompat.Builder builder,
-                                    int notificationId, String buttonText, String actionId,
-                                             Uri deeplink, INTERACTION_TYPE interaction){
+                                    int notificationId, ActionButton template,
+                                    INTERACTION_TYPE interaction,
+                                    String actionToken){
         Intent trackIntent = new Intent();
-        trackIntent.putExtra(ACTION_ID_KEY, actionId);
-        trackIntent.putExtra(ACTION_DEEP_LINK_KEY, deeplink);
+        trackIntent.putExtra(ACTION_ID_KEY, template.actionId);
+        trackIntent.putExtra(ACTION_DEEP_LINK_KEY, template.deeplinkURL);
         trackIntent.putExtra(INTERACTION_KEY, interaction);
         trackIntent.putExtra(NOTIFICATION_ID, notificationId);
+        trackIntent.putExtra(NOTIF_TOKEN_KEY, actionToken);
 
         trackIntent.setAction(getBroadcastTag(this.context));
         PendingIntent pendingIntent =  PendingIntent.getBroadcast(this.context, 0, trackIntent, 0);
-        builder.addAction(R.drawable.ic_snapyr_logo_only, buttonText, pendingIntent);
+        builder.addAction(R.drawable.ic_snapyr_logo_only, template.title, pendingIntent);
     }
 
     public void showSampleNotification() {
@@ -233,10 +235,15 @@ public class SnapyrNotificationHandler {
                 .setContentText("Snapyr: Content text")
                 .setAutoCancel(true);
         int notificationId = ++nextMessageId;
-        createActionButton(builder, notificationId, "button_one", "button_one",
-                Uri.parse("some_url"), INTERACTION_TYPE.NOTIFICATION_PRESS);
-        createActionButton(builder, notificationId, "button_two", "button_two",
-                Uri.parse("other_url"), INTERACTION_TYPE.NOTIFICATION_PRESS);
+
+        createActionButton(builder, notificationId,
+                new ActionButton("button_one", "button_one", "button_one", ""),
+                INTERACTION_TYPE.NOTIFICATION_PRESS, "");
+
+        createActionButton(builder, notificationId,
+                new ActionButton("button_two", "button_two", "button_two", ""),
+                INTERACTION_TYPE.NOTIFICATION_PRESS, "");
+
 
         builder.setContentIntent(this.getDeepLinkIntent("test%20builtin"));
         Notification notification = builder.build();
