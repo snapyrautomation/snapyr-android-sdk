@@ -216,7 +216,7 @@ public class SnapyrNotificationHandler {
                                     String actionToken){
         Intent trackIntent = new Intent(this.context, SnapyrNotificationListener.class);
         trackIntent.putExtra(ACTION_ID_KEY, template.actionId);
-        trackIntent.putExtra(ACTION_DEEP_LINK_KEY, template.deeplinkURL);
+        trackIntent.putExtra(ACTION_DEEP_LINK_KEY, template.deeplinkURL.toString());
         trackIntent.putExtra(INTERACTION_KEY, interaction);
         trackIntent.putExtra(NOTIFICATION_ID, notificationId);
         trackIntent.putExtra(NOTIF_TOKEN_KEY, actionToken);
@@ -239,7 +239,7 @@ public class SnapyrNotificationHandler {
         int notificationId = ++nextMessageId;
 
         createActionButton(builder, notificationId,
-                new ActionButton("button_one", "button_one", "button_one", ""),
+                new ActionButton("button_one", "button_one", "button_one", "snapyrsample://test"),
                 INTERACTION_TYPE.NOTIFICATION_PRESS, "");
 
         createActionButton(builder, notificationId,

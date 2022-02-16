@@ -31,6 +31,7 @@ import android.net.Uri;
 import androidx.core.app.NotificationManagerCompat;
 
 import com.snapyr.sdk.Snapyr;
+import com.snapyr.sdk.internal.Utils;
 
 
 /**
@@ -60,7 +61,7 @@ public class SnapyrNotificationListener extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         String actionId =  intent.getStringExtra(SnapyrNotificationHandler.ACTION_ID_KEY);
-        Uri deepLink =  (Uri) intent.getExtras().get(SnapyrNotificationHandler.ACTION_DEEP_LINK_KEY);
+        String deepLink =   intent.getStringExtra(SnapyrNotificationHandler.ACTION_DEEP_LINK_KEY);
         int notificationId =  intent.getIntExtra(SnapyrNotificationHandler.NOTIFICATION_ID, -1);
         SnapyrNotificationHandler.INTERACTION_TYPE interaction =
                 (SnapyrNotificationHandler.INTERACTION_TYPE)intent
@@ -74,11 +75,11 @@ public class SnapyrNotificationListener extends BroadcastReceiver {
         // Close notification drawer (so newly opened activity isn't behind anything)
         context.getApplicationContext().sendBroadcast(new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
 
-        if (deepLink != null && deepLink.toString() != ""){
+        if (!Utils.isNullOrEmpty(deepLink)){
             Intent deepLinkIntent = new Intent();
             deepLinkIntent.setAction("android.intent.action.MAIN");
             deepLinkIntent.addCategory("android.intent.category.LAUNCHER");
-            deepLinkIntent.setData(Uri.parse("snapyrsample://test"));
+            deepLinkIntent.setData(Uri.parse(deepLink));
             deepLinkIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
             context.startActivity(deepLinkIntent);
