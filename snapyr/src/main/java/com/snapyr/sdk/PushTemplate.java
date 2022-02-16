@@ -1,6 +1,6 @@
 package com.snapyr.sdk;
 
-/*
+/* Example payload:
      "pushTemplates": [
             {
                 "id": "d3cd39ac-6917-4bce-a16f-448d579be9b4",
@@ -39,6 +39,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * PushTemplate
+ * Defines a push template from the control plane. Handles parsing of the template from the
+ * json blob recieved during the sdk configuration update.
+ */
 public class PushTemplate {
     String id;
     Date modified;

@@ -23,9 +23,7 @@
  */
 package com.snapyr.sdk.notifications;
 
-import static com.snapyr.sdk.Snapyr.getBroadcastTag;
 
-import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.PendingIntent;
@@ -37,8 +35,8 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Bundle;
 import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
@@ -47,15 +45,14 @@ import androidx.core.app.NotificationManagerCompat;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.messaging.RemoteMessage;
 import com.snapyr.sdk.ActionButton;
 import com.snapyr.sdk.PushTemplate;
 import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.core.R;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -256,10 +253,6 @@ public class SnapyrNotificationHandler {
         Intent deepLinkIntent =
                 new Intent(Intent.ACTION_MAIN, Uri.parse("snapyrsample://test/Alice/" + extra));
         return PendingIntent.getActivity(applicationContext, 0, deepLinkIntent, 0);
-    }
-
-    private class NotificationHandler extends Activity{
-
     }
 
     public void autoRegisterFirebaseToken(Snapyr snapyrInstance) {

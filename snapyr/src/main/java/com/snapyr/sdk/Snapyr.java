@@ -459,10 +459,6 @@ public class Snapyr {
         }
     }
 
-    public static String getBroadcastTag(Context context) {
-        return getPackageInfo(context).packageName + ".TRACK_BROADCAST";
-    }
-
     @Private
     void recordScreenViews(Activity activity) {
         PackageManager packageManager = activity.getPackageManager();
@@ -1845,6 +1841,8 @@ public class Snapyr {
         // Dismiss source notification
         NotificationManagerCompat.from(applicationContext).cancel(notificationId);
         // Close notification drawer (so newly opened activity isn't behind anything)
+        // NOTE (BS): I don't think we need this anymore & it was causing permission errors b/c it
+        // can be called from other activities. I'll leave it commented out for now
         //applicationContext.sendBroadcast(new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
 
         this.pushNotificationClicked(props);

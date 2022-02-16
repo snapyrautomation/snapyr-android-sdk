@@ -23,8 +23,6 @@
  */
 package com.snapyr.sdk.notifications;
 
-import android.app.Application;
-import android.content.IntentFilter;
 import android.os.Build;
 import android.util.Log;
 
@@ -35,16 +33,12 @@ import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.snapyr.sdk.PushTemplate;
 import com.snapyr.sdk.Snapyr;
-import com.snapyr.sdk.SnapyrContext;
 import com.snapyr.sdk.ValueMap;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.Date;
@@ -58,11 +52,6 @@ public class SnapyrFirebaseMessagingService extends FirebaseMessagingService {
 
     public SnapyrFirebaseMessagingService() {
         super();
-    }
-
-    @Override
-    public void onDestroy(){
-        super.onDestroy();
     }
 
     @Override
