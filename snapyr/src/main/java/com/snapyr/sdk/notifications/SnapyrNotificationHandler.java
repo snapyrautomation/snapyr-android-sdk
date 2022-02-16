@@ -29,6 +29,8 @@ import android.app.NotificationChannel;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -49,10 +51,12 @@ import com.snapyr.sdk.ActionButton;
 import com.snapyr.sdk.PushTemplate;
 import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.core.R;
+import com.snapyr.sdk.internal.Utils;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -71,16 +75,11 @@ public class SnapyrNotificationHandler {
 
     public static final String ACTION_BUTTONS_KEY = "actionButtons";
     public static final String ACTION_ID_KEY = "actionId";
-    public static final String ACTION_TITLE_KEY = "title";
     public static final String ACTION_DEEP_LINK_KEY = "deepLinkUrl";
-    public static final String ACTION_TOKEN_KEY = "behaviorToken";
 
     public static final String INTERACTION_KEY = "interactionType";
     public static final String NOTIFICATION_ID = "notification_id";
-
-    public enum INTERACTION_TYPE {
-        NOTIFICATION_PRESS
-    }
+    public static final String DEEPLINK_ACTION = "com.snapyr.sdk.notifications.ACTION_DEEPLINK";
 
     private final Context context;
     private final Context applicationContext;
@@ -101,6 +100,7 @@ public class SnapyrNotificationHandler {
                 defaultChannelName,
                 defaultChannelDescription,
                 defaultChannelImportance);
+        getLaunchIntent();
     }
 
     public void registerChannel(String channelId, String name, String description, int importance) {
@@ -140,34 +140,28 @@ public class SnapyrNotificationHandler {
                 .setAutoCancel(true); // true means notification auto dismissed after tapping. TODO
         // (@paulwsmith): make configurable?
 
+        Intent baseIntent = null;
         String deepLinkUrl = (String)data.get(NOTIF_DEEP_LINK_KEY);
-        if (deepLinkUrl != null) {
-            Intent baseIntent = getLaunchIntent();
-
-            try {
-                Uri uri = Uri.parse(deepLinkUrl);
-                baseIntent.setData(uri);
-                baseIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            } catch (Exception e) {
-                Log.e("Snapyr", "showRemoteNotification: exception setting URI", e);
-            }
-
-            baseIntent.putExtra((String)ACTION_ID_KEY, (String)data.get(ACTION_ID_KEY));
+        if (!Utils.isNullOrEmpty(deepLinkUrl)) {
+            baseIntent = new Intent(DEEPLINK_ACTION);
+            baseIntent.setData(Uri.parse(deepLinkUrl));
+            baseIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             baseIntent.putExtra(NOTIF_DEEP_LINK_KEY, deepLinkUrl);
-            baseIntent.putExtra((String)NOTIF_TOKEN_KEY, (String)data.get(NOTIF_TOKEN_KEY));
-            baseIntent.putExtra(INTERACTION_KEY, INTERACTION_TYPE.NOTIFICATION_PRESS);
-            baseIntent.putExtra("notificationId", notificationId);
-
-            builder.setContentIntent(
-                    PendingIntent.getActivity(applicationContext, r.nextInt(), baseIntent, 0));
+        } else {
+            baseIntent = getLaunchIntent();
         }
+
+        baseIntent.putExtra(ACTION_ID_KEY, (String)data.get(ACTION_ID_KEY));
+        baseIntent.putExtra(NOTIF_TOKEN_KEY, (String)data.get(NOTIF_TOKEN_KEY));
+        baseIntent.putExtra("notificationId", notificationId);
+        builder.setContentIntent(
+                PendingIntent.getActivity(applicationContext, r.nextInt(), baseIntent, 0));
 
         PushTemplate pushTemplate = (PushTemplate) data.get(ACTION_BUTTONS_KEY);
         if (pushTemplate != null) {
             String token = (String) data.get(NOTIF_TOKEN_KEY);
             pushTemplate.getButtons().forEach((button)->{
-                createActionButton(builder,notificationId, button,
-                        INTERACTION_TYPE.NOTIFICATION_PRESS, token);
+                createActionButton(builder,notificationId, button, token);
             });
         }
 
@@ -193,12 +187,13 @@ public class SnapyrNotificationHandler {
 
     private Intent getLaunchIntent() {
         try {
-            String packageName = applicationContext.getPackageName();
-            PackageManager packageManager = applicationContext.getPackageManager();
-            Intent launchIntent = packageManager.getLaunchIntentForPackage(packageName);
+            PackageManager pm = applicationContext.getPackageManager();
+            Intent launchIntent = pm.getLaunchIntentForPackage(applicationContext.getPackageName());
             if (launchIntent == null) {
                 // No launch intent specified / found for this app. Default to ACTION_MAIN
                 launchIntent = new Intent(Intent.ACTION_MAIN);
+                launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                launchIntent.setPackage(applicationContext.getPackageName());
             }
             return launchIntent;
         } catch (Exception e) {
@@ -209,12 +204,10 @@ public class SnapyrNotificationHandler {
 
     private void createActionButton(NotificationCompat.Builder builder,
                                     int notificationId, ActionButton template,
-                                    INTERACTION_TYPE interaction,
                                     String actionToken){
         Intent trackIntent = new Intent(this.context, SnapyrNotificationListener.class);
-        trackIntent.putExtra(ACTION_ID_KEY, template.actionId);
+        trackIntent.putExtra(ACTION_ID_KEY, template.id);
         trackIntent.putExtra(ACTION_DEEP_LINK_KEY, template.deeplinkURL.toString());
-        trackIntent.putExtra(INTERACTION_KEY, interaction);
         trackIntent.putExtra(NOTIFICATION_ID, notificationId);
         trackIntent.putExtra(NOTIF_TOKEN_KEY, actionToken);
         trackIntent.setPackage(Snapyr.PACKAGE_NAME);
@@ -235,24 +228,19 @@ public class SnapyrNotificationHandler {
                 .setAutoCancel(true);
         int notificationId = ++nextMessageId;
 
-        createActionButton(builder, notificationId,
-                new ActionButton("button_one", "button_one", "button_one", "snapyrsample://test"),
-                INTERACTION_TYPE.NOTIFICATION_PRESS, "");
+        getLaunchIntent();
 
         createActionButton(builder, notificationId,
-                new ActionButton("button_two", "button_two", "button_two", ""),
-                INTERACTION_TYPE.NOTIFICATION_PRESS, "");
+                new ActionButton("button_one", "button_one", "button_one",
+                        "snapyrsample://test"),"");
 
+        createActionButton(builder, notificationId,
+                new ActionButton("button_two", "button_two", "button_two",
+                        ""), "");
 
-        builder.setContentIntent(this.getDeepLinkIntent("test%20builtin"));
+        builder.setContentIntent(PendingIntent.getActivity(applicationContext, 0, getLaunchIntent(), 0));
         Notification notification = builder.build();
         notificationMgr.notify(nextMessageId++, notification);
-    }
-
-    public PendingIntent getDeepLinkIntent(String extra) {
-        Intent deepLinkIntent =
-                new Intent(Intent.ACTION_MAIN, Uri.parse("snapyrsample://test/Alice/" + extra));
-        return PendingIntent.getActivity(applicationContext, 0, deepLinkIntent, 0);
     }
 
     public void autoRegisterFirebaseToken(Snapyr snapyrInstance) {

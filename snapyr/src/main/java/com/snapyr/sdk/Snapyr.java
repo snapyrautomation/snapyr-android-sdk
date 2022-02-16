@@ -1817,9 +1817,6 @@ public class Snapyr {
         String actionId = intent.getStringExtra(SnapyrNotificationHandler.ACTION_ID_KEY);
         int notificationId = intent.getIntExtra("notificationId", 0);
 
-        SnapyrNotificationHandler.INTERACTION_TYPE interactionType =
-                (SnapyrNotificationHandler.INTERACTION_TYPE)
-                        intent.getSerializableExtra(SnapyrNotificationHandler.INTERACTION_KEY);
         String token;
 
         Properties props =
@@ -1827,15 +1824,9 @@ public class Snapyr {
                         .putValue("deepLinkUrl", deepLinkUrl)
                         .putValue("actionId", actionId);
 
-        if (interactionType != null) {
-            switch (interactionType) {
-                case NOTIFICATION_PRESS:
-                    token = intent.getStringExtra(SnapyrNotificationHandler.NOTIF_TOKEN_KEY);
-                    props.putValue(SnapyrNotificationHandler.NOTIF_TOKEN_KEY, token)
-                            .putValue("interactionType", "notificationPressed");
-                    break;
-            }
-        }
+        token = intent.getStringExtra(SnapyrNotificationHandler.NOTIF_TOKEN_KEY);
+        props.putValue(SnapyrNotificationHandler.NOTIF_TOKEN_KEY, token)
+                .putValue("interactionType", "notificationPressed");
 
         // if autocancel = true....
         // Dismiss source notification

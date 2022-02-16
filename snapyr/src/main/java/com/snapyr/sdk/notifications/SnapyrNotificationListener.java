@@ -43,29 +43,11 @@ import com.snapyr.sdk.internal.Utils;
  */
 public class SnapyrNotificationListener extends BroadcastReceiver {
     private static final String TAG = "SnapyrNotificationListener";
-
-
-
-//    @Override
-//    public void onCreate(Bundle bundle){
-//        super.onCreate(bundle);
-//
-//        Intent startIntent = new Intent();
-//        startIntent.setAction("android.intent.action.MAIN");
-//        startIntent.addCategory("android.intent.category.LAUNCHER");
-//        startIntent.setData(Uri.parse("snapyrsample://test"));
-//        startIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//        this.startActivity(startIntent);
-//    }
-
     @Override
     public void onReceive(Context context, Intent intent) {
         String actionId =  intent.getStringExtra(SnapyrNotificationHandler.ACTION_ID_KEY);
         String deepLink =   intent.getStringExtra(SnapyrNotificationHandler.ACTION_DEEP_LINK_KEY);
         int notificationId =  intent.getIntExtra(SnapyrNotificationHandler.NOTIFICATION_ID, -1);
-        SnapyrNotificationHandler.INTERACTION_TYPE interaction =
-                (SnapyrNotificationHandler.INTERACTION_TYPE)intent
-                        .getExtras().get(SnapyrNotificationHandler.INTERACTION_KEY);
 
         Snapyr snapyr = Snapyr.with(context);
         snapyr.trackNotificationInteraction(intent);
@@ -77,8 +59,7 @@ public class SnapyrNotificationListener extends BroadcastReceiver {
 
         if (!Utils.isNullOrEmpty(deepLink)){
             Intent deepLinkIntent = new Intent();
-            deepLinkIntent.setAction("android.intent.action.MAIN");
-            deepLinkIntent.addCategory("android.intent.category.LAUNCHER");
+            deepLinkIntent.setAction("com.snapyr.sdk.notifications.ACTION_DEEPLINK");
             deepLinkIntent.setData(Uri.parse(deepLink));
             deepLinkIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
