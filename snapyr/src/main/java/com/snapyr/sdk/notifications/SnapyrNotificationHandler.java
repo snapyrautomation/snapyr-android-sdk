@@ -27,6 +27,7 @@ package com.snapyr.sdk.notifications;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.PendingIntent;
+import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -77,9 +78,10 @@ public class SnapyrNotificationHandler {
     public static final String ACTION_ID_KEY = "actionId";
     public static final String ACTION_DEEP_LINK_KEY = "deepLinkUrl";
 
-    public static final String INTERACTION_KEY = "interactionType";
     public static final String NOTIFICATION_ID = "notification_id";
+    // 'DEEPLINK_ACTION' is used by manifest, don't delete
     public static final String DEEPLINK_ACTION = "com.snapyr.sdk.notifications.ACTION_DEEPLINK";
+    public static final String NOTIFICATION_ACTION = "com.snapyr.sdk.notifications.TRACK_BROADCAST";
 
     private final Context context;
     private final Context applicationContext;
@@ -138,24 +140,21 @@ public class SnapyrNotificationHandler {
                 .setSubText((String)data.get(NOTIF_SUBTITLE_KEY))
                 .setColor(Color.BLUE) // TODO (@paulwsmith): make configurable
                 .setAutoCancel(true); // true means notification auto dismissed after tapping. TODO
-        // (@paulwsmith): make configurable?
 
-        Intent baseIntent = null;
-        String deepLinkUrl = (String)data.get(NOTIF_DEEP_LINK_KEY);
-        if (!Utils.isNullOrEmpty(deepLinkUrl)) {
-            baseIntent = new Intent(DEEPLINK_ACTION);
-            baseIntent.setData(Uri.parse(deepLinkUrl));
-            baseIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            baseIntent.putExtra(NOTIF_DEEP_LINK_KEY, deepLinkUrl);
-        } else {
-            baseIntent = getLaunchIntent();
-        }
+        TaskStackBuilder ts = TaskStackBuilder.create(this.context);
 
-        baseIntent.putExtra(ACTION_ID_KEY, (String)data.get(ACTION_ID_KEY));
-        baseIntent.putExtra(NOTIF_TOKEN_KEY, (String)data.get(NOTIF_TOKEN_KEY));
-        baseIntent.putExtra("notificationId", notificationId);
+        Intent trackIntent = new Intent(this.context, SnapyrNotificationListener.class);
+        trackIntent.setAction(NOTIFICATION_ACTION);
+        trackIntent.putExtra(ACTION_ID_KEY, (String)data.get(ACTION_ID_KEY));
+        trackIntent.putExtra(ACTION_DEEP_LINK_KEY, (String)data.get(NOTIF_DEEP_LINK_KEY));
+        trackIntent.putExtra(NOTIFICATION_ID, notificationId);
+        trackIntent.putExtra(NOTIF_TOKEN_KEY, (String)data.get(NOTIF_TOKEN_KEY));
+
+        ts.addNextIntent(getLaunchIntent());
+        ts.addNextIntent(trackIntent);
+
         builder.setContentIntent(
-                PendingIntent.getActivity(applicationContext, r.nextInt(), baseIntent, 0));
+                ts.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT));
 
         PushTemplate pushTemplate = (PushTemplate) data.get(ACTION_BUTTONS_KEY);
         if (pushTemplate != null) {
@@ -206,16 +205,18 @@ public class SnapyrNotificationHandler {
                                     int notificationId, ActionButton template,
                                     String actionToken){
         Intent trackIntent = new Intent(this.context, SnapyrNotificationListener.class);
+        trackIntent.setAction(NOTIFICATION_ACTION);
         trackIntent.putExtra(ACTION_ID_KEY, template.id);
         trackIntent.putExtra(ACTION_DEEP_LINK_KEY, template.deeplinkURL.toString());
         trackIntent.putExtra(NOTIFICATION_ID, notificationId);
         trackIntent.putExtra(NOTIF_TOKEN_KEY, actionToken);
-        trackIntent.setPackage(Snapyr.PACKAGE_NAME);
 
-        trackIntent.setAction("com.snapyr.sdk.notifications.TRACK_BROADCAST");
-        PendingIntent pendingIntent =  PendingIntent.getBroadcast(this.context, new Random().nextInt(), trackIntent, 0);
-        //PendingIntent pendingIntent = PendingIntent.getActivity(this.context, 0, trackIntent, 0);
-        builder.addAction(R.drawable.ic_snapyr_logo_only, template.title, pendingIntent);
+        TaskStackBuilder ts = TaskStackBuilder.create(this.context);
+        ts.addNextIntent(getLaunchIntent());
+        ts.addNextIntent(trackIntent);
+
+        builder.addAction(R.drawable.ic_snapyr_logo_only, template.title,
+                ts.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT));
     }
 
     public void showSampleNotification() {
@@ -227,8 +228,6 @@ public class SnapyrNotificationHandler {
                 .setContentText("Snapyr: Content text")
                 .setAutoCancel(true);
         int notificationId = ++nextMessageId;
-
-        getLaunchIntent();
 
         createActionButton(builder, notificationId,
                 new ActionButton("button_one", "button_one", "button_one",

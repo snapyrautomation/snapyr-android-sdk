@@ -23,10 +23,12 @@
  */
 package com.snapyr.sdk.notifications;
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
 
 import androidx.core.app.NotificationManagerCompat;
 
@@ -36,36 +38,37 @@ import com.snapyr.sdk.internal.Utils;
 
 /**
  * SnapyrNotificationListener
- * Listens for broadcast events for the action `@package_name.TRACK_BROADCAST` and fires off
- * a track event with the payload from the intent. This is currently used by action buttons to
- * trigger track notifications instead of creating a new activity. If the action button specifies
- * a deeplink then the listener will attempt to transition to the URI provided.
+ * Activity that triggers and fires off a track event with the payload from the intent.
+ * This is currently used by action buttons and notifications to trigger track notifications.
+ * If the action button or notification specifies a deeplink then the listener will attempt
+ * to transition to the URI provided.
  */
-public class SnapyrNotificationListener extends BroadcastReceiver {
+public class SnapyrNotificationListener extends Activity {
     private static final String TAG = "SnapyrNotificationListener";
+
     @Override
-    public void onReceive(Context context, Intent intent) {
-        String actionId =  intent.getStringExtra(SnapyrNotificationHandler.ACTION_ID_KEY);
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Intent intent = this.getIntent();
         String deepLink =   intent.getStringExtra(SnapyrNotificationHandler.ACTION_DEEP_LINK_KEY);
         int notificationId =  intent.getIntExtra(SnapyrNotificationHandler.NOTIFICATION_ID, -1);
 
-        Snapyr snapyr = Snapyr.with(context);
+        Snapyr snapyr = Snapyr.with(this);
         snapyr.trackNotificationInteraction(intent);
 
         // Dismiss source notification
-        NotificationManagerCompat.from(context.getApplicationContext()).cancel(notificationId);
+        NotificationManagerCompat.from(this.getApplicationContext()).cancel(notificationId);
         // Close notification drawer (so newly opened activity isn't behind anything)
-        context.getApplicationContext().sendBroadcast(new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
+        this.getApplicationContext().sendBroadcast(new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
 
-        if (!Utils.isNullOrEmpty(deepLink)){
+        if (!Utils.isNullOrEmpty(deepLink)){ // deeplink provided, respect it and advance
             Intent deepLinkIntent = new Intent();
             deepLinkIntent.setAction("com.snapyr.sdk.notifications.ACTION_DEEPLINK");
             deepLinkIntent.setData(Uri.parse(deepLink));
             deepLinkIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
-            context.startActivity(deepLinkIntent);
+            this.startActivity(deepLinkIntent);
         }
 
-        // TODO: if deeplink is valid then do something
+        this.finish(); // Nothing to do, go back in the stack
     }
 }

@@ -153,7 +153,6 @@ public class Snapyr {
     // todo: use lightweight map implementation.
     private Map<String, Integration<?>> integrations;
     volatile boolean shutdown;
-    public static String PACKAGE_NAME;
 
     @Private final boolean nanosecondTimestamps;
     @Private final boolean useNewLifecycleMethods;
@@ -173,7 +172,6 @@ public class Snapyr {
      */
     public static Snapyr with(Context context) {
         if (singleton == null) {
-            singleton.PACKAGE_NAME = context.getApplicationContext().getPackageName();
             if (context == null) {
                 throw new IllegalArgumentException("Context must not be null.");
             }
@@ -204,6 +202,10 @@ public class Snapyr {
         return singleton;
     }
 
+    public static boolean Valid() {
+        return singleton != null;
+    }
+
     /**
      * Set the global instance returned from {@link #with}.
      *
@@ -215,7 +217,6 @@ public class Snapyr {
                 throw new IllegalStateException("Singleton instance already exists.");
             }
             singleton = analytics;
-            singleton.PACKAGE_NAME = analytics.getApplication().getApplicationContext().getPackageName();
         }
     }
 

@@ -70,11 +70,12 @@
       </intent-filter>
     </activity>
 
-    <receiver android:name="com.snapyr.sdk.notifications.SnapyrNotificationListener"  android:exported="true">
+    <activity android:name="com.snapyr.sdk.notifications.SnapyrNotificationListener">
       <intent-filter>
         <action android:name="com.snapyr.sdk.notifications.TRACK_BROADCAST"/>
+        <category android:name="android.intent.category.DEFAULT" />
       </intent-filter>
-    </receiver>
+    </activity>
 
     <service android:name="com.snapyr.sdk.notifications.SnapyrFirebaseMessagingService" android:exported="false">
       <intent-filter>

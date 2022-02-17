@@ -45,8 +45,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 
-
-
 public class SnapyrFirebaseMessagingService extends FirebaseMessagingService {
     private SnapyrNotificationListener activityHandler;
 
