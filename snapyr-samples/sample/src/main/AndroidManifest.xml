@@ -37,6 +37,14 @@
   <!-- Allows location to be tracked. -->
   <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+  <uses-permission android:name="owner.custom.permission" />
+
+
+  <permission
+      android:name="owner.custom.permission"
+      android:protectionLevel="signatureOrSystem">
+  </permission>
+
 
   <application
       android:allowBackup="true"
@@ -44,19 +52,31 @@
       android:label="@string/app_name"
       android:theme="@style/AppTheme"
       android:name=".SampleApp">
-
     <activity
         android:name=".MainActivity"
         android:label="@string/app_name"
-        android:windowSoftInputMode="stateHidden">
+        android:windowSoftInputMode="stateHidden"
+        android:exported="true" >
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
         <action android:name="android.intent.action.VIEW"/>
         <category android:name="android.intent.category.LAUNCHER"/>
-        <category android:name="android.intent.category.DEFAULT"/>
+      </intent-filter>
+      <intent-filter>
+        <action android:name="com.snapyr.sdk.notifications.ACTION_DEEPLINK"/>
+        <category android:name="android.intent.category.DEFAULT" />
         <data android:scheme="snapyrsample" android:host="test" />
+        <data android:scheme="snapyrtest" android:host="dltest" />
       </intent-filter>
     </activity>
+
+    <activity android:name="com.snapyr.sdk.notifications.SnapyrNotificationListener">
+      <intent-filter>
+        <action android:name="com.snapyr.sdk.notifications.TRACK_BROADCAST"/>
+        <category android:name="android.intent.category.DEFAULT" />
+      </intent-filter>
+    </activity>
+
     <service android:name="com.snapyr.sdk.notifications.SnapyrFirebaseMessagingService" android:exported="false">
       <intent-filter>
         <action android:name="com.google.firebase.MESSAGING_EVENT" />

@@ -4,8 +4,12 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.lifecycle.DefaultLifecycleObserver;
@@ -47,50 +51,10 @@ public class SnapyrNotificationLifecycleCallbacks
             return;
         }
 
-        trackNotificationInteraction(activity);
+        snapyr.trackNotificationInteraction(activity.getIntent());
     }
 
-    private void trackNotificationInteraction(Activity activity) {
-        Intent intent = activity.getIntent();
-        Context applicationContext = activity.getApplicationContext();
 
-        String deepLinkUrl = intent.getStringExtra(SnapyrNotificationHandler.NOTIF_DEEP_LINK_KEY);
-        String actionId = intent.getStringExtra(SnapyrNotificationHandler.ACTION_ID_KEY);
-        int notificationId = intent.getIntExtra("notificationId", 0);
-
-        SnapyrNotificationHandler.INTERACTION_TYPE interactionType =
-                (SnapyrNotificationHandler.INTERACTION_TYPE)
-                        intent.getSerializableExtra(SnapyrNotificationHandler.INTERACTION_KEY);
-        String token;
-
-        Properties props =
-                new Properties()
-                        .putValue("deepLinkUrl", deepLinkUrl)
-                        .putValue("actionId", actionId);
-
-        if (interactionType != null) {
-            switch (interactionType) {
-                case NOTIFICATION_PRESS:
-                    token = intent.getStringExtra(SnapyrNotificationHandler.NOTIF_TOKEN_KEY);
-                    props.putValue(SnapyrNotificationHandler.NOTIF_TOKEN_KEY, token)
-                            .putValue("interactionType", "notificationPressed");
-                    break;
-                case ACTION_BUTTON_PRESS:
-                    token = intent.getStringExtra(SnapyrNotificationHandler.ACTION_TOKEN_KEY);
-                    props.putValue(SnapyrNotificationHandler.ACTION_TOKEN_KEY, token)
-                            .putValue("interactionType", "actionButtonPressed");
-                    break;
-            }
-        }
-
-        // if autocancel = true....
-        // Dismiss source notification
-        NotificationManagerCompat.from(applicationContext).cancel(notificationId);
-        // Close notification drawer (so newly opened activity isn't behind anything)
-        applicationContext.sendBroadcast(new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
-
-        Snapyr.with(applicationContext).pushNotificationClicked(props);
-    }
 
     // Method stubs required for valid interface implementation
     @Override

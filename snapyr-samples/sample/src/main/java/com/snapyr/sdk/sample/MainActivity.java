@@ -76,11 +76,12 @@ public class MainActivity extends Activity {
             return;
         }
         List<String> paths = data.getPathSegments();
-
-        String response = paths.get(0);
-        String text = paths.get(1);
-        Toast.makeText(this, text, Toast.LENGTH_LONG).show();
-        Log.e("Snapyr", "Sample app open intent data: " + String.valueOf(data));
+        if (paths.size() > 1){
+            String response = paths.get(0);
+            String text = paths.get(1);
+            Toast.makeText(this, text, Toast.LENGTH_LONG).show();
+            Log.e("Snapyr", "Sample app open intent data: " + String.valueOf(data));
+        }
     }
 
     @OnClick(R.id.action_track_a)
@@ -94,7 +95,7 @@ public class MainActivity extends Activity {
     }
 
     @OnClick(R.id.action_show_notification)
-    void onShowNotifClicked() {
+    void onShowNotifyClicked() {
         Snapyr.with(this).getNotificationHandler().showSampleNotification();
     }
 

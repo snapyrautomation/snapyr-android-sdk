@@ -30,18 +30,24 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.ProcessLifecycleOwner;
+
 import com.snapyr.sdk.integrations.AliasPayload;
 import com.snapyr.sdk.integrations.BasePayload;
 import com.snapyr.sdk.integrations.GroupPayload;
@@ -53,6 +59,7 @@ import com.snapyr.sdk.integrations.TrackPayload;
 import com.snapyr.sdk.internal.NanoDate;
 import com.snapyr.sdk.internal.Private;
 import com.snapyr.sdk.internal.Utils;
+import com.snapyr.sdk.notifications.SnapyrNotificationListener;
 import com.snapyr.sdk.notifications.SnapyrNotificationHandler;
 import com.snapyr.sdk.notifications.SnapyrNotificationLifecycleCallbacks;
 import java.util.ArrayList;
@@ -139,6 +146,7 @@ public class Snapyr {
     private final CountDownLatch advertisingIdLatch;
     private final ExecutorService analyticsExecutor;
     private final BooleanPreference optOut;
+    private Map<String, PushTemplate> PushTemplates;
 
     final Map<String, Boolean> bundledIntegrations = new ConcurrentHashMap<>();
     private List<Integration.Factory> factories;
@@ -189,8 +197,13 @@ public class Snapyr {
                     singleton = builder.build();
                 }
             }
+
         }
         return singleton;
+    }
+
+    public static boolean Valid() {
+        return singleton != null;
     }
 
     /**
@@ -265,14 +278,16 @@ public class Snapyr {
         this.nanosecondTimestamps = nanosecondTimestamps;
         this.useNewLifecycleMethods = useNewLifecycleMethods;
         this.actionHandler = actionHandler;
+        this.PushTemplates = null;
 
         namespaceSharedPreferences();
 
         analyticsExecutor.submit(
                 new Runnable() {
+                    @RequiresApi(api = Build.VERSION_CODES.O)
                     @Override
                     public void run() {
-                        projectSettings = getSettings();
+                        RefreshConfiguration(false);
                         if (isNullOrEmpty(projectSettings)) {
                             // Backup mode - Enable the Snapyr integration and load the provided
                             // defaultProjectSettings
@@ -308,8 +323,6 @@ public class Snapyr {
                             }
                             projectSettings = ProjectSettings.create(defaultProjectSettings);
                         }
-                        snapyrContext.putSdkMeta(projectSettings.getValueMap("metadata"));
-
                         if (edgeFunctionMiddleware != null) {
                             edgeFunctionMiddleware.setEdgeFunctionData(
                                     projectSettings.edgeFunctions());
@@ -364,6 +377,9 @@ public class Snapyr {
             this.notificationHandler = new SnapyrNotificationHandler(application);
             notificationHandler.autoRegisterFirebaseToken(this);
 
+
+
+
             // Add lifecycle callback observer so we can track user behavior on notifications
             // (i.e. tapping a notification or tapping an action button on notification)
 
@@ -383,9 +399,21 @@ public class Snapyr {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    public void RefreshConfiguration(boolean force) {
+        ProjectSettings newSettings = getSettings(force);
+        if (!isNullOrEmpty(newSettings)){
+            this.projectSettings = newSettings;
+            ValueMap metadata = projectSettings.getValueMap("metadata");
+            snapyrContext.putSdkMeta(metadata);
+            this.PushTemplates = PushTemplate.ParseTemplate(metadata);
+        }
+    }
+
     public SnapyrNotificationHandler getNotificationHandler() {
         return notificationHandler;
     }
+    public Map<String, PushTemplate> getPushTemplates() { return this.PushTemplates; }
 
     @Private
     void trackApplicationLifecycleEvents() {
@@ -1679,9 +1707,9 @@ public class Snapyr {
      * settings.
      */
     @Private
-    ProjectSettings getSettings() {
+    ProjectSettings getSettings(boolean force) {
         ProjectSettings cachedSettings = projectSettingsCache.get();
-        if (isNullOrEmpty(cachedSettings)) {
+        if (isNullOrEmpty(cachedSettings) || force) {
             return downloadSettings();
         }
 
@@ -1781,5 +1809,34 @@ public class Snapyr {
             Utils.copySharedPreferences(legacySharedPreferences, newSharedPreferences);
             namespaceSharedPreferences.set(false);
         }
+    }
+
+    public void trackNotificationInteraction(Intent intent) {
+        Context applicationContext = this.getApplication().getApplicationContext();
+
+        String deepLinkUrl = intent.getStringExtra(SnapyrNotificationHandler.NOTIF_DEEP_LINK_KEY);
+        String actionId = intent.getStringExtra(SnapyrNotificationHandler.ACTION_ID_KEY);
+        int notificationId = intent.getIntExtra("notificationId", 0);
+
+        String token;
+
+        Properties props =
+                new Properties()
+                        .putValue("deepLinkUrl", deepLinkUrl)
+                        .putValue("actionId", actionId);
+
+        token = intent.getStringExtra(SnapyrNotificationHandler.NOTIF_TOKEN_KEY);
+        props.putValue(SnapyrNotificationHandler.NOTIF_TOKEN_KEY, token)
+                .putValue("interactionType", "notificationPressed");
+
+        // if autocancel = true....
+        // Dismiss source notification
+        NotificationManagerCompat.from(applicationContext).cancel(notificationId);
+        // Close notification drawer (so newly opened activity isn't behind anything)
+        // NOTE (BS): I don't think we need this anymore & it was causing permission errors b/c it
+        // can be called from other activities. I'll leave it commented out for now
+        //applicationContext.sendBroadcast(new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
+
+        this.pushNotificationClicked(props);
     }
 }
