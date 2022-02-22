@@ -1,18 +1,18 @@
 /**
  * The MIT License (MIT)
- *
+ * <p>
  * Copyright (c) 2014 Segment.io, Inc.
- *
+ * <p>
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * <p>
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- *
+ * <p>
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,8 +26,10 @@ package com.snapyr.sdk;
 import static java.util.Collections.unmodifiableMap;
 
 import android.content.Context;
+
 import com.snapyr.sdk.internal.Private;
 import com.snapyr.sdk.internal.Utils;
+
 import java.text.ParseException;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -70,6 +72,20 @@ public class Traits extends ValueMap {
     // Address
     private static final String ADDRESS_KEY = "address";
 
+    /** For deserialization from disk by {@link Traits.Cache}. */
+    @Private
+    Traits(Map<String, Object> delegate) {
+        super(delegate);
+    }
+
+    // Public Constructor
+    public Traits() {
+    }
+
+    public Traits(int initialCapacity) {
+        super(initialCapacity);
+    }
+
     /**
      * Create a new Traits instance with an anonymous ID. Analytics client can be called on any
      * thread, so this instance is thread safe.
@@ -78,19 +94,6 @@ public class Traits extends ValueMap {
         Traits traits = new Traits(new Utils.NullableConcurrentHashMap<String, Object>());
         traits.putAnonymousId(UUID.randomUUID().toString());
         return traits;
-    }
-
-    /** For deserialization from disk by {@link Traits.Cache}. */
-    @Private
-    Traits(Map<String, Object> delegate) {
-        super(delegate);
-    }
-
-    // Public Constructor
-    public Traits() {}
-
-    public Traits(int initialCapacity) {
-        super(initialCapacity);
     }
 
     public Traits unmodifiableCopy() {
@@ -346,7 +349,8 @@ public class Traits extends ValueMap {
         private static final String ADDRESS_STREET_KEY = "street";
 
         // Public constructor
-        public Address() {}
+        public Address() {
+        }
 
         // For deserialization
         public Address(Map<String, Object> map) {

@@ -23,17 +23,13 @@
  */
 package com.snapyr.sdk.internal
 
-import java.lang.RuntimeException
-import java.text.ParseException
-import java.util.Calendar
-import java.util.Date
-import java.util.GregorianCalendar
-import java.util.TimeZone
-import java.util.concurrent.TimeUnit
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
+import java.text.ParseException
+import java.util.*
+import java.util.concurrent.TimeUnit
 
 class Iso8601UtilsTest {
 
@@ -55,8 +51,8 @@ class Iso8601UtilsTest {
         dateZeroSecondAndMillis = cal.time
         cal = GregorianCalendar(2007, 8 - 1, 13, 0, 0, 0)
         cal[Calendar.MILLISECOND] = 0
-        cal.setTimeZone(TimeZone.getTimeZone("GMT"))
-        dateWithoutTime = cal.getTime()
+        cal.timeZone = TimeZone.getTimeZone("GMT")
+        dateWithoutTime = cal.time
         dateWithNano = NanoDate(1187207505345554387L)
     }
 
@@ -96,11 +92,17 @@ class Iso8601UtilsTest {
         assertThat(Iso8601Utils.parseWithNanos("2007-08-13T19:51:23.000000000Z"))
             .isEqualTo(dateZeroMillis)
         assertThat(Iso8601Utils.parseWithNanos("2007-08-13T21:51:23.789+02:00")).isEqualTo(date)
-        assertThat(Iso8601Utils.parseWithNanos("2007-08-13T21:51:23.789000000+02:00")).isEqualTo(date)
+        assertThat(Iso8601Utils.parseWithNanos("2007-08-13T21:51:23.789000000+02:00")).isEqualTo(
+            date
+        )
         assertThat(Iso8601Utils.parseWithNanos("2007-08-15T19:51:45.345554387Z"))
             .isEqualTo(dateWithNano)
-        assertThat(Iso8601Utils.parseWithNanos("20070815T19:51:45.345554387Z")).isEqualTo(dateWithNano)
-        assertThat(Iso8601Utils.parseWithNanos("2007-08-15T195145.345554387Z")).isEqualTo(dateWithNano)
+        assertThat(Iso8601Utils.parseWithNanos("20070815T19:51:45.345554387Z")).isEqualTo(
+            dateWithNano
+        )
+        assertThat(Iso8601Utils.parseWithNanos("2007-08-15T195145.345554387Z")).isEqualTo(
+            dateWithNano
+        )
         assertThat(Iso8601Utils.parseWithNanos("20070815T195145.345554387Z")).isEqualTo(dateWithNano)
         assertThat(Iso8601Utils.parseWithNanos("2007-08-15T21:51:45.345554387+02:00"))
             .isEqualTo(dateWithNano)
@@ -216,6 +218,6 @@ class Iso8601UtilsTest {
         val calendar = GregorianCalendar(TimeZone.getTimeZone("GMT"))
         calendar.set(year, month - 1, day, hour, minute, second)
         calendar.set(Calendar.MILLISECOND, millis)
-        return Date(calendar.getTimeInMillis() - TimeUnit.MINUTES.toMillis(timezoneOffsetMinutes))
+        return Date(calendar.timeInMillis - TimeUnit.MINUTES.toMillis(timezoneOffsetMinutes))
     }
 }

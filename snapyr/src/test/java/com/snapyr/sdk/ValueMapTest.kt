@@ -27,7 +27,6 @@ import com.google.common.collect.ImmutableMap
 import com.nhaarman.mockitokotlin2.spy
 import com.nhaarman.mockitokotlin2.verify
 import com.snapyr.sdk.TestUtils.PROJECT_SETTINGS_JSON_SAMPLE
-import kotlin.jvm.Throws
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.assertj.core.data.MapEntry
@@ -204,14 +203,14 @@ class ValueMapTest {
         val valueMap = ValueMap(cartographer.fromJson(PROJECT_SETTINGS_JSON_SAMPLE))
 
         assertThat(valueMap.getValueMap("Amplitude"))
-            .isNotNull()
+            .isNotNull
             .hasSize(4)
             .contains(MapEntry.entry("apiKey", "ad3c426eb736d7442a65da8174bc1b1b"))
             .contains(MapEntry.entry("trackNamedPages", true))
             .contains(MapEntry.entry("trackCategorizedPages", true))
             .contains(MapEntry.entry("trackAllPages", false))
         assertThat(valueMap.getValueMap("Flurry"))
-            .isNotNull()
+            .isNotNull
             .hasSize(4)
             .contains(MapEntry.entry("apiKey", "8DY3D6S7CCWH54RBJ9ZM"))
             .contains(MapEntry.entry("captureUncaughtExceptions", false))
@@ -225,19 +224,19 @@ class ValueMapTest {
         val jsonObject: JSONObject =
             ValueMap(cartographer.fromJson(PROJECT_SETTINGS_JSON_SAMPLE)).toJsonObject()
         val amplitude = jsonObject.getJSONObject("Amplitude")
-        assertThat(amplitude).isNotNull()
+        assertThat(amplitude).isNotNull
         assertThat(amplitude.length()).isEqualTo(4)
         assertThat(amplitude.getString("apiKey")).isEqualTo("ad3c426eb736d7442a65da8174bc1b1b")
-        assertThat(amplitude.getBoolean("trackNamedPages")).isTrue()
-        assertThat(amplitude.getBoolean("trackCategorizedPages")).isTrue()
-        assertThat(amplitude.getBoolean("trackAllPages")).isFalse()
+        assertThat(amplitude.getBoolean("trackNamedPages")).isTrue
+        assertThat(amplitude.getBoolean("trackCategorizedPages")).isTrue
+        assertThat(amplitude.getBoolean("trackAllPages")).isFalse
 
         val flurry = jsonObject.getJSONObject("Flurry")
-        assertThat(flurry).isNotNull()
+        assertThat(flurry).isNotNull
         assertThat(flurry.length()).isEqualTo(4)
         assertThat(flurry.getString("apiKey")).isEqualTo("8DY3D6S7CCWH54RBJ9ZM")
-        assertThat(flurry.getBoolean("useHttps")).isTrue()
-        assertThat(flurry.getBoolean("captureUncaughtExceptions")).isFalse()
+        assertThat(flurry.getBoolean("useHttps")).isTrue
+        assertThat(flurry.getBoolean("captureUncaughtExceptions")).isFalse
         assertThat(flurry.getDouble("sessionContinueSeconds")).isEqualTo(10.0)
     }
 

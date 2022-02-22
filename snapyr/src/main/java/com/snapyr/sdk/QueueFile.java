@@ -1,18 +1,18 @@
 /**
  * The MIT License (MIT)
- *
+ * <p>
  * Copyright (c) 2014 Segment.io, Inc.
- *
+ * <p>
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * <p>
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- *
+ * <p>
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,6 +26,7 @@ package com.snapyr.sdk;
 import static java.lang.Math.min;
 
 import com.snapyr.sdk.internal.Private;
+
 import java.io.Closeable;
 import java.io.EOFException;
 import java.io.File;
@@ -59,17 +60,13 @@ import java.util.logging.Logger;
  * @author Bob Lee (bob@squareup.com)
  */
 public class QueueFile implements Closeable {
-    private static final Logger LOGGER = Logger.getLogger(QueueFile.class.getName());
-
-    /** Initial file size in bytes. */
-    private static final int INITIAL_LENGTH = 4096; // one file system block
-
-    /** A block of nothing to write over old data. */
-    private static final byte[] ZEROES = new byte[INITIAL_LENGTH];
-
     /** Length of header in bytes. */
     static final int HEADER_LENGTH = 16;
-
+    private static final Logger LOGGER = Logger.getLogger(QueueFile.class.getName());
+    /** Initial file size in bytes. */
+    private static final int INITIAL_LENGTH = 4096; // one file system block
+    /** A block of nothing to write over old data. */
+    private static final byte[] ZEROES = new byte[INITIAL_LENGTH];
     /**
      * The underlying file. Uses a ring buffer to store entries. Designed so that a modification
      * isn't committed or visible until we write the header. The header is much smaller than a
@@ -99,21 +96,16 @@ public class QueueFile implements Closeable {
      * Visible for testing.
      */
     final RandomAccessFile raf;
-
-    /** Cached file length. Always a power of 2. */
-    int fileLength;
-
-    /** Number of elements. */
-    private int elementCount;
-
-    /** Pointer to first (or eldest) element. */
-    private Element first;
-
-    /** Pointer to last (or newest) element. */
-    private Element last;
-
     /** In-memory buffer. Big enough to hold the header. */
     private final byte[] buffer = new byte[16];
+    /** Cached file length. Always a power of 2. */
+    int fileLength;
+    /** Number of elements. */
+    private int elementCount;
+    /** Pointer to first (or eldest) element. */
+    private Element first;
+    /** Pointer to last (or newest) element. */
+    private Element last;
 
     /**
      * Constructs a new queue backed by the given file. Only one instance should access a given file
@@ -149,6 +141,31 @@ public class QueueFile implements Closeable {
                 + ((buffer[offset + 1] & 0xff) << 16)
                 + ((buffer[offset + 2] & 0xff) << 8)
                 + (buffer[offset + 3] & 0xff);
+    }
+
+    private static void initialize(File file) throws IOException {
+        // Use a temp file so we don't leave a partially-initialized file.
+        File tempFile = new File(file.getPath() + ".tmp");
+        RandomAccessFile raf = open(tempFile);
+        try {
+            raf.setLength(INITIAL_LENGTH);
+            raf.seek(0);
+            byte[] headerBuffer = new byte[16];
+            writeInt(headerBuffer, 0, INITIAL_LENGTH);
+            raf.write(headerBuffer);
+        } finally {
+            raf.close();
+        }
+
+        // A rename is atomic.
+        if (!tempFile.renameTo(file)) {
+            throw new IOException("Rename failed!");
+        }
+    }
+
+    /** Opens a random access file that writes synchronously. */
+    private static RandomAccessFile open(File file) throws FileNotFoundException {
+        return new RandomAccessFile(file, "rwd");
     }
 
     private void readHeader() throws IOException {
@@ -204,31 +221,6 @@ public class QueueFile implements Closeable {
         ringRead(position, buffer, 0, Element.HEADER_LENGTH);
         int length = readInt(buffer, 0);
         return new Element(position, length);
-    }
-
-    private static void initialize(File file) throws IOException {
-        // Use a temp file so we don't leave a partially-initialized file.
-        File tempFile = new File(file.getPath() + ".tmp");
-        RandomAccessFile raf = open(tempFile);
-        try {
-            raf.setLength(INITIAL_LENGTH);
-            raf.seek(0);
-            byte[] headerBuffer = new byte[16];
-            writeInt(headerBuffer, 0, INITIAL_LENGTH);
-            raf.write(headerBuffer);
-        } finally {
-            raf.close();
-        }
-
-        // A rename is atomic.
-        if (!tempFile.renameTo(file)) {
-            throw new IOException("Rename failed!");
-        }
-    }
-
-    /** Opens a random access file that writes synchronously. */
-    private static RandomAccessFile open(File file) throws FileNotFoundException {
-        return new RandomAccessFile(file, "rwd");
     }
 
     /** Wraps the position if it exceeds the end of the file. */
@@ -460,43 +452,6 @@ public class QueueFile implements Closeable {
         return elementCount;
     }
 
-    @Private
-    final class ElementInputStream extends InputStream {
-        private int position;
-        private int remaining;
-
-        @Private
-        ElementInputStream(Element element) {
-            position = wrapPosition(element.position + Element.HEADER_LENGTH);
-            remaining = element.length;
-        }
-
-        @Override
-        public int read(byte[] buffer, int offset, int length) throws IOException {
-            if ((offset | length) < 0 || length > buffer.length - offset) {
-                throw new ArrayIndexOutOfBoundsException();
-            }
-            if (remaining == 0) {
-                return -1;
-            }
-            if (length > remaining) length = remaining;
-            ringRead(position, buffer, offset, length);
-            position = wrapPosition(position + length);
-            remaining -= length;
-            return length;
-        }
-
-        @Override
-        public int read() throws IOException {
-            if (remaining == 0) return -1;
-            raf.seek(position);
-            int b = raf.read();
-            position = wrapPosition(position + 1);
-            remaining--;
-            return b;
-        }
-    }
-
     /** Returns the number of elements in this queue. */
     public synchronized int size() {
         return elementCount;
@@ -650,6 +605,43 @@ public class QueueFile implements Closeable {
                     + ", length = "
                     + length
                     + "]";
+        }
+    }
+
+    @Private
+    final class ElementInputStream extends InputStream {
+        private int position;
+        private int remaining;
+
+        @Private
+        ElementInputStream(Element element) {
+            position = wrapPosition(element.position + Element.HEADER_LENGTH);
+            remaining = element.length;
+        }
+
+        @Override
+        public int read(byte[] buffer, int offset, int length) throws IOException {
+            if ((offset | length) < 0 || length > buffer.length - offset) {
+                throw new ArrayIndexOutOfBoundsException();
+            }
+            if (remaining == 0) {
+                return -1;
+            }
+            if (length > remaining) length = remaining;
+            ringRead(position, buffer, offset, length);
+            position = wrapPosition(position + length);
+            remaining -= length;
+            return length;
+        }
+
+        @Override
+        public int read() throws IOException {
+            if (remaining == 0) return -1;
+            raf.seek(position);
+            int b = raf.read();
+            position = wrapPosition(position + 1);
+            remaining--;
+            return b;
         }
     }
 }

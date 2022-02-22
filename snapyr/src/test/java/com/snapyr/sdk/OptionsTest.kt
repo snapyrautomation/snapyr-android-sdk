@@ -24,7 +24,6 @@
 package com.snapyr.sdk
 
 import com.google.common.collect.ImmutableMap
-import kotlin.jvm.Throws
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.junit.Before

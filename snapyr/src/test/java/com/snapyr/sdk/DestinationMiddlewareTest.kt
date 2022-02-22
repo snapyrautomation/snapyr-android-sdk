@@ -33,9 +33,6 @@ import com.snapyr.sdk.integrations.BasePayload
 import com.snapyr.sdk.integrations.IdentifyPayload
 import com.snapyr.sdk.integrations.Integration
 import com.snapyr.sdk.integrations.TrackPayload
-import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.atomic.AtomicReference
-import kotlin.jvm.Throws
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -47,6 +44,8 @@ import org.mockito.MockitoAnnotations.initMocks
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicReference
 
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE)
@@ -83,7 +82,10 @@ class DestinationMiddlewareTest {
                 .defaultProjectSettings(projectSettings)
                 .use(
                     object : Integration.Factory {
-                        override fun create(settings: ValueMap, analytics: Snapyr): Integration<*>? {
+                        override fun create(
+                            settings: ValueMap,
+                            analytics: Snapyr
+                        ): Integration<*>? {
                             return integrationFoo
                         }
 
@@ -93,7 +95,10 @@ class DestinationMiddlewareTest {
                     })
                 .use(
                     object : Integration.Factory {
-                        override fun create(settings: ValueMap, analytics: Snapyr): Integration<*>? {
+                        override fun create(
+                            settings: ValueMap,
+                            analytics: Snapyr
+                        ): Integration<*>? {
                             return integrationBar
                         }
 
@@ -220,7 +225,8 @@ class DestinationMiddlewareTest {
                 val payload = chain.payload() as TrackPayload
                 val properties = ValueMap()
                 properties.putAll(payload.properties())
-                val newPayload = payload.toBuilder().properties(properties.putValue("key1", "val1")).build()
+                val newPayload =
+                    payload.toBuilder().properties(properties.putValue("key1", "val1")).build()
                 chain.proceed(newPayload)
             }
             .useDestinationMiddleware(
@@ -229,7 +235,8 @@ class DestinationMiddlewareTest {
                 val payload = chain.payload() as TrackPayload
                 val properties = ValueMap()
                 properties.putAll(payload.properties())
-                val newPayload = payload.toBuilder().properties(properties.putValue("key2", "val2")).build()
+                val newPayload =
+                    payload.toBuilder().properties(properties.putValue("key2", "val2")).build()
                 payloadRef.set(newPayload)
                 chain.proceed(newPayload)
             }

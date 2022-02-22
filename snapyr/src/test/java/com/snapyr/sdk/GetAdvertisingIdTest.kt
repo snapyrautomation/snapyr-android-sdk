@@ -27,14 +27,13 @@ import android.content.ContentResolver
 import android.content.Context
 import android.provider.Settings.Secure
 import com.snapyr.sdk.integrations.Logger
-import java.util.concurrent.CountDownLatch
-import kotlin.jvm.Throws
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
+import java.util.concurrent.CountDownLatch
 
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE)
@@ -89,7 +88,8 @@ class GetAdvertisingIdTest {
         val analyticsContext =
             SnapyrContext.create(RuntimeEnvironment.application, traits, true)
 
-        val task = GetAdvertisingIdTask(analyticsContext, latch, Logger.with(Snapyr.LogLevel.VERBOSE))
+        val task =
+            GetAdvertisingIdTask(analyticsContext, latch, Logger.with(Snapyr.LogLevel.VERBOSE))
         task.execute(context)
         latch.await()
 

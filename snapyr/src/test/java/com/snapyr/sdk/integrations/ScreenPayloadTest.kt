@@ -34,7 +34,9 @@ class ScreenPayloadTest {
     lateinit var builder: ScreenPayload.Builder
 
     @Before
-    fun setUp() { builder = ScreenPayload.Builder().userId("userId") }
+    fun setUp() {
+        builder = ScreenPayload.Builder().userId("userId")
+    }
 
     @Test
     fun name() {

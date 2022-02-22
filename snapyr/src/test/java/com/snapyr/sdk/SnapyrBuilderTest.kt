@@ -32,8 +32,6 @@ import com.nhaarman.mockitokotlin2.whenever
 import com.snapyr.sdk.Snapyr.Builder
 import com.snapyr.sdk.Snapyr.WRITE_KEY_RESOURCE_IDENTIFIER
 import com.snapyr.sdk.core.BuildConfig
-import java.util.concurrent.TimeUnit
-import kotlin.jvm.Throws
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.junit.Before
@@ -44,6 +42,7 @@ import org.mockito.Mockito
 import org.mockito.MockitoAnnotations
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import java.util.concurrent.TimeUnit
 
 @RunWith(RobolectricTestRunner::class)
 @Config(constants = BuildConfig::class, sdk = [18], manifest = Config.NONE)
@@ -289,7 +288,13 @@ class SnapyrBuilderTest {
     private fun mockWriteKeyInResources(context: Context, writeKey: String?) {
         val resources = Mockito.mock(Resources::class.java)
         whenever(context.resources).thenReturn(resources)
-        whenever(resources.getIdentifier(eq(WRITE_KEY_RESOURCE_IDENTIFIER), eq("string"), eq("string")))
+        whenever(
+            resources.getIdentifier(
+                eq(WRITE_KEY_RESOURCE_IDENTIFIER),
+                eq("string"),
+                eq("string")
+            )
+        )
             .thenReturn(1)
         whenever(resources.getString(1)).thenReturn(writeKey)
     }

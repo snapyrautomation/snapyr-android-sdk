@@ -23,7 +23,6 @@
  */
 package com.snapyr.sdk
 
-import kotlin.jvm.Throws
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -43,7 +42,11 @@ class ValueMapCacheTest {
         cartographer = Cartographer.INSTANCE
         traitsCache =
             ValueMap.Cache<Traits>(
-                RuntimeEnvironment.application, cartographer, "traits-cache-test", "tag", Traits::class.java
+                RuntimeEnvironment.application,
+                cartographer,
+                "traits-cache-test",
+                "tag",
+                Traits::class.java
             )
         traitsCache.delete()
         assertThat(traitsCache.get()).isNullOrEmpty()
@@ -60,14 +63,18 @@ class ValueMapCacheTest {
     @Test
     @Throws(Exception::class)
     fun cacheWithSameKeyHasSameValue() {
-        assertThat(traitsCache.isSet).isFalse()
+        assertThat(traitsCache.isSet).isFalse
         val traits = Traits().putValue("foo", "bar")
         traitsCache.set(traits)
 
         val traitsCacheDuplicate =
             ValueMap.Cache<Traits>(
-                RuntimeEnvironment.application, cartographer, "traits-cache-test", "tag", Traits::class.java
+                RuntimeEnvironment.application,
+                cartographer,
+                "traits-cache-test",
+                "tag",
+                Traits::class.java
             )
-        assertThat(traitsCacheDuplicate.isSet).isTrue()
+        assertThat(traitsCacheDuplicate.isSet).isTrue
     }
 }

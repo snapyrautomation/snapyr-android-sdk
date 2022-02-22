@@ -1,18 +1,18 @@
 /**
  * The MIT License (MIT)
- *
+ * <p>
  * Copyright (c) 2014 Segment.io, Inc.
- *
+ * <p>
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * <p>
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- *
+ * <p>
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,6 +26,7 @@ package com.snapyr.sdk;
 import android.util.JsonReader;
 import android.util.JsonToken;
 import android.util.JsonWriter;
+
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
@@ -52,6 +53,108 @@ public class Cartographer {
         this.prettyPrint = prettyPrint;
     }
 
+    /** Reads the {@link JsonReader} into a {@link Map}. */
+    private static Map<String, Object> readerToMap(JsonReader reader) throws IOException {
+        Map<String, Object> map = new LinkedHashMap<String, Object>();
+        reader.beginObject();
+        while (reader.hasNext()) {
+            map.put(reader.nextName(), readValue(reader));
+        }
+        reader.endObject();
+        return map;
+    }
+
+    /** Reads the {@link JsonReader} into a {@link List}. */
+    private static List<Object> readerToList(JsonReader reader) throws IOException {
+        // todo: try to infer the type of the List?
+        List<Object> list = new ArrayList<Object>();
+        reader.beginArray();
+        while (reader.hasNext()) {
+            list.add(readValue(reader));
+        }
+        reader.endArray();
+        return list;
+    }
+
+    /** Reads the next value in the {@link JsonReader}. */
+    private static Object readValue(JsonReader reader) throws IOException {
+        JsonToken token = reader.peek();
+        switch (token) {
+            case BEGIN_OBJECT:
+                return readerToMap(reader);
+            case BEGIN_ARRAY:
+                return readerToList(reader);
+            case BOOLEAN:
+                return reader.nextBoolean();
+            case NULL:
+                reader.nextNull(); // consume the null token
+                return null;
+            case NUMBER:
+                return reader.nextDouble();
+            case STRING:
+                return reader.nextString();
+            default:
+                throw new IllegalStateException("Invalid token " + token);
+        }
+    }
+
+    /** Encode the given {@link Map} into the {@link JsonWriter}. */
+    private static void mapToWriter(Map<?, ?> map, JsonWriter writer) throws IOException {
+        writer.beginObject();
+        for (Map.Entry<?, ?> entry : map.entrySet()) {
+            writer.name(String.valueOf(entry.getKey()));
+            writeValue(entry.getValue(), writer);
+        }
+        writer.endObject();
+    }
+
+    /** Print the json representation of a List to the given writer. */
+    private static void listToWriter(List<?> list, JsonWriter writer) throws IOException {
+        writer.beginArray();
+        for (Object value : list) {
+            writeValue(value, writer);
+        }
+        writer.endArray();
+    }
+
+    // Decoding
+
+    /**
+     * Print the json representation of an array to the given writer. Primitive arrays cannot be
+     * cast to Object[], to this method accepts the raw object and uses {@link
+     * Array#getLength(Object)} and {@link Array#get(Object, int)} to read the array.
+     */
+    private static void arrayToWriter(Object array, JsonWriter writer) throws IOException {
+        writer.beginArray();
+        for (int i = 0, size = Array.getLength(array); i < size; i++) {
+            writeValue(Array.get(array, i), writer);
+        }
+        writer.endArray();
+    }
+
+    /**
+     * Writes the given {@link Object} to the {@link JsonWriter}.
+     *
+     * @throws IOException
+     */
+    private static void writeValue(Object value, JsonWriter writer) throws IOException {
+        if (value == null) {
+            writer.nullValue();
+        } else if (value instanceof Number) {
+            writer.value((Number) value);
+        } else if (value instanceof Boolean) {
+            writer.value((Boolean) value);
+        } else if (value instanceof List) {
+            listToWriter((List) value, writer);
+        } else if (value instanceof Map) {
+            mapToWriter((Map) value, writer);
+        } else if (value.getClass().isArray()) {
+            arrayToWriter(value, writer);
+        } else {
+            writer.value(String.valueOf(value));
+        }
+    }
+
     /**
      * Deserializes the specified json into a {@link Map}. If you have the Json in a {@link Reader}
      * form instead of a {@link String}, use {@link #fromJson(Reader)} instead.
@@ -65,6 +168,8 @@ public class Cartographer {
         }
         return fromJson(new StringReader(json));
     }
+
+    // Encoding
 
     /**
      * Deserializes the json read from the specified {@link Reader} into a {@link Map}. If you have
@@ -136,110 +241,6 @@ public class Cartographer {
             mapToWriter(map, jsonWriter);
         } finally {
             jsonWriter.close();
-        }
-    }
-
-    // Decoding
-
-    /** Reads the {@link JsonReader} into a {@link Map}. */
-    private static Map<String, Object> readerToMap(JsonReader reader) throws IOException {
-        Map<String, Object> map = new LinkedHashMap<String, Object>();
-        reader.beginObject();
-        while (reader.hasNext()) {
-            map.put(reader.nextName(), readValue(reader));
-        }
-        reader.endObject();
-        return map;
-    }
-
-    /** Reads the {@link JsonReader} into a {@link List}. */
-    private static List<Object> readerToList(JsonReader reader) throws IOException {
-        // todo: try to infer the type of the List?
-        List<Object> list = new ArrayList<Object>();
-        reader.beginArray();
-        while (reader.hasNext()) {
-            list.add(readValue(reader));
-        }
-        reader.endArray();
-        return list;
-    }
-
-    /** Reads the next value in the {@link JsonReader}. */
-    private static Object readValue(JsonReader reader) throws IOException {
-        JsonToken token = reader.peek();
-        switch (token) {
-            case BEGIN_OBJECT:
-                return readerToMap(reader);
-            case BEGIN_ARRAY:
-                return readerToList(reader);
-            case BOOLEAN:
-                return reader.nextBoolean();
-            case NULL:
-                reader.nextNull(); // consume the null token
-                return null;
-            case NUMBER:
-                return reader.nextDouble();
-            case STRING:
-                return reader.nextString();
-            default:
-                throw new IllegalStateException("Invalid token " + token);
-        }
-    }
-
-    // Encoding
-
-    /** Encode the given {@link Map} into the {@link JsonWriter}. */
-    private static void mapToWriter(Map<?, ?> map, JsonWriter writer) throws IOException {
-        writer.beginObject();
-        for (Map.Entry<?, ?> entry : map.entrySet()) {
-            writer.name(String.valueOf(entry.getKey()));
-            writeValue(entry.getValue(), writer);
-        }
-        writer.endObject();
-    }
-
-    /** Print the json representation of a List to the given writer. */
-    private static void listToWriter(List<?> list, JsonWriter writer) throws IOException {
-        writer.beginArray();
-        for (Object value : list) {
-            writeValue(value, writer);
-        }
-        writer.endArray();
-    }
-
-    /**
-     * Print the json representation of an array to the given writer. Primitive arrays cannot be
-     * cast to Object[], to this method accepts the raw object and uses {@link
-     * Array#getLength(Object)} and {@link Array#get(Object, int)} to read the array.
-     */
-    private static void arrayToWriter(Object array, JsonWriter writer) throws IOException {
-        writer.beginArray();
-        for (int i = 0, size = Array.getLength(array); i < size; i++) {
-            writeValue(Array.get(array, i), writer);
-        }
-        writer.endArray();
-    }
-
-    /**
-     * Writes the given {@link Object} to the {@link JsonWriter}.
-     *
-     * @throws IOException
-     */
-    private static void writeValue(Object value, JsonWriter writer) throws IOException {
-        if (value == null) {
-            writer.nullValue();
-        } else if (value instanceof Number) {
-            writer.value((Number) value);
-        } else if (value instanceof Boolean) {
-            writer.value((Boolean) value);
-        } else if (value instanceof List) {
-            listToWriter((List) value, writer);
-        } else if (value instanceof Map) {
-            mapToWriter((Map) value, writer);
-        } else if (value.getClass().isArray()) {
-            arrayToWriter(value, writer);
-        } else {
-            writer.value(String.valueOf(value));
         }
     }
 

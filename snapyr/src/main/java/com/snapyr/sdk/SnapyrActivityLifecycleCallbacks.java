@@ -1,18 +1,18 @@
 /**
  * The MIT License (MIT)
- *
+ * <p>
  * Copyright (c) 2014 Segment.io, Inc.
- *
+ * <p>
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * <p>
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- *
+ * <p>
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -29,36 +29,24 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.net.Uri;
 import android.os.Bundle;
+
 import androidx.annotation.NonNull;
 import androidx.lifecycle.DefaultLifecycleObserver;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 class SnapyrActivityLifecycleCallbacks
         implements Application.ActivityLifecycleCallbacks, DefaultLifecycleObserver {
-    private Snapyr snapyr;
-    private ExecutorService analyticsExecutor;
-    private Boolean shouldTrackApplicationLifecycleEvents;
-    private Boolean trackDeepLinks;
-    private Boolean shouldRecordScreenViews;
-    private PackageInfo packageInfo;
-
-    private AtomicBoolean trackedApplicationLifecycleEvents;
-    private AtomicInteger numberOfActivities;
-    private AtomicBoolean firstLaunch;
-
-    private AtomicBoolean isChangingActivityConfigurations;
-    private Boolean useNewLifecycleMethods;
-
     // This is just a stub LifecycleOwner which is used when we need to call some lifecycle
     // methods without going through the actual lifecycle callbacks
-    private static LifecycleOwner stubOwner =
+    private static final LifecycleOwner stubOwner =
             new LifecycleOwner() {
-                Lifecycle stubLifecycle =
+                final Lifecycle stubLifecycle =
                         new Lifecycle() {
                             @Override
                             public void addObserver(@NonNull LifecycleObserver observer) {
@@ -83,6 +71,17 @@ class SnapyrActivityLifecycleCallbacks
                     return stubLifecycle;
                 }
             };
+    private final Snapyr snapyr;
+    private final ExecutorService analyticsExecutor;
+    private final Boolean shouldTrackApplicationLifecycleEvents;
+    private final Boolean trackDeepLinks;
+    private final Boolean shouldRecordScreenViews;
+    private final PackageInfo packageInfo;
+    private final AtomicBoolean trackedApplicationLifecycleEvents;
+    private final AtomicInteger numberOfActivities;
+    private final AtomicBoolean firstLaunch;
+    private final AtomicBoolean isChangingActivityConfigurations;
+    private final Boolean useNewLifecycleMethods;
 
     private SnapyrActivityLifecycleCallbacks(
             Snapyr snapyr,
@@ -144,13 +143,16 @@ class SnapyrActivityLifecycleCallbacks
     }
 
     @Override
-    public void onResume(@NonNull LifecycleOwner owner) {}
+    public void onResume(@NonNull LifecycleOwner owner) {
+    }
 
     @Override
-    public void onPause(@NonNull LifecycleOwner owner) {}
+    public void onPause(@NonNull LifecycleOwner owner) {
+    }
 
     @Override
-    public void onDestroy(@NonNull LifecycleOwner owner) {}
+    public void onDestroy(@NonNull LifecycleOwner owner) {
+    }
 
     @Override
     public void onActivityCreated(Activity activity, Bundle bundle) {
@@ -239,7 +241,8 @@ class SnapyrActivityLifecycleCallbacks
         private PackageInfo packageInfo;
         private Boolean useNewLifecycleMethods;
 
-        public Builder() {}
+        public Builder() {
+        }
 
         public Builder snapyr(Snapyr snapyr) {
             this.snapyr = snapyr;

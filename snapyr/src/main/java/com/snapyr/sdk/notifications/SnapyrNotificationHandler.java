@@ -1,18 +1,18 @@
 /**
  * The MIT License (MIT)
- *
+ * <p>
  * Copyright (c) 2014 Segment.io, Inc.
- *
+ * <p>
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * <p>
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- *
+ * <p>
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -30,13 +30,10 @@ import android.app.PendingIntent;
 import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.net.Uri;
 import android.os.Build;
 import android.util.Log;
 
@@ -52,12 +49,10 @@ import com.snapyr.sdk.ActionButton;
 import com.snapyr.sdk.PushTemplate;
 import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.core.R;
-import com.snapyr.sdk.internal.Utils;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -86,12 +81,12 @@ public class SnapyrNotificationHandler {
     private final Context context;
     private final Context applicationContext;
     private final NotificationManagerCompat notificationMgr;
-    private int nextMessageId = 0;
     public String defaultChannelId = "channel1";
     public String defaultChannelName = "General Notifications";
     public String defaultChannelDescription =
             "Displays all Snapyr-managed notifications by default";
     public int defaultChannelImportance = NotificationManagerCompat.IMPORTANCE_HIGH;
+    private int nextMessageId = 0;
 
     public SnapyrNotificationHandler(Context ctx) {
         context = ctx;
@@ -135,9 +130,9 @@ public class SnapyrNotificationHandler {
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(this.context, channelId);
         builder.setSmallIcon(R.drawable.ic_snapyr_logo_only)
-                .setContentTitle((String)data.get(NOTIF_TITLE_KEY))
-                .setContentText((String)data.get(NOTIF_CONTENT_KEY))
-                .setSubText((String)data.get(NOTIF_SUBTITLE_KEY))
+                .setContentTitle((String) data.get(NOTIF_TITLE_KEY))
+                .setContentText((String) data.get(NOTIF_CONTENT_KEY))
+                .setSubText((String) data.get(NOTIF_SUBTITLE_KEY))
                 .setColor(Color.BLUE) // TODO (@paulwsmith): make configurable
                 .setAutoCancel(true); // true means notification auto dismissed after tapping. TODO
 
@@ -145,10 +140,10 @@ public class SnapyrNotificationHandler {
 
         Intent trackIntent = new Intent(this.context, SnapyrNotificationListener.class);
         trackIntent.setAction(NOTIFICATION_ACTION);
-        trackIntent.putExtra(ACTION_ID_KEY, (String)data.get(ACTION_ID_KEY));
-        trackIntent.putExtra(ACTION_DEEP_LINK_KEY, (String)data.get(NOTIF_DEEP_LINK_KEY));
+        trackIntent.putExtra(ACTION_ID_KEY, (String) data.get(ACTION_ID_KEY));
+        trackIntent.putExtra(ACTION_DEEP_LINK_KEY, (String) data.get(NOTIF_DEEP_LINK_KEY));
         trackIntent.putExtra(NOTIFICATION_ID, notificationId);
-        trackIntent.putExtra(NOTIF_TOKEN_KEY, (String)data.get(NOTIF_TOKEN_KEY));
+        trackIntent.putExtra(NOTIF_TOKEN_KEY, (String) data.get(NOTIF_TOKEN_KEY));
 
         ts.addNextIntent(getLaunchIntent());
         ts.addNextIntent(trackIntent);
@@ -159,15 +154,15 @@ public class SnapyrNotificationHandler {
         PushTemplate pushTemplate = (PushTemplate) data.get(ACTION_BUTTONS_KEY);
         if (pushTemplate != null) {
             String token = (String) data.get(NOTIF_TOKEN_KEY);
-            pushTemplate.getButtons().forEach((button)->{
-                createActionButton(builder,notificationId, button, token);
+            pushTemplate.getButtons().forEach((button) -> {
+                createActionButton(builder, notificationId, button, token);
             });
         }
 
         // Image handling - fetch from URL
         // TODO (@paulwsmith): move off-thread? (maybe not necessary; not part of main thread
         // anyway)
-        String imageUrl = (String)data.get(NOTIF_IMAGE_URL_KEY);
+        String imageUrl = (String) data.get(NOTIF_IMAGE_URL_KEY);
         if (imageUrl != null) {
             InputStream inputStream = null;
             Bitmap image = null;
@@ -203,7 +198,7 @@ public class SnapyrNotificationHandler {
 
     private void createActionButton(NotificationCompat.Builder builder,
                                     int notificationId, ActionButton template,
-                                    String actionToken){
+                                    String actionToken) {
         Intent trackIntent = new Intent(this.context, SnapyrNotificationListener.class);
         trackIntent.setAction(NOTIFICATION_ACTION);
         trackIntent.putExtra(ACTION_ID_KEY, template.id);
@@ -231,7 +226,7 @@ public class SnapyrNotificationHandler {
 
         createActionButton(builder, notificationId,
                 new ActionButton("button_one", "button_one", "button_one",
-                        "snapyrsample://test"),"");
+                        "snapyrsample://test"), "");
 
         createActionButton(builder, notificationId,
                 new ActionButton("button_two", "button_two", "button_two",

@@ -25,16 +25,6 @@ package com.snapyr.sdk
 
 import com.snapyr.sdk.QueueFile.Element
 import com.snapyr.sdk.QueueFile.HEADER_LENGTH
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.IOException
-import java.io.RandomAccessFile
-import java.util.LinkedList
-import java.util.Queue
-import java.util.concurrent.atomic.AtomicInteger
-import java.util.logging.Logger
-import kotlin.NoSuchElementException
-import kotlin.jvm.Throws
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.junit.Assert
@@ -42,6 +32,13 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.IOException
+import java.io.RandomAccessFile
+import java.util.*
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.logging.Logger
 
 class QueueFileTest {
     private val logger = Logger.getLogger(QueueFileTest::class.java.name)
@@ -64,7 +61,9 @@ class QueueFileTest {
         }
     }
 
-    @Rule @JvmField val folder = TemporaryFolder()
+    @Rule
+    @JvmField
+    val folder = TemporaryFolder()
     private lateinit var file: File
 
     @Before
@@ -118,7 +117,7 @@ class QueueFileTest {
         queue.clear()
 
         queue = QueueFile(file)
-        assertThat(queue.isEmpty).isTrue()
+        assertThat(queue.isEmpty).isTrue
         assertThat(queue.peek()).isNull()
 
         queue.add(values[25])
@@ -290,7 +289,7 @@ class QueueFileTest {
         assertThat(queue.peek()).isEqualTo(values[4])
 
         queue.remove(6)
-        assertThat(queue.isEmpty).isTrue()
+        assertThat(queue.isEmpty).isTrue
         assertThat(queue.peek()).isNull()
     }
 
@@ -365,8 +364,7 @@ class QueueFileTest {
         val bigBoy = ByteArray(7000)
         for (i in 0 until 7000 step 100) {
             values[100]!!.let {
-                values[100]!!.size.let {
-                    length ->
+                values[100]!!.size.let { length ->
                     System.arraycopy(values[100]!!, 0, bigBoy, i, length)
                 }
             }
@@ -620,27 +618,28 @@ class QueueFileTest {
         val baos = ByteArrayOutputStream()
         val buffer = ByteArray(8)
 
-        val elementVisitor = PayloadQueue.ElementVisitor { input, length -> // A common idiom for copying data between two streams, but it depends on the
-            // InputStream correctly returning -1 when no more data is available
-            var count: Int
-            while (input.read(buffer).also { count = it } != -1) {
-                if (count == 0) {
-                    // In the past, the ElementInputStream.read(byte[], int, int) method would return 0
-                    // when no more bytes were available for reading. This test detects that error.
-                    //
-                    // Note: 0 is a valid return value for InputStream.read(byte[], int, int), which
-                    // happens
-                    // when the passed length is zero. We could trigger that through
-                    // InputStream.read(byte[])
-                    // by passing a zero-length buffer. However, since we won't do that during this
-                    // test,
-                    // we can safely assume that a return value of 0 indicates the past error in logic.
-                    Assert.fail("This test should never receive a result of 0 from InputStream.read(byte[])")
+        val elementVisitor =
+            PayloadQueue.ElementVisitor { input, length -> // A common idiom for copying data between two streams, but it depends on the
+                // InputStream correctly returning -1 when no more data is available
+                var count: Int
+                while (input.read(buffer).also { count = it } != -1) {
+                    if (count == 0) {
+                        // In the past, the ElementInputStream.read(byte[], int, int) method would return 0
+                        // when no more bytes were available for reading. This test detects that error.
+                        //
+                        // Note: 0 is a valid return value for InputStream.read(byte[], int, int), which
+                        // happens
+                        // when the passed length is zero. We could trigger that through
+                        // InputStream.read(byte[])
+                        // by passing a zero-length buffer. However, since we won't do that during this
+                        // test,
+                        // we can safely assume that a return value of 0 indicates the past error in logic.
+                        Assert.fail("This test should never receive a result of 0 from InputStream.read(byte[])")
+                    }
+                    baos.write(buffer, 0, count)
                 }
-                baos.write(buffer, 0, count)
+                true
             }
-            true
-        }
 
         val saw = queueFile.forEach(elementVisitor)
         assertThat(saw).isEqualTo(2)
@@ -835,7 +834,8 @@ class QueueFileTest {
         assertThat(data).containsOnly(0x00.toByte())
 
         // Read from the last element to the end and make sure it's zeroed.
-        val endOfLastElement = HEADER_LENGTH + firstElementPadding + 4 * (Element.HEADER_LENGTH + 1024)
+        val endOfLastElement =
+            HEADER_LENGTH + firstElementPadding + 4 * (Element.HEADER_LENGTH + 1024)
         val readLength = (queue.raf.length() - endOfLastElement).toInt()
         data = ByteArray(readLength)
         queue.raf.seek(endOfLastElement.toLong())

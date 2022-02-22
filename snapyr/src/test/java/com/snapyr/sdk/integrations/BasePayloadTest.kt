@@ -26,12 +26,12 @@ package com.snapyr.sdk.integrations
 import androidx.annotation.Nullable
 import com.nhaarman.mockitokotlin2.any
 import com.snapyr.sdk.integrations.BasePayload.Type
-import java.util.Date
 import org.assertj.core.api.Assertions
 import org.assertj.core.data.MapEntry.entry
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import java.util.*
 
 class BasePayloadTest {
 
@@ -53,7 +53,8 @@ class BasePayloadTest {
     fun channelIsSet() {
         for (builder in builders) {
             val payload = builder.userId("user_id").build()
-            Assertions.assertThat(payload).containsEntry(BasePayload.CHANNEL_KEY, BasePayload.Channel.mobile)
+            Assertions.assertThat(payload)
+                .containsEntry(BasePayload.CHANNEL_KEY, BasePayload.Channel.mobile)
         }
     }
 
@@ -94,7 +95,8 @@ class BasePayloadTest {
         for (builder in builders) {
             val payload = builder.anonymousId("anonymous_id").build()
             Assertions.assertThat(payload.anonymousId()).isEqualTo("anonymous_id")
-            Assertions.assertThat(payload).containsEntry(BasePayload.ANONYMOUS_ID_KEY, "anonymous_id")
+            Assertions.assertThat(payload)
+                .containsEntry(BasePayload.ANONYMOUS_ID_KEY, "anonymous_id")
         }
     }
 
@@ -176,7 +178,7 @@ class BasePayloadTest {
     fun messageIdIsGenerated() {
         for (builder in builders) {
             val payload = builder.userId("user_id").build()
-            Assertions.assertThat(payload.messageId()).isNotEmpty()
+            Assertions.assertThat(payload.messageId()).isNotEmpty
             Assertions.assertThat(payload).containsKey(BasePayload.MESSAGE_ID)
         }
     }

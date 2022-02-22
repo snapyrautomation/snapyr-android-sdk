@@ -29,11 +29,6 @@ import com.snapyr.sdk.internal.Private
 import com.squareup.okhttp.mockwebserver.MockResponse
 import com.squareup.okhttp.mockwebserver.MockWebServer
 import com.squareup.okhttp.mockwebserver.RecordedRequest
-import java.io.IOException
-import java.io.InputStream
-import java.io.OutputStream
-import java.net.HttpURLConnection
-import kotlin.jvm.Throws
 import org.assertj.core.api.AbstractAssert
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
@@ -46,6 +41,10 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import java.io.IOException
+import java.io.InputStream
+import java.io.OutputStream
+import java.net.HttpURLConnection
 
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE)
@@ -53,6 +52,7 @@ class ClientTest {
     @Rule
     @JvmField
     val server = MockWebServer()
+
     @Rule
     @JvmField
     val folder = TemporaryFolder()
@@ -158,8 +158,8 @@ class ClientTest {
             assertThat(e)
                 .hasMessage(
                     "HTTP 300: bar. " +
-                        "Response: Could not read response body for rejected message: " +
-                        "java.io.IOException: Underlying input stream returned zero bytes"
+                            "Response: Could not read response body for rejected message: " +
+                            "java.io.IOException: Underlying input stream returned zero bytes"
                 )
         }
         verify(mockConnection).disconnect()
@@ -173,7 +173,7 @@ class ClientTest {
 
         val connection = client.fetchSettings()
         assertThat(connection.os).isNull()
-        assertThat(connection.`is`).isNotNull()
+        assertThat(connection.`is`).isNotNull
         assertThat(connection.connection.responseCode).isEqualTo(200)
         RecordedRequestAssert.assertThat(server.takeRequest())
             .hasRequestLine("GET /sdk/foo HTTP/1.1")
@@ -213,14 +213,17 @@ class ClientTest {
 
     internal class RecordedRequestAssert constructor(actual: RecordedRequest) :
         AbstractAssert<RecordedRequestAssert,
-            RecordedRequest>(actual, RecordedRequestAssert::class.java) {
+                RecordedRequest>(actual, RecordedRequestAssert::class.java) {
 
         fun containsHeader(name: String, expectedHeader: String): RecordedRequestAssert {
             isNotNull
             val actualHeader = actual.getHeader(name)
             assertThat(actualHeader)
                 .overridingErrorMessage(
-                    "Expected header <%s> to be <%s> but was <%s>.", name, expectedHeader, actualHeader
+                    "Expected header <%s> to be <%s> but was <%s>.",
+                    name,
+                    expectedHeader,
+                    actualHeader
                 )
                 .isEqualTo(expectedHeader)
             return this
@@ -233,8 +236,8 @@ class ClientTest {
                 .overridingErrorMessage(
                     "Expected header <%s> to not be empty but was.", name, actualHeader
                 )
-                .isNotNull()
-                .isNotEmpty()
+                .isNotNull
+                .isNotEmpty
             return this
         }
 
@@ -243,7 +246,9 @@ class ClientTest {
             val actualRequestLine = actual.requestLine
             assertThat(actualRequestLine)
                 .overridingErrorMessage(
-                    "Expected requestLine <%s> to be <%s> but was not.", actualRequestLine, requestLine
+                    "Expected requestLine <%s> to be <%s> but was not.",
+                    actualRequestLine,
+                    requestLine
                 )
                 .isEqualTo(requestLine)
             return this

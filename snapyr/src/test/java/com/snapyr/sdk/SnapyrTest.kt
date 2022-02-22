@@ -40,33 +40,11 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import com.nhaarman.mockitokotlin2.doNothing
-import com.nhaarman.mockitokotlin2.never
-import com.nhaarman.mockitokotlin2.spy
-import com.nhaarman.mockitokotlin2.verify
-import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
-import com.nhaarman.mockitokotlin2.whenever
+import com.nhaarman.mockitokotlin2.*
 import com.snapyr.sdk.ProjectSettings.create
-import com.snapyr.sdk.TestUtils.NoDescriptionMatcher
-import com.snapyr.sdk.TestUtils.grantPermission
-import com.snapyr.sdk.TestUtils.mockApplication
-import com.snapyr.sdk.integrations.AliasPayload
-import com.snapyr.sdk.integrations.GroupPayload
-import com.snapyr.sdk.integrations.IdentifyPayload
-import com.snapyr.sdk.integrations.Integration
-import com.snapyr.sdk.integrations.Logger
-import com.snapyr.sdk.integrations.ScreenPayload
-import com.snapyr.sdk.integrations.TrackPayload
-import com.snapyr.sdk.internal.Utils.AnalyticsNetworkExecutorService
-import com.snapyr.sdk.internal.Utils.DEFAULT_FLUSH_INTERVAL
-import com.snapyr.sdk.internal.Utils.DEFAULT_FLUSH_QUEUE_SIZE
-import com.snapyr.sdk.internal.Utils.isNullOrEmpty
-import java.io.IOException
-import java.lang.Boolean.TRUE
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.atomic.AtomicReference
-import kotlin.jvm.Throws
+import com.snapyr.sdk.TestUtils.*
+import com.snapyr.sdk.integrations.*
+import com.snapyr.sdk.internal.Utils.*
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.assertj.core.data.MapEntry
@@ -87,6 +65,11 @@ import org.mockito.hamcrest.MockitoHamcrest.argThat
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
+import java.io.IOException
+import java.lang.Boolean.TRUE
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.atomic.AtomicReference
 
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE)
@@ -107,6 +90,7 @@ open class SnapyrTest {
 
     @Mock
     private lateinit var traitsCache: Traits.Cache
+
     @Spy
     private lateinit var networkExecutor: AnalyticsNetworkExecutorService
 
@@ -134,8 +118,10 @@ open class SnapyrTest {
     private lateinit var traits: Traits
     private lateinit var snapyrContext: SnapyrContext
     private lateinit var analytics: Snapyr
+
     @Mock
     private lateinit var jsMiddleware: JSMiddleware
+
     @Mock
     private lateinit var actionHandler: SnapyrActionHandler
 
@@ -241,7 +227,7 @@ open class SnapyrTest {
                     object : TestUtils.NoDescriptionMatcher<IdentifyPayload>() {
                         override fun matchesSafely(item: IdentifyPayload): Boolean {
                             return item.userId() == "prateek" &&
-                                item.traits().username() == "f2prateek"
+                                    item.traits().username() == "f2prateek"
                         }
                     })
             )
@@ -307,7 +293,7 @@ open class SnapyrTest {
                     object : NoDescriptionMatcher<GroupPayload>() {
                         override fun matchesSafely(item: GroupPayload): Boolean {
                             return item.groupId() == "snapyr" &&
-                                item.traits().employees() == 42L
+                                    item.traits().employees() == 42L
                         }
                     })
             )
@@ -336,7 +322,7 @@ open class SnapyrTest {
                     object : NoDescriptionMatcher<TrackPayload>() {
                         override fun matchesSafely(payload: TrackPayload): Boolean {
                             return payload.event() == "wrote tests" &&
-                                payload.properties().url() == "github.com"
+                                    payload.properties().url() == "github.com"
                         }
                     })
             )
@@ -369,8 +355,8 @@ open class SnapyrTest {
                     object : NoDescriptionMatcher<ScreenPayload>() {
                         override fun matchesSafely(payload: ScreenPayload): Boolean {
                             return payload.name() == "saw tests" &&
-                                payload.category() == "android" &&
-                                payload.properties().url() == "github.com"
+                                    payload.category() == "android" &&
+                                    payload.properties().url() == "github.com"
                         }
                     })
             )
@@ -706,12 +692,12 @@ open class SnapyrTest {
 
     @Test
     fun shutdown() {
-        assertThat(analytics.shutdown).isFalse()
+        assertThat(analytics.shutdown).isFalse
         analytics.shutdown()
         verify(application).unregisterActivityLifecycleCallbacks(analytics.activityLifecycleCallback)
         verify(stats).shutdown()
         verify(networkExecutor).shutdown()
-        assertThat(analytics.shutdown).isTrue()
+        assertThat(analytics.shutdown).isTrue
         try {
             analytics.track("foo")
             fail("Enqueuing a message after shutdown should throw.")
@@ -729,11 +715,11 @@ open class SnapyrTest {
 
     @Test
     fun shutdownTwice() {
-        assertThat(analytics.shutdown).isFalse()
+        assertThat(analytics.shutdown).isFalse
         analytics.shutdown()
         analytics.shutdown()
         verify(stats).shutdown()
-        assertThat(analytics.shutdown).isTrue()
+        assertThat(analytics.shutdown).isTrue
     }
 
     @Test
@@ -885,11 +871,11 @@ open class SnapyrTest {
                     object : NoDescriptionMatcher<TrackPayload>() {
                         override fun matchesSafely(payload: TrackPayload): Boolean {
                             return payload.event() ==
-                                "Application Installed" &&
-                                payload.properties()
-                                .getString("version") == "1.0.0" &&
-                                payload.properties()
-                                .getString("build") == 100.toString()
+                                    "Application Installed" &&
+                                    payload.properties()
+                                        .getString("version") == "1.0.0" &&
+                                    payload.properties()
+                                        .getString("build") == 100.toString()
                         }
                     })
             )
@@ -908,7 +894,10 @@ open class SnapyrTest {
         packageInfo.versionName = "1.0.1"
 
         val sharedPreferences =
-            RuntimeEnvironment.application.getSharedPreferences("analytics-android-qaz", MODE_PRIVATE)
+            RuntimeEnvironment.application.getSharedPreferences(
+                "analytics-android-qaz",
+                MODE_PRIVATE
+            )
         val editor = sharedPreferences.edit()
         editor.putInt("build", 100)
         editor.putString("version", "1.0.0")
@@ -975,15 +964,15 @@ open class SnapyrTest {
                     object : NoDescriptionMatcher<TrackPayload>() {
                         override fun matchesSafely(payload: TrackPayload): Boolean {
                             return payload.event() ==
-                                "Application Updated" &&
-                                payload.properties()
-                                .getString("previous_version") == "1.0.0" &&
-                                payload.properties()
-                                .getString("previous_build") == 100.toString() &&
-                                payload.properties()
-                                .getString("version") == "1.0.1" &&
-                                payload.properties()
-                                .getString("build") == 101.toString()
+                                    "Application Updated" &&
+                                    payload.properties()
+                                        .getString("previous_version") == "1.0.0" &&
+                                    payload.properties()
+                                        .getString("previous_build") == 100.toString() &&
+                                    payload.properties()
+                                        .getString("version") == "1.0.1" &&
+                                    payload.properties()
+                                        .getString("build") == 101.toString()
                         }
                     })
             )
@@ -1044,7 +1033,12 @@ open class SnapyrTest {
 
         whenever(activity.packageManager).thenReturn(packageManager)
         //noinspection WrongConstant
-        whenever(packageManager.getActivityInfo(any(ComponentName::class.java), eq(PackageManager.GET_META_DATA)))
+        whenever(
+            packageManager.getActivityInfo(
+                any(ComponentName::class.java),
+                eq(PackageManager.GET_META_DATA)
+            )
+        )
             .thenReturn(info)
         whenever(info.loadLabel(packageManager)).thenReturn("Foo")
 
@@ -1128,12 +1122,12 @@ open class SnapyrTest {
                     object : NoDescriptionMatcher<TrackPayload>() {
                         override fun matchesSafely(payload: TrackPayload): Boolean {
                             return payload.event() == "Deep Link Opened" &&
-                                payload.properties()
-                                .getString("url") == expectedURL &&
-                                payload.properties()
-                                .getString("gclid") == "abcd" &&
-                                payload.properties()
-                                .getString("utm_id") == "12345"
+                                    payload.properties()
+                                        .getString("url") == expectedURL &&
+                                    payload.properties()
+                                        .getString("gclid") == "abcd" &&
+                                    payload.properties()
+                                        .getString("utm_id") == "12345"
                         }
                     })
             )
@@ -1204,12 +1198,12 @@ open class SnapyrTest {
                     object : NoDescriptionMatcher<TrackPayload>() {
                         override fun matchesSafely(payload: TrackPayload): Boolean {
                             return payload.event() == "Deep Link Opened" &&
-                                payload.properties()
-                                .getString("url") == expectedURL &&
-                                payload.properties()
-                                .getString("gclid") == "abcd" &&
-                                payload.properties()
-                                .getString("utm_id") == "12345"
+                                    payload.properties()
+                                        .getString("url") == expectedURL &&
+                                    payload.properties()
+                                        .getString("gclid") == "abcd" &&
+                                    payload.properties()
+                                        .getString("utm_id") == "12345"
                         }
                     })
             )
@@ -1492,9 +1486,9 @@ open class SnapyrTest {
                     object : NoDescriptionMatcher<TrackPayload>() {
                         override fun matchesSafely(payload: TrackPayload): Boolean {
                             return payload.event() == "Application Opened" &&
-                                payload.properties().getString("version") == "1.0.0" &&
-                                payload.properties().getString("build") == 100.toString() &&
-                                !payload.properties().getBoolean("from_background", true)
+                                    payload.properties().getString("version") == "1.0.0" &&
+                                    payload.properties().getString("build") == 100.toString() &&
+                                    !payload.properties().getBoolean("from_background", true)
                         }
                     })
             )
@@ -1646,8 +1640,8 @@ open class SnapyrTest {
                     object : NoDescriptionMatcher<TrackPayload>() {
                         override fun matchesSafely(payload: TrackPayload): Boolean {
                             return payload.event() == "Application Opened" &&
-                                payload.properties()
-                                    .getBoolean("from_background", false)
+                                    payload.properties()
+                                        .getBoolean("from_background", false)
                         }
                     })
             )
@@ -1716,9 +1710,9 @@ open class SnapyrTest {
                     object : NoDescriptionMatcher<TrackPayload>() {
                         override fun matchesSafely(payload: TrackPayload): Boolean {
                             return payload.event() == "Application Opened" &&
-                                payload.properties().getString("version") == "1.0.0" &&
-                                payload.properties().getString("build") == 100.toString() &&
-                                !payload.properties().getBoolean("from_background", true)
+                                    payload.properties().getString("version") == "1.0.0" &&
+                                    payload.properties().getString("build") == 100.toString() &&
+                                    !payload.properties().getBoolean("from_background", true)
                         }
                     })
             )
@@ -1871,7 +1865,7 @@ open class SnapyrTest {
                     object : NoDescriptionMatcher<TrackPayload>() {
                         override fun matchesSafely(payload: TrackPayload): Boolean {
                             return payload.event() == "Application Opened" &&
-                                payload.properties().getBoolean("from_background", false)
+                                    payload.properties().getBoolean("from_background", false)
                         }
                     })
             )
@@ -1939,7 +1933,7 @@ open class SnapyrTest {
             false
         )
 
-        assertThat(analytics.shutdown).isFalse()
+        assertThat(analytics.shutdown).isFalse
         analytics.shutdown()
 
         // Same callback was registered and unregistered
@@ -2037,7 +2031,7 @@ open class SnapyrTest {
             false
         )
 
-        assertThat(analytics.shutdown).isFalse()
+        assertThat(analytics.shutdown).isFalse
         analytics.shutdown()
         val lifecycleObserverSpy = spy(analytics.activityLifecycleCallback)
         // Same callback was registered and unregistered

@@ -24,8 +24,6 @@
 package com.snapyr.sdk
 
 import android.util.Pair
-import java.io.IOException
-import kotlin.jvm.Throws
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.assertj.core.data.MapEntry
@@ -34,6 +32,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import java.io.IOException
 
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE)
@@ -128,12 +127,12 @@ class StatsTest {
     fun createEmptySnapshot() {
         val snapshot: StatsSnapshot = stats.createSnapshot()
 
-        assertThat(snapshot.timestamp).isNotZero()
-        assertThat(snapshot.flushCount).isZero()
-        assertThat(snapshot.flushEventCount).isZero()
-        assertThat(snapshot.integrationOperationCount).isZero()
-        assertThat(snapshot.integrationOperationDuration).isZero()
-        assertThat(snapshot.integrationOperationAverageDuration).isZero()
+        assertThat(snapshot.timestamp).isNotZero
+        assertThat(snapshot.flushCount).isZero
+        assertThat(snapshot.flushEventCount).isZero
+        assertThat(snapshot.integrationOperationCount).isZero
+        assertThat(snapshot.integrationOperationDuration).isZero
+        assertThat(snapshot.integrationOperationAverageDuration).isZero
         assertThat(snapshot.integrationOperationDurationByIntegration).isEmpty()
     }
 }

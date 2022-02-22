@@ -184,7 +184,7 @@ class PropertiesTest {
     fun repeatCustomer() {
         properties.putRepeatCustomer(true)
 
-        assertThat(properties.isRepeatCustomer).isTrue()
+        assertThat(properties.isRepeatCustomer).isTrue
     }
 
     @Test

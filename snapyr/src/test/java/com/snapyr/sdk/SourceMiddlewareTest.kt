@@ -28,9 +28,6 @@ import com.google.common.util.concurrent.MoreExecutors
 import com.snapyr.sdk.integrations.BasePayload
 import com.snapyr.sdk.integrations.ScreenPayload
 import com.snapyr.sdk.integrations.TrackPayload
-import java.lang.AssertionError
-import java.util.concurrent.atomic.AtomicReference
-import kotlin.jvm.Throws
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -39,6 +36,7 @@ import org.mockito.MockitoAnnotations.initMocks
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
+import java.util.concurrent.atomic.AtomicReference
 
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE)
@@ -62,8 +60,7 @@ class SourceMiddlewareTest {
         val payloadRef = AtomicReference<TrackPayload>()
         val analytics: Snapyr =
             builder
-                .useSourceMiddleware {
-                    chain ->
+                .useSourceMiddleware { chain ->
                     val payload = chain.payload()
                     payloadRef.set(payload as TrackPayload)
                     chain.proceed(payload)
@@ -98,7 +95,11 @@ class SourceMiddlewareTest {
     fun middlewareCanTransform() {
         val payloadRef = AtomicReference<BasePayload>()
         val analytics = builder
-            .useSourceMiddleware { chain -> chain.proceed(chain.payload().toBuilder().messageId("override").build()) }
+            .useSourceMiddleware { chain ->
+                chain.proceed(
+                    chain.payload().toBuilder().messageId("override").build()
+                )
+            }
             .useSourceMiddleware { chain ->
                 val payload = chain.payload()
                 payloadRef.set(payload)

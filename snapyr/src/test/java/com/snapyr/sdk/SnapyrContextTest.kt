@@ -58,7 +58,17 @@ class SnapyrContextTest {
     fun create() {
         context = SnapyrContext.create(RuntimeEnvironment.application, traits, true)
         assertThat(context)
-            .containsKeys("app", "device", "library", "locale", "network", "os", "screen", "timezone", "traits")
+            .containsKeys(
+                "app",
+                "device",
+                "library",
+                "locale",
+                "network",
+                "os",
+                "screen",
+                "timezone",
+                "traits"
+            )
         assertThat(context).containsEntry("userAgent", "undefined")
 
         assertThat(context.getValueMap("app"))

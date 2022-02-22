@@ -34,8 +34,8 @@ import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.kotlin_sample.databinding.ActivityMainBinding
-import com.snapyr.sdk.Snapyr
 import com.snapyr.sdk.Properties
+import com.snapyr.sdk.Snapyr
 import com.snapyr.sdk.Traits
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -104,8 +104,12 @@ class MainActivity : AppCompatActivity() {
             if (!isNullOrEmpty(userId)) {
                 Snapyr.with(this).identify(userId)
             }
-            if (!isNullOrEmpty(name)) { Snapyr.with(this).identify(Traits().putName(name)) }
-            if (!isNullOrEmpty(email)) { Snapyr.with(this).identify(Traits().putEmail(email)) }
+            if (!isNullOrEmpty(name)) {
+                Snapyr.with(this).identify(Traits().putName(name))
+            }
+            if (!isNullOrEmpty(email)) {
+                Snapyr.with(this).identify(Traits().putEmail(email))
+            }
 
             Toast.makeText(this, "Identification acknowledged", Toast.LENGTH_SHORT).show()
         }
