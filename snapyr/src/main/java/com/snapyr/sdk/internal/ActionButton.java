@@ -1,4 +1,4 @@
-package com.snapyr.sdk;
+package com.snapyr.sdk.internal;
 
 import android.net.Uri;
 

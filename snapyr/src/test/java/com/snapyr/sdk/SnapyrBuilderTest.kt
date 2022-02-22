@@ -90,60 +90,6 @@ class SnapyrBuilderTest {
 
     @Test
     @Throws(Exception::class)
-    fun invalidSourceMiddlewareThrowsException() {
-        try {
-            Builder(context, "foo").useSourceMiddleware(null)
-            fail("Null middleware should throw exception.")
-        } catch (expected: NullPointerException) {
-            assertThat(expected).hasMessage("middleware == null")
-        }
-
-        try {
-            val middleware = Middleware { throw AssertionError("should not be invoked") }
-            Builder(context, "foo").useSourceMiddleware(middleware).useSourceMiddleware(middleware)
-            fail("Registering middleware twice throw exception.")
-        } catch (expected: IllegalStateException) {
-            assertThat(expected).hasMessage("Source Middleware is already registered.")
-        }
-    }
-
-    @Test
-    @Throws(Exception::class)
-    fun invalidDestinationMiddlewareThrowsException() {
-        try {
-            Builder(context, "foo").useDestinationMiddleware(null, null)
-            fail("Null key should throw exception.")
-        } catch (expected: IllegalArgumentException) {
-            assertThat(expected).hasMessage("key must not be null or empty.")
-        }
-
-        try {
-            Builder(context, "foo").useDestinationMiddleware("", null)
-            fail("Null key should throw exception.")
-        } catch (expected: IllegalArgumentException) {
-            assertThat(expected).hasMessage("key must not be null or empty.")
-        }
-
-        try {
-            Builder(context, "foo").useDestinationMiddleware("foo", null)
-            fail("Null middleware should throw exception.")
-        } catch (expected: NullPointerException) {
-            assertThat(expected).hasMessage("middleware == null")
-        }
-
-        try {
-            val middleware = Middleware { throw AssertionError("should not be invoked") }
-            Builder(context, "foo")
-                .useDestinationMiddleware("bar", middleware)
-                .useDestinationMiddleware("bar", middleware)
-            fail("Registering middleware twice throw exception.")
-        } catch (expected: IllegalStateException) {
-            assertThat(expected).hasMessage("Destination Middleware is already registered.")
-        }
-    }
-
-    @Test
-    @Throws(Exception::class)
     fun invalidWriteKeyThrowsException() {
         try {
             Builder(context, null)

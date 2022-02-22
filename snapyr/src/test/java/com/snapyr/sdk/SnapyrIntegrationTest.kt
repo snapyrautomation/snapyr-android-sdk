@@ -31,7 +31,7 @@ import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.verifyZeroInteractions
 import com.nhaarman.mockitokotlin2.whenever
 import com.snapyr.sdk.PayloadQueue.PersistentQueue
-import com.snapyr.sdk.SnapyrIntegration.*
+import com.snapyr.sdk.SnapyrWriteQueue.*
 import com.snapyr.sdk.TestUtils.*
 import com.snapyr.sdk.integrations.Logger
 import com.snapyr.sdk.integrations.Logger.with
@@ -610,7 +610,7 @@ class SnapyrIntegrationTest {
             return this
         }
 
-        fun build(): SnapyrIntegration {
+        fun build(): SnapyrWriteQueue {
             if (context == null) {
                 context = mockApplication()
                 whenever(context!!.checkCallingOrSelfPermission(ACCESS_NETWORK_STATE))
@@ -634,7 +634,7 @@ class SnapyrIntegrationTest {
             if (networkExecutor == null) {
                 networkExecutor = SynchronousExecutor()
             }
-            return SnapyrIntegration(
+            return SnapyrWriteQueue(
                 context,
                 client,
                 cartographer,

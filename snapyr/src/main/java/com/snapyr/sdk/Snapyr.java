@@ -52,24 +52,21 @@ import com.snapyr.sdk.integrations.AliasPayload;
 import com.snapyr.sdk.integrations.BasePayload;
 import com.snapyr.sdk.integrations.GroupPayload;
 import com.snapyr.sdk.integrations.IdentifyPayload;
-import com.snapyr.sdk.integrations.Integration;
 import com.snapyr.sdk.integrations.Logger;
 import com.snapyr.sdk.integrations.ScreenPayload;
 import com.snapyr.sdk.integrations.TrackPayload;
 import com.snapyr.sdk.internal.NanoDate;
 import com.snapyr.sdk.internal.Private;
+import com.snapyr.sdk.internal.PushTemplate;
 import com.snapyr.sdk.internal.Utils;
 import com.snapyr.sdk.notifications.SnapyrNotificationHandler;
 import com.snapyr.sdk.notifications.SnapyrNotificationLifecycleCallbacks;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -143,17 +140,11 @@ public class Snapyr {
     final String writeKey;
     final int flushQueueSize;
     final long flushIntervalInMillis;
-    final Map<String, Boolean> bundledIntegrations = new ConcurrentHashMap<>();
     @Private
     final boolean nanosecondTimestamps;
     @Private
     final boolean useNewLifecycleMethods;
     private final Application application;
-    private final @NonNull
-    List<Middleware> sourceMiddleware;
-    private final @NonNull
-    Map<String, List<Middleware>> destinationMiddleware;
-    private final JSMiddleware edgeFunctionMiddleware;
     private final Logger logger;
     private final ProjectSettings.Cache projectSettingsCache;
     // Retrieving the advertising ID is asynchronous. This latch helps us wait to ensure the
@@ -166,9 +157,7 @@ public class Snapyr {
     private SnapyrNotificationHandler notificationHandler;
     private String pushToken;
     private Map<String, PushTemplate> PushTemplates;
-    private List<Integration.Factory> factories;
-    // todo: use lightweight map implementation.
-    private Map<String, Integration<?>> integrations;
+    private  final SnapyrWriteQueue sendQueue;
 
     Snapyr(
             Application application,
@@ -179,7 +168,6 @@ public class Snapyr {
             Options defaultOptions,
             @NonNull Logger logger,
             String tag,
-            @NonNull List<Integration.Factory> factories,
             Client client,
             Cartographer cartographer,
             ProjectSettings.Cache projectSettingsCache,
@@ -194,9 +182,6 @@ public class Snapyr {
             final boolean trackDeepLinks,
             BooleanPreference optOut,
             Crypto crypto,
-            @NonNull List<Middleware> sourceMiddleware,
-            @NonNull Map<String, List<Middleware>> destinationMiddleware,
-            JSMiddleware edgeFunctionMiddleware,
             @NonNull final ValueMap defaultProjectSettings,
             @NonNull Lifecycle lifecycle,
             boolean nanosecondTimestamps,
@@ -218,17 +203,24 @@ public class Snapyr {
         this.flushIntervalInMillis = flushIntervalInMillis;
         this.advertisingIdLatch = advertisingIdLatch;
         this.optOut = optOut;
-        this.factories = factories;
         this.analyticsExecutor = analyticsExecutor;
         this.crypto = crypto;
-        this.sourceMiddleware = sourceMiddleware;
-        this.destinationMiddleware = destinationMiddleware;
-        this.edgeFunctionMiddleware = edgeFunctionMiddleware;
         this.lifecycle = lifecycle;
         this.nanosecondTimestamps = nanosecondTimestamps;
         this.useNewLifecycleMethods = useNewLifecycleMethods;
         this.actionHandler = actionHandler;
         this.PushTemplates = null;
+        this.sendQueue = new SnapyrWriteQueue(
+                application.getApplicationContext(),
+                client,
+                cartographer,
+                networkExecutor,
+                stats,
+                flushIntervalInMillis,
+                flushQueueSize,
+                getLogger(),
+                crypto,
+                actionHandler);
 
         namespaceSharedPreferences();
 
@@ -273,17 +265,6 @@ public class Snapyr {
                             }
                             projectSettings = ProjectSettings.create(defaultProjectSettings);
                         }
-                        if (edgeFunctionMiddleware != null) {
-                            edgeFunctionMiddleware.setEdgeFunctionData(
-                                    projectSettings.edgeFunctions());
-                        }
-                        HANDLER.post(
-                                new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        performInitializeIntegrations(projectSettings);
-                                    }
-                                });
                     }
                 });
 
@@ -492,24 +473,9 @@ public class Snapyr {
         }
     }
 
-    @Private
-    void runOnMainThread(final IntegrationOperation operation) {
-        if (shutdown) {
-            return;
-        }
-        analyticsExecutor.submit(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        HANDLER.post(
-                                new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        performRun(operation);
-                                    }
-                                });
-                    }
-                });
+    /** @see #identify(String, Traits, Options) */
+    public void identify(@NonNull IdentifyPayload payload) {
+        identify(payload.userId(), payload.traits(), null);
     }
 
     /** @see #identify(String, Traits, Options) */
@@ -578,6 +544,11 @@ public class Snapyr {
     }
 
     /** @see #group(String, Traits, Options) */
+    public void group(@NonNull GroupPayload payload) {
+        group(payload.groupId(), payload.traits(), null);
+    }
+
+    /** @see #group(String, Traits, Options) */
     public void group(@NonNull String groupId) {
         group(groupId, null, null);
     }
@@ -632,6 +603,11 @@ public class Snapyr {
     }
 
     /** @see #track(String, Properties, Options) */
+    public void track(@NonNull TrackPayload payload) {
+        track(payload.userId(), payload.properties(), null);
+    }
+
+    /** @see #track(String, Properties, Options) */
     public void track(@NonNull String event) {
         track(event, null, null);
     }
@@ -639,6 +615,83 @@ public class Snapyr {
     /** @see #track(String, Properties, Options) */
     public void track(@NonNull String event, @Nullable Properties properties) {
         track(event, properties, null);
+    }
+
+    /**
+     * @see #screen(String, String, Properties, Options)
+     * @deprecated Use {@link #screen(String)} instead.
+     */
+    public void screen(ScreenPayload payload) {
+        screen(payload.category(), payload.name(), payload.properties(), null);
+    }
+
+    /**
+     * @see #screen(String, String, Properties, Options)
+     * @deprecated Use {@link #screen(String)} instead.
+     */
+    public void screen(@Nullable String category, @Nullable String name) {
+        screen(category, name, null, null);
+    }
+    /**
+     * @see #screen(String, String, Properties, Options)
+     * @deprecated Use {@link #screen(String, Properties)} instead.
+     */
+    public void screen(
+            @Nullable String category, @Nullable String name, @Nullable Properties properties) {
+        screen(category, name, properties, null);
+    }
+    /** @see #screen(String, String, Properties, Options) */
+    public void screen(@Nullable String name) {
+        screen(null, name, null, null);
+    }
+    /** @see #screen(String, String, Properties, Options) */
+    public void screen(@Nullable String name, @Nullable Properties properties) {
+        screen(null, name, properties, null);
+    }
+
+    /**
+     * The screen methods let your record whenever a user sees a screen of your mobile app, and
+     * attach a name, category or properties to the screen. Either category or name must be
+     * provided.
+     *
+     * @param category A category to describe the screen. Deprecated.
+     * @param name A name for the screen.
+     * @param properties {@link Properties} to add extra information to this call.
+     * @param options To configure the call, these override the defaultOptions, to extend use
+     *     #getDefaultOptions()
+     * @see <a href="https://segment.com/docs/spec/screen/">Screen Documentation</a>
+     */
+    public void screen(
+            @Nullable final String category,
+            @Nullable final String name,
+            @Nullable final Properties properties,
+            @Nullable final Options options) {
+        assertNotShutdown();
+        if (Utils.isNullOrEmpty(category) && Utils.isNullOrEmpty(name)) {
+            throw new IllegalArgumentException("either category or name must be provided.");
+        }
+        NanoDate timestamp = new NanoDate();
+        analyticsExecutor.submit(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        final Properties finalProperties;
+                        if (properties == null) {
+                            finalProperties = EMPTY_PROPERTIES;
+                        } else {
+                            finalProperties = properties;
+                        }
+
+                        //noinspection deprecation
+                        ScreenPayload.Builder builder =
+                                new ScreenPayload.Builder()
+                                        .timestamp(timestamp)
+                                        .name(name)
+                                        .category(category)
+                                        .properties(finalProperties);
+                        fillAndEnqueue(builder, options);
+                    }
+                });
     }
 
     public void setPushNotificationToken(final @NonNull String token) {
@@ -702,76 +755,9 @@ public class Snapyr {
                 });
     }
 
-    /**
-     * @see #screen(String, String, Properties, Options)
-     * @deprecated Use {@link #screen(String)} instead.
-     */
-    public void screen(@Nullable String category, @Nullable String name) {
-        screen(category, name, null, null);
-    }
-
-    /**
-     * @see #screen(String, String, Properties, Options)
-     * @deprecated Use {@link #screen(String, Properties)} instead.
-     */
-    public void screen(
-            @Nullable String category, @Nullable String name, @Nullable Properties properties) {
-        screen(category, name, properties, null);
-    }
-
-    /** @see #screen(String, String, Properties, Options) */
-    public void screen(@Nullable String name) {
-        screen(null, name, null, null);
-    }
-
-    /** @see #screen(String, String, Properties, Options) */
-    public void screen(@Nullable String name, @Nullable Properties properties) {
-        screen(null, name, properties, null);
-    }
-
-    /**
-     * The screen methods let your record whenever a user sees a screen of your mobile app, and
-     * attach a name, category or properties to the screen. Either category or name must be
-     * provided.
-     *
-     * @param category A category to describe the screen. Deprecated.
-     * @param name A name for the screen.
-     * @param properties {@link Properties} to add extra information to this call.
-     * @param options To configure the call, these override the defaultOptions, to extend use
-     *     #getDefaultOptions()
-     * @see <a href="https://segment.com/docs/spec/screen/">Screen Documentation</a>
-     */
-    public void screen(
-            @Nullable final String category,
-            @Nullable final String name,
-            @Nullable final Properties properties,
-            @Nullable final Options options) {
-        assertNotShutdown();
-        if (Utils.isNullOrEmpty(category) && Utils.isNullOrEmpty(name)) {
-            throw new IllegalArgumentException("either category or name must be provided.");
-        }
-        NanoDate timestamp = new NanoDate();
-        analyticsExecutor.submit(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        final Properties finalProperties;
-                        if (properties == null) {
-                            finalProperties = EMPTY_PROPERTIES;
-                        } else {
-                            finalProperties = properties;
-                        }
-
-                        //noinspection deprecation
-                        ScreenPayload.Builder builder =
-                                new ScreenPayload.Builder()
-                                        .timestamp(timestamp)
-                                        .name(name)
-                                        .category(category)
-                                        .properties(finalProperties);
-                        fillAndEnqueue(builder, options);
-                    }
-                });
+    /** @see #alias(String, Options) */
+    public void alias(@NonNull AliasPayload payload) {
+        alias(payload.userId(), null);
     }
 
     /** @see #alias(String, Options) */
@@ -862,36 +848,36 @@ public class Snapyr {
         enqueue(builder.build());
     }
 
+
     void enqueue(BasePayload payload) {
         if (optOut.get()) {
             return;
         }
+
         logger.verbose("Created payload %s.", payload);
-        Middleware.Chain chain =
-                new MiddlewareChainRunner(
-                        0,
-                        payload,
-                        sourceMiddleware,
-                        new Middleware.Callback() {
-                            @Override
-                            public void invoke(BasePayload payload) {
-                                run(payload);
-                            }
-                        });
-        chain.proceed(payload);
+        this.sendQueue.performEnqueue(payload);
     }
 
-    void run(BasePayload payload) {
-        logger.verbose("Running payload %s.", payload);
-        final IntegrationOperation operation =
-                IntegrationOperation.snapyrEvent(payload, destinationMiddleware);
-        HANDLER.post(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        performRun(operation);
-                    }
-                });
+    void handleEvent(BasePayload payload){
+        switch (payload.type()) {
+            case identify:
+                identify((IdentifyPayload) payload);
+                break;
+            case alias:
+                alias((AliasPayload) payload);
+                break;
+            case group:
+                group((GroupPayload) payload);
+                break;
+            case track:
+                track((TrackPayload) payload);
+                break;
+            case screen:
+                screen((ScreenPayload) payload);
+                break;
+            default:
+                throw new AssertionError("unknown type " + payload.type());
+        }
     }
 
     /**
@@ -902,12 +888,6 @@ public class Snapyr {
         if (shutdown) {
             throw new IllegalStateException("Cannot enqueue messages after client is shutdown.");
         }
-        runOnMainThread(IntegrationOperation.FLUSH);
-    }
-
-    /** Get the underlying {@link JSMiddleware} associated with this analytics object */
-    public JSMiddleware getEdgeFunctionMiddleware() {
-        return edgeFunctionMiddleware;
     }
 
     /** Get the {@link SnapyrContext} used by this instance. */
@@ -985,7 +965,6 @@ public class Snapyr {
         traitsCache.delete();
         traitsCache.set(Traits.create());
         snapyrContext.setTraits(traitsCache.get());
-        runOnMainThread(IntegrationOperation.RESET);
     }
 
     /**
@@ -995,62 +974,6 @@ public class Snapyr {
      */
     public void optOut(boolean optOut) {
         this.optOut.set(optOut);
-    }
-
-    /**
-     * Register to be notified when a bundled integration is ready.
-     *
-     * <p>In most cases, integrations would have already been initialized, and the callback will be
-     * invoked fairly quickly. However there may be a latency the first time the app is launched,
-     * and we don't have settings for bundled integrations yet. This is compounded if the user is
-     * offline on the first run.
-     *
-     * <p>You can only register for one callback per integration at a time, and passing in a {@code
-     * callback} will remove the previous callback for that integration.
-     *
-     * <p>Usage:
-     *
-     * <pre> <code>
-     *   analytics.onIntegrationReady("Amplitude", new Callback() {
-     *     {@literal @}Override public void onIntegrationReady(Object instance) {
-     *       Amplitude.enableLocationListening();
-     *     }
-     *   });
-     *   analytics.onIntegrationReady("Mixpanel", new Callback() {
-     *     {@literal @}Override public void onIntegrationReady(MixpanelAPI mixpanel) {
-     *       mixpanel.clearSuperProperties();
-     *     }
-     *   })*
-     * </code> </pre>
-     */
-    public <T> void onIntegrationReady(final String key, final Callback<T> callback) {
-        if (Utils.isNullOrEmpty(key)) {
-            throw new IllegalArgumentException("key cannot be null or empty.");
-        }
-
-        analyticsExecutor.submit(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        HANDLER.post(
-                                new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        performCallback(key, callback);
-                                    }
-                                });
-                    }
-                });
-    }
-
-    /** @deprecated Use {@link #onIntegrationReady(String, Callback)} instead. */
-    public void onIntegrationReady(
-            @SuppressWarnings("deprecation") BundledIntegration integration, Callback callback) {
-        if (integration == null) {
-            throw new IllegalArgumentException("integration cannot be null");
-        }
-
-        onIntegrationReady(integration.key, callback);
     }
 
     /**
@@ -1171,63 +1094,6 @@ public class Snapyr {
             returnInterval = 60 * 1000; // 1 minute
         }
         return returnInterval;
-    }
-
-    void performInitializeIntegrations(ProjectSettings projectSettings) throws AssertionError {
-        if (isNullOrEmpty(projectSettings)) {
-            throw new AssertionError("ProjectSettings is empty!");
-        }
-        ValueMap integrationSettings = projectSettings.integrations();
-
-        integrations = new LinkedHashMap<>(factories.size());
-        for (int i = 0; i < factories.size(); i++) {
-            if (Utils.isNullOrEmpty(integrationSettings)) {
-                logger.debug("Integration settings are empty");
-                continue;
-            }
-            Integration.Factory factory = factories.get(i);
-            String key = factory.key();
-            if (Utils.isNullOrEmpty(key)) {
-                throw new AssertionError("The factory key is empty!");
-            }
-            ValueMap settings = integrationSettings.getValueMap(key);
-            if (!(factory instanceof WebhookIntegration.WebhookIntegrationFactory)
-                    && Utils.isNullOrEmpty(settings)) {
-                logger.debug("Integration %s is not enabled.", key);
-                continue;
-            }
-            Integration integration = factory.create(settings, this);
-            if (integration == null) {
-                logger.info("Factory %s couldn't create integration.", factory);
-            } else {
-                integrations.put(key, integration);
-                bundledIntegrations.put(key, false);
-            }
-        }
-        factories = null;
-    }
-
-    /** Runs the given operation on all integrations. */
-    void performRun(IntegrationOperation operation) {
-        for (Map.Entry<String, Integration<?>> entry : integrations.entrySet()) {
-            String key = entry.getKey();
-            long startTime = System.nanoTime();
-            operation.run(key, entry.getValue(), projectSettings);
-            long endTime = System.nanoTime();
-            long durationInMillis = TimeUnit.NANOSECONDS.toMillis(endTime - startTime);
-            stats.dispatchIntegrationOperation(key, durationInMillis);
-            logger.debug("Ran %s on integration %s in %d ns.", operation, key, endTime - startTime);
-        }
-    }
-
-    @Private
-    <T> void performCallback(String key, Callback<T> callback) {
-        for (Map.Entry<String, Integration<?>> entry : integrations.entrySet()) {
-            if (key.equals(entry.getKey())) {
-                callback.onReady((T) entry.getValue().getUnderlyingInstance());
-                return;
-            }
-        }
     }
 
     /**
@@ -1365,7 +1231,6 @@ public class Snapyr {
 
         private final Application application;
         private final String writeKey;
-        private final List<Integration.Factory> factories = new ArrayList<>();
         private boolean collectDeviceID = Utils.DEFAULT_COLLECT_DEVICE_ID;
         private int flushQueueSize = Utils.DEFAULT_FLUSH_QUEUE_SIZE;
         private long flushIntervalInMillis = Utils.DEFAULT_FLUSH_INTERVAL;
@@ -1375,9 +1240,6 @@ public class Snapyr {
         private ExecutorService networkExecutor;
         private ExecutorService executor;
         private ConnectionFactory connectionFactory;
-        private List<Middleware> sourceMiddleware;
-        private Map<String, List<Middleware>> destinationMiddleware;
-        private JSMiddleware edgeFunctionMiddleware;
         private SnapyrActionHandler actionHandler;
         private boolean trackApplicationLifecycleEvents = false;
         private boolean recordScreenViews = false;
@@ -1507,12 +1369,6 @@ public class Snapyr {
             return this;
         }
 
-        /** @deprecated As of {@code 3.0.1}, this method does nothing. */
-        @Deprecated
-        public Builder disableBundledIntegrations() {
-            return this;
-        }
-
         /**
          * Specify the executor service for making network calls in the background.
          *
@@ -1566,15 +1422,6 @@ public class Snapyr {
             return this;
         }
 
-        /** TODO: docs */
-        public Builder use(Integration.Factory factory) {
-            if (factory == null) {
-                throw new IllegalArgumentException("Factory must not be null.");
-            }
-            factories.add(factory);
-            return this;
-        }
-
         /**
          * Automatically track application lifecycle events, including "Application Installed",
          * "Application Updated" and "Application Opened".
@@ -1602,86 +1449,6 @@ public class Snapyr {
         /** Automatically track deep links as part of the screen call. */
         public Builder trackDeepLinks() {
             this.trackDeepLinks = true;
-            return this;
-        }
-
-        /**
-         * @see #useSourceMiddleware(Middleware)
-         * @deprecated Use {@link #useSourceMiddleware(Middleware)} instead.
-         */
-        public Builder middleware(Middleware middleware) {
-            return useSourceMiddleware(middleware);
-        }
-
-        /**
-         * Add a {@link Middleware} custom source middleware. This will be run before sending to all
-         * integrations
-         */
-        public Builder useSourceMiddleware(Middleware middleware) {
-
-            if (this.edgeFunctionMiddleware != null) {
-                throw new IllegalStateException(
-                        "Can not use native middleware and edge function middleware");
-            }
-
-            Utils.assertNotNull(middleware, "middleware");
-            if (sourceMiddleware == null) {
-                sourceMiddleware = new ArrayList<>();
-            }
-            if (sourceMiddleware.contains(middleware)) {
-                throw new IllegalStateException("Source Middleware is already registered.");
-            }
-            sourceMiddleware.add(middleware);
-            return this;
-        }
-
-        /**
-         * Add a {@link Middleware} custom destination middleware, for a particular destination.
-         * This will be run before sending to the associated destination
-         */
-        public Builder useDestinationMiddleware(String key, Middleware middleware) {
-
-            if (this.edgeFunctionMiddleware != null) {
-                throw new IllegalStateException(
-                        "Can not use native middleware and edge function middleware");
-            }
-
-            if (Utils.isNullOrEmpty(key)) {
-                throw new IllegalArgumentException("key must not be null or empty.");
-            }
-            Utils.assertNotNull(middleware, "middleware");
-            if (destinationMiddleware == null) {
-                destinationMiddleware = new HashMap<>();
-            }
-            List<Middleware> middlewareList = destinationMiddleware.get(key);
-            if (middlewareList == null) {
-                middlewareList = new ArrayList<>();
-                destinationMiddleware.put(key, middlewareList);
-            }
-            if (middlewareList.contains(middleware)) {
-                throw new IllegalStateException("Destination Middleware is already registered.");
-            }
-            middlewareList.add(middleware);
-            return this;
-        }
-
-        /**
-         * Enable the use of {@link JSMiddleware} as Edge function Middleware, that can configure
-         * both source and destination middleware using JS. This option cannot be used
-         * simultaneously with native source/destination middleware
-         */
-        public Builder useEdgeFunctionMiddleware(JSMiddleware middleware) {
-
-            Utils.assertNotNull(middleware, "middleware");
-
-            if (this.sourceMiddleware != null || this.destinationMiddleware != null) {
-                throw new IllegalStateException(
-                        "Can not use native middleware and edge function middleware");
-            }
-
-            // Set the current middleware
-            this.edgeFunctionMiddleware = middleware;
-
             return this;
         }
 
@@ -1784,36 +1551,15 @@ public class Snapyr {
             CountDownLatch advertisingIdLatch = new CountDownLatch(1);
             snapyrContext.attachAdvertisingId(application, advertisingIdLatch, logger);
 
-            List<Integration.Factory> factories = new ArrayList<>(1 + this.factories.size());
-            factories.add(SnapyrIntegration.FACTORY);
-            factories.addAll(this.factories);
-
             if (actionHandler == null) {
                 actionHandler = new DummyActionHandler(logger);
             }
-
-            // Check for edge functions, disable the destination and source middleware if found
-            if (this.edgeFunctionMiddleware != null) {
-
-                if (this.edgeFunctionMiddleware.sourceMiddleware != null) {
-                    this.sourceMiddleware = this.edgeFunctionMiddleware.sourceMiddleware;
-                }
-
-                if (this.edgeFunctionMiddleware.destinationMiddleware != null) {
-                    this.destinationMiddleware = this.edgeFunctionMiddleware.destinationMiddleware;
-                }
-            }
-
-            List<Middleware> srcMiddleware = Utils.immutableCopyOf(this.sourceMiddleware);
-            Map<String, List<Middleware>> destMiddleware =
-                    Utils.isNullOrEmpty(this.destinationMiddleware)
-                            ? Collections.emptyMap()
-                            : Utils.immutableCopyOf(this.destinationMiddleware);
 
             ExecutorService executor = this.executor;
             if (executor == null) {
                 executor = Executors.newSingleThreadExecutor();
             }
+
             Lifecycle lifecycle = ProcessLifecycleOwner.get().getLifecycle();
             return new Snapyr(
                     application,
@@ -1824,7 +1570,6 @@ public class Snapyr {
                     defaultOptions,
                     logger,
                     tag,
-                    Collections.unmodifiableList(factories),
                     client,
                     cartographer,
                     projectSettingsCache,
@@ -1839,9 +1584,6 @@ public class Snapyr {
                     trackDeepLinks,
                     optOut,
                     crypto,
-                    srcMiddleware,
-                    destMiddleware,
-                    edgeFunctionMiddleware,
                     defaultProjectSettings,
                     lifecycle,
                     nanosecondTimestamps,

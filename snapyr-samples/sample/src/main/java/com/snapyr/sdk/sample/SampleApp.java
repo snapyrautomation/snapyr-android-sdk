@@ -24,13 +24,9 @@
 package com.snapyr.sdk.sample;
 
 import android.app.Application;
-import android.util.Log;
 
-import com.snapyr.sdk.Middleware;
 import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.ValueMap;
-import com.snapyr.sdk.integrations.BasePayload;
-import com.snapyr.sdk.integrations.TrackPayload;
 
 import io.github.inflationx.calligraphy3.CalligraphyConfig;
 import io.github.inflationx.calligraphy3.CalligraphyInterceptor;
@@ -40,7 +36,7 @@ public class SampleApp extends Application {
 
     // https://segment.com/segment-engineering/sources/android-test/settings/keys
     //    private static final String ANALYTICS_WRITE_KEY = "HO63Z36e0Ufa8AAgbjDomDuKxFuUICqI";
-    private static final String ANALYTICS_WRITE_KEY = "AAJfSynhNipgCqmCQJBWqNSrl4BhSTXi";
+    private static final String ANALYTICS_WRITE_KEY = "JLIfT7Q8gAkXDqkMbENkF1tKoaHRF552";
 
     @Override
     public void onCreate() {
@@ -77,37 +73,6 @@ public class SampleApp extends Application {
                                                                         .putValue(
                                                                                 "trackAttributionData",
                                                                                 true))))
-                        .useSourceMiddleware(
-                                new Middleware() {
-                                    @Override
-                                    public void intercept(Chain chain) {
-                                        if (chain.payload().type() == BasePayload.Type.track) {
-                                            TrackPayload payload = (TrackPayload) chain.payload();
-                                            if (payload.event()
-                                                    .equalsIgnoreCase("Button B Clicked")) {
-                                                chain.proceed(payload.toBuilder().build());
-                                                return;
-                                            }
-                                        }
-                                        chain.proceed(chain.payload());
-                                    }
-                                })
-                        .useDestinationMiddleware(
-                                "Snapyr",
-                                new Middleware() {
-                                    @Override
-                                    public void intercept(Chain chain) {
-                                        if (chain.payload().type() == BasePayload.Type.track) {
-                                            TrackPayload payload = (TrackPayload) chain.payload();
-                                            if (payload.event()
-                                                    .equalsIgnoreCase("Button B Clicked")) {
-                                                chain.proceed(payload.toBuilder().build());
-                                                return;
-                                            }
-                                        }
-                                        chain.proceed(chain.payload());
-                                    }
-                                })
                         .flushQueueSize(1)
                         .enableSnapyrPushHandling()
                         .recordScreenViews();
@@ -117,16 +82,5 @@ public class SampleApp extends Application {
 
         // Now anytime you call Snapyr.with, the custom instance will be returned.
         Snapyr snapyr = Snapyr.with(this);
-
-        // If you need to know when integrations have been initialized, use the onIntegrationReady
-        // listener.
-        snapyr.onIntegrationReady(
-                "Snapyr",
-                new Snapyr.Callback() {
-                    @Override
-                    public void onReady(Object instance) {
-                        Log.d("Snapyr Sample", "Snapyr integration ready.");
-                    }
-                });
     }
 }

@@ -74,7 +74,7 @@ public class Options {
      * @return This options object for chaining
      */
     public Options setIntegration(String integrationKey, boolean enabled) {
-        if (SnapyrIntegration.SNAPYR_KEY.equals(integrationKey)) {
+        if (SnapyrWriteQueue.SNAPYR_KEY.equals(integrationKey)) {
             throw new IllegalArgumentException("Snapyr integration cannot be enabled or disabled.");
         }
         integrations.put(integrationKey, enabled);

@@ -156,7 +156,6 @@ class SnapyrActivityLifecycleCallbacks
 
     @Override
     public void onActivityCreated(Activity activity, Bundle bundle) {
-        snapyr.runOnMainThread(IntegrationOperation.onActivityCreated(activity, bundle));
         Intent launchIntent = activity.getIntent();
         Bundle x = launchIntent.getExtras();
         if (!useNewLifecycleMethods) {
@@ -192,12 +191,10 @@ class SnapyrActivityLifecycleCallbacks
         if (shouldRecordScreenViews) {
             snapyr.recordScreenViews(activity);
         }
-        snapyr.runOnMainThread(IntegrationOperation.onActivityStarted(activity));
     }
 
     @Override
     public void onActivityResumed(Activity activity) {
-        snapyr.runOnMainThread(IntegrationOperation.onActivityResumed(activity));
         if (!useNewLifecycleMethods) {
             onStart(stubOwner);
         }
@@ -205,7 +202,6 @@ class SnapyrActivityLifecycleCallbacks
 
     @Override
     public void onActivityPaused(Activity activity) {
-        snapyr.runOnMainThread(IntegrationOperation.onActivityPaused(activity));
         if (!useNewLifecycleMethods) {
             onPause(stubOwner);
         }
@@ -213,7 +209,6 @@ class SnapyrActivityLifecycleCallbacks
 
     @Override
     public void onActivityStopped(Activity activity) {
-        snapyr.runOnMainThread(IntegrationOperation.onActivityStopped(activity));
         if (!useNewLifecycleMethods) {
             onStop(stubOwner);
         }
@@ -221,12 +216,10 @@ class SnapyrActivityLifecycleCallbacks
 
     @Override
     public void onActivitySaveInstanceState(Activity activity, Bundle bundle) {
-        snapyr.runOnMainThread(IntegrationOperation.onActivitySaveInstanceState(activity, bundle));
     }
 
     @Override
     public void onActivityDestroyed(Activity activity) {
-        snapyr.runOnMainThread(IntegrationOperation.onActivityDestroyed(activity));
         if (!useNewLifecycleMethods) {
             onDestroy(stubOwner);
         }

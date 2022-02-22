@@ -45,8 +45,8 @@ import androidx.core.app.NotificationManagerCompat;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.messaging.FirebaseMessaging;
-import com.snapyr.sdk.ActionButton;
-import com.snapyr.sdk.PushTemplate;
+import com.snapyr.sdk.internal.ActionButton;
+import com.snapyr.sdk.internal.PushTemplate;
 import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.core.R;
 

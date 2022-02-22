@@ -1,4 +1,4 @@
-package com.snapyr.sdk;
+package com.snapyr.sdk.internal;
 
 /* Example payload:
      "pushTemplates": [
@@ -26,6 +26,8 @@ package com.snapyr.sdk;
 import android.os.Build;
 
 import androidx.annotation.RequiresApi;
+
+import com.snapyr.sdk.ValueMap;
 
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;

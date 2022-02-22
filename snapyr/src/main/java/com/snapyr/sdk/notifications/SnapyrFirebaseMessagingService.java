@@ -31,7 +31,7 @@ import androidx.annotation.RequiresApi;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
-import com.snapyr.sdk.PushTemplate;
+import com.snapyr.sdk.internal.PushTemplate;
 import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.ValueMap;
 
