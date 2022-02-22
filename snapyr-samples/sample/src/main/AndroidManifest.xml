@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ The MIT License (MIT)
   ~
   ~ Copyright (c) 2014 Segment, Inc.
@@ -26,63 +25,70 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.snapyr.sdk.sample">
 
-  <!-- Required for internet. -->
-  <uses-permission android:name="android.permission.INTERNET"/>
-  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-  <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <!-- Required for internet. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
-  <!-- Allow you to see which activity was active when a crash occurs. -->
-  <uses-permission android:name="android.permission.GET_TASKS"/>
+    <!-- Allow you to see which activity was active when a crash occurs. -->
+    <uses-permission android:name="android.permission.GET_TASKS" />
 
-  <!-- Allows location to be tracked. -->
-  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-  <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-  <uses-permission android:name="owner.custom.permission" />
-
-
-  <permission
-      android:name="owner.custom.permission"
-      android:protectionLevel="signatureOrSystem">
-  </permission>
+    <!-- Allows location to be tracked. -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="owner.custom.permission" />
 
 
-  <application
-      android:allowBackup="true"
-      android:icon="@mipmap/ic_launcher"
-      android:label="@string/app_name"
-      android:theme="@style/AppTheme"
-      android:name=".SampleApp">
-    <activity
-        android:name=".MainActivity"
+    <permission
+        android:name="owner.custom.permission"
+        android:protectionLevel="signatureOrSystem"></permission>
+
+
+    <application
+        android:name=".SampleApp"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:windowSoftInputMode="stateHidden"
-        android:exported="true" >
-      <intent-filter>
-        <action android:name="android.intent.action.MAIN"/>
-        <action android:name="android.intent.action.VIEW"/>
-        <category android:name="android.intent.category.LAUNCHER"/>
-      </intent-filter>
-      <intent-filter>
-        <action android:name="com.snapyr.sdk.notifications.ACTION_DEEPLINK"/>
-        <category android:name="android.intent.category.DEFAULT" />
-        <data android:scheme="snapyrsample" android:host="test" />
-        <data android:scheme="snapyrtest" android:host="dltest" />
-      </intent-filter>
-    </activity>
+        android:theme="@style/AppTheme">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:windowSoftInputMode="stateHidden">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.intent.action.VIEW" />
 
-    <activity android:name="com.snapyr.sdk.notifications.SnapyrNotificationListener">
-      <intent-filter>
-        <action android:name="com.snapyr.sdk.notifications.TRACK_BROADCAST"/>
-        <category android:name="android.intent.category.DEFAULT" />
-      </intent-filter>
-    </activity>
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.snapyr.sdk.notifications.ACTION_DEEPLINK" />
+                <category android:name="android.intent.category.DEFAULT" />
 
-    <service android:name="com.snapyr.sdk.notifications.SnapyrFirebaseMessagingService" android:exported="false">
-      <intent-filter>
-        <action android:name="com.google.firebase.MESSAGING_EVENT" />
-      </intent-filter>
-    </service>
+                <data
+                    android:host="test"
+                    android:scheme="snapyrsample" />
+                <data
+                    android:host="dltest"
+                    android:scheme="snapyrtest" />
+            </intent-filter>
+        </activity>
 
-  </application>
+        <activity android:name="com.snapyr.sdk.notifications.SnapyrNotificationListener">
+            <intent-filter>
+                <action android:name="com.snapyr.sdk.notifications.TRACK_BROADCAST" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <service
+            android:name="com.snapyr.sdk.notifications.SnapyrFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+    </application>
 
 </manifest>

@@ -22,14 +22,14 @@
   ~ SOFTWARE.
   -->
 
-<menu
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.snapyr.sdk.sample.MainActivity">
 
-  <item android:id="@+id/action_view_docs"
-      android:title="@string/action_view_docs"
-      android:orderInCategory="100"
-      android:showAsAction="never"/>
+    <item
+        android:id="@+id/action_view_docs"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/action_view_docs" />
 
 </menu>

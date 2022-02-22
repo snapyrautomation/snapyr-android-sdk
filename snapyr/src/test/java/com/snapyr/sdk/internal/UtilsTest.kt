@@ -28,23 +28,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import com.google.common.collect.ImmutableMap
 import com.nhaarman.mockitokotlin2.whenever
-import com.snapyr.sdk.internal.Utils.NullableConcurrentHashMap
-import com.snapyr.sdk.internal.Utils.assertNotNull
-import com.snapyr.sdk.internal.Utils.assertNotNullOrEmpty
-import com.snapyr.sdk.internal.Utils.buffer
-import com.snapyr.sdk.internal.Utils.coerceToFloat
-import com.snapyr.sdk.internal.Utils.copySharedPreferences
-import com.snapyr.sdk.internal.Utils.hasFeature
-import com.snapyr.sdk.internal.Utils.hasPermission
-import com.snapyr.sdk.internal.Utils.isConnected
-import com.snapyr.sdk.internal.Utils.isNullOrEmpty
-import com.snapyr.sdk.internal.Utils.newSet
-import com.snapyr.sdk.internal.Utils.readFully
-import com.snapyr.sdk.internal.Utils.transform
-import java.io.IOException
-import kotlin.collections.ArrayList
-import kotlin.collections.HashSet
-import kotlin.collections.LinkedHashMap
+import com.snapyr.sdk.internal.Utils.*
 import okio.Buffer
 import org.assertj.android.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThat
@@ -59,6 +43,7 @@ import org.mockito.MockitoAnnotations.initMocks
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
+import java.io.IOException
 
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE)
@@ -68,37 +53,39 @@ class UtilsTest {
     lateinit var context: Context
 
     @Before
-    fun setUp() { initMocks(this) }
+    fun setUp() {
+        initMocks(this)
+    }
 
     @Test
     fun emptyString() {
-        assertThat(isNullOrEmpty(null as String?)).isTrue()
-        assertThat(isNullOrEmpty("")).isTrue()
-        assertThat(isNullOrEmpty(" ")).isTrue()
-        assertThat(isNullOrEmpty(" a ")).isFalse()
-        assertThat(isNullOrEmpty("a")).isFalse()
+        assertThat(isNullOrEmpty(null as String?)).isTrue
+        assertThat(isNullOrEmpty("")).isTrue
+        assertThat(isNullOrEmpty(" ")).isTrue
+        assertThat(isNullOrEmpty(" a ")).isFalse
+        assertThat(isNullOrEmpty("a")).isFalse
     }
 
     @Test
     fun emptyMap() {
-        assertThat(isNullOrEmpty(null as Map<*, *>?)).isTrue()
+        assertThat(isNullOrEmpty(null as Map<*, *>?)).isTrue
         val map: MutableMap<String, Any> = LinkedHashMap(20)
-        assertThat(isNullOrEmpty(map)).isTrue()
+        assertThat(isNullOrEmpty(map)).isTrue
         map["foo"] = "bar"
-        assertThat(isNullOrEmpty(map)).isFalse()
+        assertThat(isNullOrEmpty(map)).isFalse
         map.clear()
-        assertThat(isNullOrEmpty(map)).isTrue()
+        assertThat(isNullOrEmpty(map)).isTrue
     }
 
     @Test
     fun emptyCollections() {
-        assertThat(isNullOrEmpty(null as Collection<*>?)).isTrue()
+        assertThat(isNullOrEmpty(null as Collection<*>?)).isTrue
         val collection: MutableCollection<String> = ArrayList()
-        assertThat(isNullOrEmpty(collection)).isTrue()
+        assertThat(isNullOrEmpty(collection)).isTrue
         collection.add("foo")
-        assertThat(isNullOrEmpty(collection)).isFalse()
+        assertThat(isNullOrEmpty(collection)).isFalse
         collection.clear()
-        assertThat(isNullOrEmpty(collection)).isTrue()
+        assertThat(isNullOrEmpty(collection)).isTrue
     }
 
     @Test
@@ -121,7 +108,7 @@ class UtilsTest {
     fun returnsConnectedIfMissingPermission() {
         whenever(context.checkCallingOrSelfPermission(permission.ACCESS_NETWORK_STATE))
             .thenReturn(PackageManager.PERMISSION_DENIED)
-        assertThat(isConnected(context)).isTrue()
+        assertThat(isConnected(context)).isTrue
     }
 
     @Test
@@ -189,10 +176,10 @@ class UtilsTest {
     fun hasPermission() {
         whenever(context.checkCallingOrSelfPermission(permission.INTERNET))
             .thenReturn(PackageManager.PERMISSION_DENIED)
-        assertThat(hasPermission(context, permission.INTERNET)).isFalse()
+        assertThat(hasPermission(context, permission.INTERNET)).isFalse
         whenever(context.checkCallingOrSelfPermission(permission.INTERNET))
             .thenReturn(PackageManager.PERMISSION_GRANTED)
-        assertThat(hasPermission(context, permission.INTERNET)).isTrue()
+        assertThat(hasPermission(context, permission.INTERNET)).isTrue
     }
 
     @Test
@@ -200,9 +187,9 @@ class UtilsTest {
         val packageManager = mock(PackageManager::class.java)
         whenever(context.packageManager).thenReturn(packageManager)
         whenever(packageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY)).thenReturn(false)
-        assertThat(hasFeature(context, PackageManager.FEATURE_TELEPHONY)).isFalse()
+        assertThat(hasFeature(context, PackageManager.FEATURE_TELEPHONY)).isFalse
         whenever(packageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY)).thenReturn(true)
-        assertThat(hasFeature(context, PackageManager.FEATURE_TELEPHONY)).isTrue()
+        assertThat(hasFeature(context, PackageManager.FEATURE_TELEPHONY)).isTrue
     }
 
     @Test

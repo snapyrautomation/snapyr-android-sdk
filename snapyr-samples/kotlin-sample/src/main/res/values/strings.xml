@@ -1,13 +1,11 @@
 <resources>
     <string name="app_name">Snapyr Sample</string>
     <string name="docs">Docs</string>
-    <string name="primary_dark">#12424a</string>
     <string name="track_button_a">Track Button A</string>
     <string name="track_button_b">Track Button B</string>
     <string name="flush">Flush</string>
     <string name="name">Name</string>
     <string name="email">Email</string>
-    <string name="age">Age</string>
     <string name="user_id">User Id</string>
     <string name="identify">Identify</string>
     <string name="screen">Screen</string>

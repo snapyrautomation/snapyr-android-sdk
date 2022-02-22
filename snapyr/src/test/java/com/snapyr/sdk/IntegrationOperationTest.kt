@@ -24,15 +24,7 @@
 package com.snapyr.sdk
 
 import com.google.common.collect.ImmutableMap
-import com.snapyr.sdk.integrations.AliasPayload
-import com.snapyr.sdk.integrations.GroupPayload
-import com.snapyr.sdk.integrations.IdentifyPayload
-import com.snapyr.sdk.integrations.Integration
-import com.snapyr.sdk.integrations.ScreenPayload
-import com.snapyr.sdk.integrations.TrackPayload
-import java.io.IOException
-import java.util.Collections
-import kotlin.jvm.Throws
+import com.snapyr.sdk.integrations.*
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -42,15 +34,20 @@ import org.mockito.Mockito.verify
 import org.mockito.MockitoAnnotations.initMocks
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import java.io.IOException
+import java.util.*
 
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE)
 class IntegrationOperationTest {
 
-    @Mock lateinit var integration: Integration<Void>
+    @Mock
+    lateinit var integration: Integration<Void>
 
     @Before
-    fun setUp() { initMocks(this) }
+    fun setUp() {
+        initMocks(this)
+    }
 
     private fun track(payload: TrackPayload, name: String, settings: Map<String, Any>) {
         IntegrationOperation.snapyrEvent(payload, emptyMap())
@@ -102,7 +99,14 @@ class IntegrationOperationTest {
         val payload = TrackPayload.Builder()
             .event("event")
             .userId("userId")
-            .integrations(ImmutableMap.of<String, Any?>("All", false, "Mixpanel", emptyMap<Any, Any>()))
+            .integrations(
+                ImmutableMap.of<String, Any?>(
+                    "All",
+                    false,
+                    "Mixpanel",
+                    emptyMap<Any, Any>()
+                )
+            )
             .build()
         track(payload, "Mixpanel", emptyMap())
         verify(integration).track(payload)

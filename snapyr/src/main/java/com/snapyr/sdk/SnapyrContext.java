@@ -1,18 +1,18 @@
 /**
  * The MIT License (MIT)
- *
+ * <p>
  * Copyright (c) 2014 Segment.io, Inc.
- *
+ * <p>
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * <p>
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- *
+ * <p>
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -42,10 +42,12 @@ import android.telephony.TelephonyManager;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.WindowManager;
+
 import com.snapyr.sdk.core.BuildConfig;
 import com.snapyr.sdk.integrations.Logger;
 import com.snapyr.sdk.internal.Private;
 import com.snapyr.sdk.internal.Utils;
+
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -117,6 +119,11 @@ public class SnapyrContext extends ValueMap {
     // Snapyr SDK Meta
     private static final String SDK_META_KEY = "sdkMeta";
 
+    // For deserialization and wrapping
+    SnapyrContext(Map<String, Object> delegate) {
+        super(delegate);
+    }
+
     /**
      * Create a new {@link SnapyrContext} instance filled in with information from the given {@link
      * Context}. The {@link Snapyr} client can be called from anywhere, so the returned instances is
@@ -147,11 +154,6 @@ public class SnapyrContext extends ValueMap {
         } else {
             target.put(key, value);
         }
-    }
-
-    // For deserialization and wrapping
-    SnapyrContext(Map<String, Object> delegate) {
-        super(delegate);
     }
 
     void attachAdvertisingId(Context context, CountDownLatch latch, Logger logger) {
@@ -352,7 +354,8 @@ public class SnapyrContext extends ValueMap {
         private static final String CAMPAIGN_CONTENT_KEY = "content";
 
         // Public Constructor
-        public Campaign() {}
+        public Campaign() {
+        }
 
         // For deserialization
         private Campaign(Map<String, Object> map) {
@@ -419,17 +422,26 @@ public class SnapyrContext extends ValueMap {
     /** Information about the device. */
     public static class Device extends ValueMap {
 
-        @Private static final String DEVICE_ID_KEY = "id";
-        @Private static final String DEVICE_MANUFACTURER_KEY = "manufacturer";
-        @Private static final String DEVICE_MODEL_KEY = "model";
-        @Private static final String DEVICE_NAME_KEY = "name";
-        @Private static final String DEVICE_TYPE_KEY = "type";
-        @Private static final String DEVICE_TOKEN_KEY = "token";
-        @Private static final String DEVICE_ADVERTISING_ID_KEY = "advertisingId";
-        @Private static final String DEVICE_AD_TRACKING_ENABLED_KEY = "adTrackingEnabled";
+        @Private
+        static final String DEVICE_ID_KEY = "id";
+        @Private
+        static final String DEVICE_MANUFACTURER_KEY = "manufacturer";
+        @Private
+        static final String DEVICE_MODEL_KEY = "model";
+        @Private
+        static final String DEVICE_NAME_KEY = "name";
+        @Private
+        static final String DEVICE_TYPE_KEY = "type";
+        @Private
+        static final String DEVICE_TOKEN_KEY = "token";
+        @Private
+        static final String DEVICE_ADVERTISING_ID_KEY = "advertisingId";
+        @Private
+        static final String DEVICE_AD_TRACKING_ENABLED_KEY = "adTrackingEnabled";
 
         @Private
-        Device() {}
+        Device() {
+        }
 
         // For deserialization
         private Device(Map<String, Object> map) {
@@ -464,7 +476,8 @@ public class SnapyrContext extends ValueMap {
         private static final String LOCATION_SPEED_KEY = "speed";
 
         // Public constructor
-        public Location() {}
+        public Location() {
+        }
 
         // For deserialization
         private Location(Map<String, Object> map) {
@@ -515,7 +528,8 @@ public class SnapyrContext extends ValueMap {
         private static final String REFERRER_URL_KEY = "url";
 
         // Public constructor
-        public Referrer() {}
+        public Referrer() {
+        }
 
         // For deserialization
         public Referrer(Map<String, Object> map) {

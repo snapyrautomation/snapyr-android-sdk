@@ -23,12 +23,10 @@ package com.snapyr.sdk;
         ]
  */
 
-import android.net.Uri;
 import android.os.Build;
 
 import androidx.annotation.RequiresApi;
 
-import java.net.URI;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
@@ -49,16 +47,28 @@ public class PushTemplate {
     Date modified;
     ArrayList<ActionButton> buttons;
 
-    public String getId(){ return id; }
-    public Date getModified() { return modified; }
-    public List<ActionButton> getButtons() { return Collections.unmodifiableList(this.buttons); }
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    public PushTemplate(Map<String, Object> src) {
+        super();
+        this.id = (String) src.get("id");
+        String modifiedStr = (String) src.get("modified");
+
+        TemporalAccessor ta = DateTimeFormatter.ISO_INSTANT.parse(modifiedStr);
+        this.modified = Date.from(Instant.from(ta));
+        this.buttons = new ArrayList<>();
+
+        ArrayList<Map<String, Object>> buttonsRaw = (ArrayList) src.get("actions");
+        buttonsRaw.forEach((v) -> {
+            this.buttons.add(new ActionButton(v));
+        });
+    }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public static Map<String, PushTemplate> ParseTemplate(ValueMap metadata){
+    public static Map<String, PushTemplate> ParseTemplate(ValueMap metadata) {
         ArrayList<Map<String, Object>> templates = (ArrayList<Map<String, Object>>) metadata.get("pushTemplates");
         HashMap<String, PushTemplate> parsed = new HashMap<String, PushTemplate>();
 
-        templates.forEach((v)->{
+        templates.forEach((v) -> {
             PushTemplate t = new PushTemplate(v);
             parsed.put(t.id, t);
         });
@@ -67,19 +77,15 @@ public class PushTemplate {
         return parsed;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    public PushTemplate(Map<String, Object> src){
-        super();
-        this.id = (String)src.get("id");
-        String modifiedStr = (String)src.get("modified");
+    public String getId() {
+        return id;
+    }
 
-        TemporalAccessor ta = DateTimeFormatter.ISO_INSTANT.parse(modifiedStr);
-        this.modified = Date.from(Instant.from(ta));
-        this.buttons = new ArrayList<>();
+    public Date getModified() {
+        return modified;
+    }
 
-        ArrayList<Map<String, Object>> buttonsRaw = (ArrayList) src.get("actions");
-        buttonsRaw.forEach((v)->{
-            this.buttons.add(new ActionButton(v));
-        });
+    public List<ActionButton> getButtons() {
+        return Collections.unmodifiableList(this.buttons);
     }
 }

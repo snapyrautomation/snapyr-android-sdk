@@ -1,18 +1,18 @@
 /**
  * The MIT License (MIT)
- *
+ * <p>
  * Copyright (c) 2014 Segment.io, Inc.
- *
+ * <p>
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * <p>
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- *
+ * <p>
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -35,14 +35,17 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.Toast;
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
+
 import com.google.firebase.installations.FirebaseInstallations;
 import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.Traits;
-import io.github.inflationx.viewpump.ViewPumpContextWrapper;
+
 import java.util.List;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
+import io.github.inflationx.viewpump.ViewPumpContextWrapper;
 
 public class MainActivity extends Activity {
     @BindView(R.id.user_id)
@@ -76,11 +79,11 @@ public class MainActivity extends Activity {
             return;
         }
         List<String> paths = data.getPathSegments();
-        if (paths.size() > 1){
+        if (paths.size() > 1) {
             String response = paths.get(0);
             String text = paths.get(1);
             Toast.makeText(this, text, Toast.LENGTH_LONG).show();
-            Log.e("Snapyr", "Sample app open intent data: " + String.valueOf(data));
+            Log.e("Snapyr", "Sample app open intent data: " + data);
         }
     }
 

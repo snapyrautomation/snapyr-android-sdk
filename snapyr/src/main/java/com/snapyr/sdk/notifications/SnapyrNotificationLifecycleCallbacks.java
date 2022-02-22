@@ -2,27 +2,22 @@ package com.snapyr.sdk.notifications;
 
 import android.app.Activity;
 import android.app.Application;
-import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.core.app.NotificationManagerCompat;
 import androidx.lifecycle.DefaultLifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
-import com.snapyr.sdk.Properties;
+
 import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.integrations.Logger;
 
 public class SnapyrNotificationLifecycleCallbacks
         implements Application.ActivityLifecycleCallbacks, DefaultLifecycleObserver {
-    private Snapyr snapyr;
-    private Boolean enabled;
-    private Logger logger;
+    private final Snapyr snapyr;
+    private final Boolean enabled;
+    private final Logger logger;
 
     public SnapyrNotificationLifecycleCallbacks(Snapyr snapyr, Logger logger, Boolean enabled) {
         this.snapyr = snapyr;
@@ -55,38 +50,48 @@ public class SnapyrNotificationLifecycleCallbacks
     }
 
 
-
     // Method stubs required for valid interface implementation
     @Override
-    public void onActivityStarted(@NonNull Activity activity) {}
+    public void onActivityStarted(@NonNull Activity activity) {
+    }
 
     @Override
-    public void onActivityResumed(@NonNull Activity activity) {}
+    public void onActivityResumed(@NonNull Activity activity) {
+    }
 
     @Override
-    public void onActivityPaused(@NonNull Activity activity) {}
+    public void onActivityPaused(@NonNull Activity activity) {
+    }
 
     @Override
-    public void onActivityStopped(@NonNull Activity activity) {}
+    public void onActivityStopped(@NonNull Activity activity) {
+    }
 
     @Override
-    public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {}
+    public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {
+    }
 
     @Override
-    public void onActivityDestroyed(@NonNull Activity activity) {}
+    public void onActivityDestroyed(@NonNull Activity activity) {
+    }
 
     @Override
-    public void onCreate(@NonNull LifecycleOwner owner) {}
+    public void onCreate(@NonNull LifecycleOwner owner) {
+    }
 
     @Override
-    public void onStart(@NonNull LifecycleOwner owner) {}
+    public void onStart(@NonNull LifecycleOwner owner) {
+    }
 
     @Override
-    public void onResume(@NonNull LifecycleOwner owner) {}
+    public void onResume(@NonNull LifecycleOwner owner) {
+    }
 
     @Override
-    public void onPause(@NonNull LifecycleOwner owner) {}
+    public void onPause(@NonNull LifecycleOwner owner) {
+    }
 
     @Override
-    public void onStop(@NonNull LifecycleOwner owner) {}
+    public void onStop(@NonNull LifecycleOwner owner) {
+    }
 }

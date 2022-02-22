@@ -1,18 +1,18 @@
 /**
  * The MIT License (MIT)
- *
+ * <p>
  * Copyright (c) 2014 Segment.io, Inc.
- *
+ * <p>
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * <p>
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- *
+ * <p>
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,7 +24,9 @@
 package com.snapyr.sdk;
 
 import android.util.Base64;
+
 import com.snapyr.sdk.core.BuildConfig;
+
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -36,27 +38,17 @@ import java.net.URL;
  */
 public class ConnectionFactory {
 
+    static final String USER_AGENT = "snapyr-android/" + BuildConfig.VERSION_NAME;
     private static final int DEFAULT_READ_TIMEOUT_MILLIS = 20 * 1000; // 20s
     private static final int DEFAULT_CONNECT_TIMEOUT_MILLIS = 15 * 1000; // 15s
-    static final String USER_AGENT = "snapyr-android/" + BuildConfig.VERSION_NAME;
-
-    private final String configEndpoint;
-    private final String engineEndpoint;
-
     private static final String PROD_CONFIG_ENDPOINT = "https://api.snapyr.com/sdk/";
     private static final String PROD_ENGINE_ENDPOINT = "https://engine.snapyr.com/v1/batch";
-
     private static final String STAGE_CONFIG_ENDPOINT = "https://stage-api.snapyr.com/sdk/";
     private static final String STAGE_ENGINE_ENDPOINT = "https://stage-engine.snapyr.com/v1/batch";
-
     private static final String DEV_CONFIG_ENDPOINT = "https://dev-api.snapyrdev.net/sdk/";
     private static final String DEV_ENGINE_ENDPOINT = "https://dev-engine.snapyrdev.net/v1/batch";
-
-    public enum Environment {
-        PROD,
-        STAGE,
-        DEV
-    }
+    private final String configEndpoint;
+    private final String engineEndpoint;
 
     public ConnectionFactory() {
         this(Environment.PROD);
@@ -121,5 +113,11 @@ public class ConnectionFactory {
         connection.setRequestProperty("User-Agent", USER_AGENT);
         connection.setDoInput(true);
         return connection;
+    }
+
+    public enum Environment {
+        PROD,
+        STAGE,
+        DEV
     }
 }

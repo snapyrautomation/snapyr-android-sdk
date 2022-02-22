@@ -1,18 +1,18 @@
 /**
  * The MIT License (MIT)
- *
+ * <p>
  * Copyright (c) 2014 Segment.io, Inc.
- *
+ * <p>
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * <p>
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- *
+ * <p>
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -32,6 +32,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.JsonWriter;
 import android.util.Log;
+
 import com.snapyr.sdk.integrations.AliasPayload;
 import com.snapyr.sdk.integrations.BasePayload;
 import com.snapyr.sdk.integrations.GroupPayload;
@@ -42,6 +43,7 @@ import com.snapyr.sdk.integrations.ScreenPayload;
 import com.snapyr.sdk.integrations.TrackPayload;
 import com.snapyr.sdk.internal.Private;
 import com.snapyr.sdk.internal.Utils;
+
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
@@ -51,6 +53,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -64,6 +67,24 @@ import java.util.concurrent.TimeUnit;
 /** Entity that queues payloads on disks and uploads them periodically. */
 class SnapyrIntegration extends Integration<Void> {
 
+    /**
+     * Drop old payloads if queue contains more than 1000 items. Since each item can be at most
+     * 32KB, this bounds the queue size to ~32MB (ignoring headers), which also leaves room for
+     * QueueFile's 2GB limit.
+     */
+    static final int MAX_QUEUE_SIZE = 1000;
+    /** Our servers only accept payloads < 32KB. */
+    static final int MAX_PAYLOAD_SIZE = 32000; // 32KB.
+    /**
+     * Our servers only accept batches < 500KB. This limit is 475KB to account for extra data that
+     * is not present in payloads themselves, but is added later, such as {@code sentAt}, {@code
+     * integrations} and other json tokens.
+     */
+    @Private
+    static final int MAX_BATCH_SIZE = 475000; // 475KB.
+    @Private
+    static final Charset UTF_8 = StandardCharsets.UTF_8;
+    static final String SNAPYR_KEY = "Snapyr";
     static final Integration.Factory FACTORY =
             new Integration.Factory() {
                 @Override
@@ -88,38 +109,7 @@ class SnapyrIntegration extends Integration<Void> {
                     return SNAPYR_KEY;
                 }
             };
-
-    /**
-     * Drop old payloads if queue contains more than 1000 items. Since each item can be at most
-     * 32KB, this bounds the queue size to ~32MB (ignoring headers), which also leaves room for
-     * QueueFile's 2GB limit.
-     */
-    static final int MAX_QUEUE_SIZE = 1000;
-    /** Our servers only accept payloads < 32KB. */
-    static final int MAX_PAYLOAD_SIZE = 32000; // 32KB.
-    /**
-     * Our servers only accept batches < 500KB. This limit is 475KB to account for extra data that
-     * is not present in payloads themselves, but is added later, such as {@code sentAt}, {@code
-     * integrations} and other json tokens.
-     */
-    @Private static final int MAX_BATCH_SIZE = 475000; // 475KB.
-
-    @Private static final Charset UTF_8 = Charset.forName("UTF-8");
     private static final String SNAPYR_THREAD_NAME = Utils.THREAD_PREFIX + "SnapyrDispatcher";
-    static final String SNAPYR_KEY = "Snapyr";
-    private final Context context;
-    private final PayloadQueue payloadQueue;
-    private final Client client;
-    private final int flushQueueSize;
-    private final Stats stats;
-    private final Handler handler;
-    private final HandlerThread snapyrThread;
-    private final Logger logger;
-    private final Map<String, Boolean> bundledIntegrations;
-    private final Cartographer cartographer;
-    private final ExecutorService networkExecutor;
-    private final ScheduledExecutorService flushScheduler;
-    private final SnapyrActionHandler actionHandler;
     /**
      * We don't want to stop adding payloads to our disk queue when we're uploading payloads. So we
      * upload payloads on a network executor instead.
@@ -141,9 +131,66 @@ class SnapyrIntegration extends Integration<Void> {
      * <p>This lock is used ensure that the Dispatcher thread doesn't remove payloads when we're
      * uploading.
      */
-    @Private final Object flushLock = new Object();
-
+    @Private
+    final Object flushLock = new Object();
+    private final Context context;
+    private final PayloadQueue payloadQueue;
+    private final Client client;
+    private final int flushQueueSize;
+    private final Stats stats;
+    private final Handler handler;
+    private final HandlerThread snapyrThread;
+    private final Logger logger;
+    private final Map<String, Boolean> bundledIntegrations;
+    private final Cartographer cartographer;
+    private final ExecutorService networkExecutor;
+    private final ScheduledExecutorService flushScheduler;
+    private final SnapyrActionHandler actionHandler;
     private final Crypto crypto;
+
+    SnapyrIntegration(
+            Context context,
+            Client client,
+            Cartographer cartographer,
+            ExecutorService networkExecutor,
+            PayloadQueue payloadQueue,
+            Stats stats,
+            Map<String, Boolean> bundledIntegrations,
+            long flushIntervalInMillis,
+            int flushQueueSize,
+            Logger logger,
+            Crypto crypto,
+            SnapyrActionHandler actionHandler) {
+        this.context = context;
+        this.client = client;
+        this.networkExecutor = networkExecutor;
+        this.payloadQueue = payloadQueue;
+        this.stats = stats;
+        this.logger = logger;
+        this.bundledIntegrations = bundledIntegrations;
+        this.cartographer = cartographer;
+        this.flushQueueSize = flushQueueSize;
+        this.flushScheduler =
+                Executors.newScheduledThreadPool(1, new Utils.AnalyticsThreadFactory());
+        this.actionHandler = actionHandler;
+        this.crypto = crypto;
+
+        snapyrThread = new HandlerThread(SNAPYR_THREAD_NAME, THREAD_PRIORITY_BACKGROUND);
+        snapyrThread.start();
+        handler = new SnapyrDispatcherHandler(snapyrThread.getLooper(), this);
+
+        long initialDelay = payloadQueue.size() >= flushQueueSize ? 0L : flushIntervalInMillis;
+        flushScheduler.scheduleAtFixedRate(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        flush();
+                    }
+                },
+                initialDelay,
+                flushIntervalInMillis,
+                TimeUnit.MILLISECONDS);
+    }
 
     /**
      * Create a {@link QueueFile} in the given folder with the given name. If the underlying file is
@@ -201,50 +248,6 @@ class SnapyrIntegration extends Integration<Void> {
                 logger,
                 crypto,
                 actionHandler);
-    }
-
-    SnapyrIntegration(
-            Context context,
-            Client client,
-            Cartographer cartographer,
-            ExecutorService networkExecutor,
-            PayloadQueue payloadQueue,
-            Stats stats,
-            Map<String, Boolean> bundledIntegrations,
-            long flushIntervalInMillis,
-            int flushQueueSize,
-            Logger logger,
-            Crypto crypto,
-            SnapyrActionHandler actionHandler) {
-        this.context = context;
-        this.client = client;
-        this.networkExecutor = networkExecutor;
-        this.payloadQueue = payloadQueue;
-        this.stats = stats;
-        this.logger = logger;
-        this.bundledIntegrations = bundledIntegrations;
-        this.cartographer = cartographer;
-        this.flushQueueSize = flushQueueSize;
-        this.flushScheduler =
-                Executors.newScheduledThreadPool(1, new Utils.AnalyticsThreadFactory());
-        this.actionHandler = actionHandler;
-        this.crypto = crypto;
-
-        snapyrThread = new HandlerThread(SNAPYR_THREAD_NAME, THREAD_PRIORITY_BACKGROUND);
-        snapyrThread.start();
-        handler = new SnapyrDispatcherHandler(snapyrThread.getLooper(), this);
-
-        long initialDelay = payloadQueue.size() >= flushQueueSize ? 0L : flushIntervalInMillis;
-        flushScheduler.scheduleAtFixedRate(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        flush();
-                    }
-                },
-                initialDelay,
-                flushIntervalInMillis,
-                TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -402,7 +405,7 @@ class SnapyrIntegration extends Integration<Void> {
                     } catch (IOException e) {
                         responseBody =
                                 "Could not read response body for rejected message: "
-                                        + e.toString();
+                                        + e;
                     } finally {
                         if (inputStream != null) {
                             inputStream.close();
@@ -539,6 +542,16 @@ class SnapyrIntegration extends Integration<Void> {
     static class BatchPayloadWriter implements Closeable {
 
         public static final boolean DEBUG_MODE = false;
+        private final JsonWriter jsonWriter;
+        /** Keep around for writing payloads as Strings. */
+        private final BufferedWriter bufferedWriter;
+        StringBuilder debugString = new StringBuilder();
+        private boolean needsComma = false;
+
+        BatchPayloadWriter(OutputStream stream) {
+            bufferedWriter = new BufferedWriter(new OutputStreamWriter(stream));
+            jsonWriter = new JsonWriter(bufferedWriter);
+        }
 
         public static void largeLog(String tag, String content) {
             if (content.length() > 4000) {
@@ -547,19 +560,6 @@ class SnapyrIntegration extends Integration<Void> {
             } else {
                 Log.e(tag, content);
             }
-        }
-
-        private final JsonWriter jsonWriter;
-        /** Keep around for writing payloads as Strings. */
-        private final BufferedWriter bufferedWriter;
-
-        private boolean needsComma = false;
-
-        StringBuilder debugString = new StringBuilder();
-
-        BatchPayloadWriter(OutputStream stream) {
-            bufferedWriter = new BufferedWriter(new OutputStreamWriter(stream));
-            jsonWriter = new JsonWriter(bufferedWriter);
         }
 
         BatchPayloadWriter beginObject() throws IOException {
@@ -636,7 +636,8 @@ class SnapyrIntegration extends Integration<Void> {
     static class SnapyrDispatcherHandler extends Handler {
 
         static final int REQUEST_FLUSH = 1;
-        @Private static final int REQUEST_ENQUEUE = 0;
+        @Private
+        static final int REQUEST_ENQUEUE = 0;
         private final SnapyrIntegration snapyrIntegration;
 
         SnapyrDispatcherHandler(Looper looper, SnapyrIntegration snapyrIntegration) {

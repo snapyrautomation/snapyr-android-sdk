@@ -24,12 +24,6 @@
 package com.snapyr.sdk
 
 import com.google.common.collect.ImmutableMap
-import java.io.IOException
-import java.io.Reader
-import java.io.StringWriter
-import java.util.UUID
-import kotlin.collections.LinkedHashMap
-import kotlin.jvm.Throws
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.assertj.core.data.MapEntry
@@ -38,6 +32,10 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import java.io.IOException
+import java.io.Reader
+import java.io.StringWriter
+import java.util.*
 
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE)
@@ -303,7 +301,8 @@ class CartographerTest {
     fun encodesPrimitiveArrays() {
         // Exercise a bug where primitive arrays would throw an IOException.
         // https://github.com/segmentio/analytics-android/issues/507
-        val map: Map<String?, Any?> = ImmutableMap.builder<String?, Any?>().put("a", intArrayOf(1, 2)).build()
+        val map: Map<String?, Any?> =
+            ImmutableMap.builder<String?, Any?>().put("a", intArrayOf(1, 2)).build()
 
         assertThat(cartographer.toJson(map))
             .isEqualTo(

@@ -1,18 +1,18 @@
 /**
  * The MIT License (MIT)
- *
+ * <p>
  * Copyright (c) 2014 Segment.io, Inc.
- *
+ * <p>
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * <p>
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- *
+ * <p>
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -31,7 +31,6 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
@@ -41,6 +40,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -59,9 +59,9 @@ import com.snapyr.sdk.integrations.TrackPayload;
 import com.snapyr.sdk.internal.NanoDate;
 import com.snapyr.sdk.internal.Private;
 import com.snapyr.sdk.internal.Utils;
-import com.snapyr.sdk.notifications.SnapyrNotificationListener;
 import com.snapyr.sdk.notifications.SnapyrNotificationHandler;
 import com.snapyr.sdk.notifications.SnapyrNotificationLifecycleCallbacks;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -104,121 +104,71 @@ public class Snapyr {
                     throw new AssertionError("Unknown handler message received: " + msg.what);
                 }
             };
-    @Private static final String OPT_OUT_PREFERENCE_KEY = "opt-out";
+    @Private
+    static final String OPT_OUT_PREFERENCE_KEY = "opt-out";
     static final String WRITE_KEY_RESOURCE_IDENTIFIER = "analytics_write_key";
     static final List<String> INSTANCES = new ArrayList<>(1);
-    /* This is intentional since we're only using the application context. */
-    @SuppressLint("StaticFieldLeak")
-    static volatile Snapyr singleton = null;
-
-    @Private static final Properties EMPTY_PROPERTIES = new Properties();
+    @Private
+    static final Properties EMPTY_PROPERTIES = new Properties();
     private static final String VERSION_KEY = "version";
     private static final String BUILD_KEY = "build";
     private static final String TRAITS_KEY = "traits";
-
-    private final Application application;
-    private SnapyrNotificationHandler notificationHandler;
+    // Handler Logic.
+    private static final long SETTINGS_REFRESH_INTERVAL = 1000 * 60 * 60 * 24; // 24 hours
+    private static final long SETTINGS_RETRY_INTERVAL = 1000 * 60; // 1 minute
+    /* This is intentional since we're only using the application context. */
+    @SuppressLint("StaticFieldLeak")
+    static volatile Snapyr singleton = null;
     final ExecutorService networkExecutor;
     final Stats stats;
-    private final @NonNull List<Middleware> sourceMiddleware;
-    private final @NonNull Map<String, List<Middleware>> destinationMiddleware;
-    private JSMiddleware edgeFunctionMiddleware;
-    @Private final Options defaultOptions;
-    @Private final Traits.Cache traitsCache;
-    @Private final SnapyrContext snapyrContext;
-    private final Logger logger;
+    @Private
+    final Options defaultOptions;
+    @Private
+    final Traits.Cache traitsCache;
+    @Private
+    final SnapyrContext snapyrContext;
     final String tag;
     final Client client;
     final Cartographer cartographer;
-    private final ProjectSettings.Cache projectSettingsCache;
     final Crypto crypto;
-    @Private final SnapyrActivityLifecycleCallbacks activityLifecycleCallback;
-    @Private final SnapyrNotificationLifecycleCallbacks notificationLifecycleCallbacks;
-    @Private final Lifecycle lifecycle;
-    @Private final SnapyrActionHandler actionHandler;
-    ProjectSettings projectSettings; // todo: make final (non-final for testing).
-    @Private final String writeKey;
-    private String pushToken;
+    @Private
+    final SnapyrActivityLifecycleCallbacks activityLifecycleCallback;
+    @Private
+    final SnapyrNotificationLifecycleCallbacks notificationLifecycleCallbacks;
+    @Private
+    final Lifecycle lifecycle;
+    @Private
+    final SnapyrActionHandler actionHandler;
+    @Private
+    final String writeKey;
     final int flushQueueSize;
     final long flushIntervalInMillis;
+    final Map<String, Boolean> bundledIntegrations = new ConcurrentHashMap<>();
+    @Private
+    final boolean nanosecondTimestamps;
+    @Private
+    final boolean useNewLifecycleMethods;
+    private final Application application;
+    private final @NonNull
+    List<Middleware> sourceMiddleware;
+    private final @NonNull
+    Map<String, List<Middleware>> destinationMiddleware;
+    private final JSMiddleware edgeFunctionMiddleware;
+    private final Logger logger;
+    private final ProjectSettings.Cache projectSettingsCache;
     // Retrieving the advertising ID is asynchronous. This latch helps us wait to ensure the
     // advertising ID is ready.
     private final CountDownLatch advertisingIdLatch;
     private final ExecutorService analyticsExecutor;
     private final BooleanPreference optOut;
+    ProjectSettings projectSettings; // todo: make final (non-final for testing).
+    volatile boolean shutdown;
+    private SnapyrNotificationHandler notificationHandler;
+    private String pushToken;
     private Map<String, PushTemplate> PushTemplates;
-
-    final Map<String, Boolean> bundledIntegrations = new ConcurrentHashMap<>();
     private List<Integration.Factory> factories;
     // todo: use lightweight map implementation.
     private Map<String, Integration<?>> integrations;
-    volatile boolean shutdown;
-
-    @Private final boolean nanosecondTimestamps;
-    @Private final boolean useNewLifecycleMethods;
-
-    /**
-     * Return a reference to the global default {@link Snapyr} instance.
-     *
-     * <p>This instance is automatically initialized with defaults that are suitable to most
-     * implementations.
-     *
-     * <p>If these settings do not meet the requirements of your application, you can override
-     * defaults in {@code analytics.xml}, or you can construct your own instance with full control
-     * over the configuration by using {@link Builder}.
-     *
-     * <p>By default, events are uploaded every 30 seconds, or every 20 events (whichever occurs
-     * first), and debugging is disabled.
-     */
-    public static Snapyr with(Context context) {
-        if (singleton == null) {
-            if (context == null) {
-                throw new IllegalArgumentException("Context must not be null.");
-            }
-            synchronized (Snapyr.class) {
-                if (singleton == null) {
-                    String writeKey =
-                            Utils.getResourceString(context, WRITE_KEY_RESOURCE_IDENTIFIER);
-                    Builder builder = new Builder(context, writeKey);
-
-                    try {
-                        String packageName = context.getPackageName();
-                        int flags =
-                                context.getPackageManager()
-                                        .getApplicationInfo(packageName, 0)
-                                        .flags;
-                        boolean debugging = (flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
-                        if (debugging) {
-                            builder.logLevel(LogLevel.INFO);
-                        }
-                    } catch (PackageManager.NameNotFoundException ignored) {
-                    }
-
-                    singleton = builder.build();
-                }
-            }
-
-        }
-        return singleton;
-    }
-
-    public static boolean Valid() {
-        return singleton != null;
-    }
-
-    /**
-     * Set the global instance returned from {@link #with}.
-     *
-     * <p>This method must be called before any calls to {@link #with} and may only be called once.
-     */
-    public static void setSingletonInstance(Snapyr analytics) {
-        synchronized (Snapyr.class) {
-            if (singleton != null) {
-                throw new IllegalStateException("Singleton instance already exists.");
-            }
-            singleton = analytics;
-        }
-    }
 
     Snapyr(
             Application application,
@@ -378,8 +328,6 @@ public class Snapyr {
             notificationHandler.autoRegisterFirebaseToken(this);
 
 
-
-
             // Add lifecycle callback observer so we can track user behavior on notifications
             // (i.e. tapping a notification or tapping an action button on notification)
 
@@ -399,10 +347,82 @@ public class Snapyr {
         }
     }
 
+    /**
+     * Return a reference to the global default {@link Snapyr} instance.
+     *
+     * <p>This instance is automatically initialized with defaults that are suitable to most
+     * implementations.
+     *
+     * <p>If these settings do not meet the requirements of your application, you can override
+     * defaults in {@code analytics.xml}, or you can construct your own instance with full control
+     * over the configuration by using {@link Builder}.
+     *
+     * <p>By default, events are uploaded every 30 seconds, or every 20 events (whichever occurs
+     * first), and debugging is disabled.
+     */
+    public static Snapyr with(Context context) {
+        if (singleton == null) {
+            if (context == null) {
+                throw new IllegalArgumentException("Context must not be null.");
+            }
+            synchronized (Snapyr.class) {
+                if (singleton == null) {
+                    String writeKey =
+                            Utils.getResourceString(context, WRITE_KEY_RESOURCE_IDENTIFIER);
+                    Builder builder = new Builder(context, writeKey);
+
+                    try {
+                        String packageName = context.getPackageName();
+                        int flags =
+                                context.getPackageManager()
+                                        .getApplicationInfo(packageName, 0)
+                                        .flags;
+                        boolean debugging = (flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
+                        if (debugging) {
+                            builder.logLevel(LogLevel.INFO);
+                        }
+                    } catch (PackageManager.NameNotFoundException ignored) {
+                    }
+
+                    singleton = builder.build();
+                }
+            }
+
+        }
+        return singleton;
+    }
+
+    public static boolean Valid() {
+        return singleton != null;
+    }
+
+    /**
+     * Set the global instance returned from {@link #with}.
+     *
+     * <p>This method must be called before any calls to {@link #with} and may only be called once.
+     */
+    public static void setSingletonInstance(Snapyr analytics) {
+        synchronized (Snapyr.class) {
+            if (singleton != null) {
+                throw new IllegalStateException("Singleton instance already exists.");
+            }
+            singleton = analytics;
+        }
+    }
+
+    static PackageInfo getPackageInfo(Context context) {
+        PackageManager packageManager = context.getPackageManager();
+        try {
+            return packageManager.getPackageInfo(context.getPackageName(), 0);
+        } catch (PackageManager.NameNotFoundException e) {
+            throw new AssertionError("Package not found: " + context.getPackageName());
+        }
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void RefreshConfiguration(boolean force) {
         ProjectSettings newSettings = getSettings(force);
-        if (!isNullOrEmpty(newSettings)){
+        if (!isNullOrEmpty(newSettings)) {
             this.projectSettings = newSettings;
             ValueMap metadata = projectSettings.getValueMap("metadata");
             snapyrContext.putSdkMeta(metadata);
@@ -413,7 +433,10 @@ public class Snapyr {
     public SnapyrNotificationHandler getNotificationHandler() {
         return notificationHandler;
     }
-    public Map<String, PushTemplate> getPushTemplates() { return this.PushTemplates; }
+
+    public Map<String, PushTemplate> getPushTemplates() {
+        return this.PushTemplates;
+    }
 
     @Private
     void trackApplicationLifecycleEvents() {
@@ -451,14 +474,7 @@ public class Snapyr {
         editor.apply();
     }
 
-    static PackageInfo getPackageInfo(Context context) {
-        PackageManager packageManager = context.getPackageManager();
-        try {
-            return packageManager.getPackageInfo(context.getPackageName(), 0);
-        } catch (PackageManager.NameNotFoundException e) {
-            throw new AssertionError("Package not found: " + context.getPackageName());
-        }
-    }
+    // Analytics API
 
     @Private
     void recordScreenViews(Activity activity) {
@@ -470,7 +486,7 @@ public class Snapyr {
             CharSequence activityLabel = info.loadLabel(packageManager);
             screen(activityLabel.toString());
         } catch (PackageManager.NameNotFoundException e) {
-            throw new AssertionError("Activity Not Found: " + e.toString());
+            throw new AssertionError("Activity Not Found: " + e);
         } catch (Exception e) {
             logger.error(e, "Unable to track screen view for %s", activity.toString());
         }
@@ -495,8 +511,6 @@ public class Snapyr {
                     }
                 });
     }
-
-    // Analytics API
 
     /** @see #identify(String, Traits, Options) */
     public void identify(@NonNull String userId) {
@@ -1039,33 +1053,6 @@ public class Snapyr {
         onIntegrationReady(integration.key, callback);
     }
 
-    /** @deprecated */
-    public enum BundledIntegration {
-        AMPLITUDE("Amplitude"),
-        APPS_FLYER("AppsFlyer"),
-        APPTIMIZE("Apptimize"),
-        BUGSNAG("Bugsnag"),
-        COUNTLY("Countly"),
-        CRITTERCISM("Crittercism"),
-        FLURRY("Flurry"),
-        GOOGLE_ANALYTICS("Google Analytics"),
-        KAHUNA("Kahuna"),
-        LEANPLUM("Leanplum"),
-        LOCALYTICS("Localytics"),
-        MIXPANEL("Mixpanel"),
-        QUANTCAST("Quantcast"),
-        TAPLYTICS("Taplytics"),
-        TAPSTREAM("Tapstream"),
-        UXCAM("UXCam");
-
-        /** The key that identifies this integration in our API. */
-        final String key;
-
-        BundledIntegration(String key) {
-            this.key = key;
-        }
-    }
-
     /**
      * Stops this instance from accepting further requests. In-flight events may not be uploaded
      * right away.
@@ -1101,6 +1088,222 @@ public class Snapyr {
     private void assertNotShutdown() {
         if (shutdown) {
             throw new IllegalStateException("Cannot enqueue messages after client is shutdown.");
+        }
+    }
+
+    private ProjectSettings downloadSettings() {
+        try {
+            ProjectSettings projectSettings =
+                    networkExecutor
+                            .submit(
+                                    new Callable<ProjectSettings>() {
+                                        @Override
+                                        public ProjectSettings call() throws Exception {
+                                            Client.Connection connection = null;
+                                            try {
+                                                connection = client.fetchSettings();
+                                                Map<String, Object> map =
+                                                        cartographer.fromJson(
+                                                                Utils.buffer(connection.is));
+                                                if (!map.containsKey("integrations")) {
+                                                    map.put(
+                                                            "integrations",
+                                                            new ValueMap()
+                                                                    .putValue(
+                                                                            "Snapyr",
+                                                                            new ValueMap()
+                                                                                    .putValue(
+                                                                                            "apiKey",
+                                                                                            writeKey)));
+                                                }
+                                                if (!map.containsKey("metadata")) {
+                                                    map.put(
+                                                            "metadata",
+                                                            new ValueMap()
+                                                                    .putValue(
+                                                                            "platform", "Android"));
+                                                }
+                                                return ProjectSettings.create(map);
+                                            } finally {
+                                                Utils.closeQuietly(connection);
+                                            }
+                                        }
+                                    })
+                            .get();
+            projectSettingsCache.set(projectSettings);
+            return projectSettings;
+        } catch (InterruptedException e) {
+            logger.error(e, "Thread interrupted while fetching settings.");
+        } catch (ExecutionException e) {
+            logger.error(
+                    e, "Unable to fetch settings. Retrying in %s ms.", SETTINGS_RETRY_INTERVAL);
+        }
+        return null;
+    }
+
+    /**
+     * Retrieve settings from the cache or the network: 1. If the cache is empty, fetch new
+     * settings. 2. If the cache is not stale, use it. 2. If the cache is stale, try to get new
+     * settings.
+     */
+    @Private
+    ProjectSettings getSettings(boolean force) {
+        ProjectSettings cachedSettings = projectSettingsCache.get();
+        if (isNullOrEmpty(cachedSettings) || force) {
+            return downloadSettings();
+        }
+
+        long expirationTime = cachedSettings.timestamp() + getSettingsRefreshInterval();
+        if (expirationTime > System.currentTimeMillis()) {
+            return cachedSettings;
+        }
+
+        ProjectSettings downloadedSettings = downloadSettings();
+        if (isNullOrEmpty(downloadedSettings)) {
+            return cachedSettings;
+        }
+        return downloadedSettings;
+    }
+
+    private long getSettingsRefreshInterval() {
+        long returnInterval = SETTINGS_REFRESH_INTERVAL;
+        if (logger.logLevel == LogLevel.DEBUG) {
+            returnInterval = 60 * 1000; // 1 minute
+        }
+        return returnInterval;
+    }
+
+    void performInitializeIntegrations(ProjectSettings projectSettings) throws AssertionError {
+        if (isNullOrEmpty(projectSettings)) {
+            throw new AssertionError("ProjectSettings is empty!");
+        }
+        ValueMap integrationSettings = projectSettings.integrations();
+
+        integrations = new LinkedHashMap<>(factories.size());
+        for (int i = 0; i < factories.size(); i++) {
+            if (Utils.isNullOrEmpty(integrationSettings)) {
+                logger.debug("Integration settings are empty");
+                continue;
+            }
+            Integration.Factory factory = factories.get(i);
+            String key = factory.key();
+            if (Utils.isNullOrEmpty(key)) {
+                throw new AssertionError("The factory key is empty!");
+            }
+            ValueMap settings = integrationSettings.getValueMap(key);
+            if (!(factory instanceof WebhookIntegration.WebhookIntegrationFactory)
+                    && Utils.isNullOrEmpty(settings)) {
+                logger.debug("Integration %s is not enabled.", key);
+                continue;
+            }
+            Integration integration = factory.create(settings, this);
+            if (integration == null) {
+                logger.info("Factory %s couldn't create integration.", factory);
+            } else {
+                integrations.put(key, integration);
+                bundledIntegrations.put(key, false);
+            }
+        }
+        factories = null;
+    }
+
+    /** Runs the given operation on all integrations. */
+    void performRun(IntegrationOperation operation) {
+        for (Map.Entry<String, Integration<?>> entry : integrations.entrySet()) {
+            String key = entry.getKey();
+            long startTime = System.nanoTime();
+            operation.run(key, entry.getValue(), projectSettings);
+            long endTime = System.nanoTime();
+            long durationInMillis = TimeUnit.NANOSECONDS.toMillis(endTime - startTime);
+            stats.dispatchIntegrationOperation(key, durationInMillis);
+            logger.debug("Ran %s on integration %s in %d ns.", operation, key, endTime - startTime);
+        }
+    }
+
+    @Private
+    <T> void performCallback(String key, Callback<T> callback) {
+        for (Map.Entry<String, Integration<?>> entry : integrations.entrySet()) {
+            if (key.equals(entry.getKey())) {
+                callback.onReady((T) entry.getValue().getUnderlyingInstance());
+                return;
+            }
+        }
+    }
+
+    /**
+     * Previously (until version 4.1.7) shared preferences were not namespaced by a tag. This meant
+     * that all analytics instances shared the same shared preferences. This migration checks if the
+     * namespaced shared preferences instance contains {@code namespaceSharedPreferences: true}. If
+     * it does, the migration is already run and does not need to be run again. If it doesn't, it
+     * copies the legacy shared preferences mapping into the namespaced shared preferences, and sets
+     * namespaceSharedPreferences to false.
+     */
+    private void namespaceSharedPreferences() {
+        SharedPreferences newSharedPreferences = Utils.getSnapyrSharedPreferences(application, tag);
+        BooleanPreference namespaceSharedPreferences =
+                new BooleanPreference(newSharedPreferences, "namespaceSharedPreferences", true);
+
+        if (namespaceSharedPreferences.get()) {
+            SharedPreferences legacySharedPreferences =
+                    application.getSharedPreferences("analytics-android", Context.MODE_PRIVATE);
+            Utils.copySharedPreferences(legacySharedPreferences, newSharedPreferences);
+            namespaceSharedPreferences.set(false);
+        }
+    }
+
+    public void trackNotificationInteraction(Intent intent) {
+        Context applicationContext = this.getApplication().getApplicationContext();
+
+        String deepLinkUrl = intent.getStringExtra(SnapyrNotificationHandler.NOTIF_DEEP_LINK_KEY);
+        String actionId = intent.getStringExtra(SnapyrNotificationHandler.ACTION_ID_KEY);
+        int notificationId = intent.getIntExtra("notificationId", 0);
+
+        String token;
+
+        Properties props =
+                new Properties()
+                        .putValue("deepLinkUrl", deepLinkUrl)
+                        .putValue("actionId", actionId);
+
+        token = intent.getStringExtra(SnapyrNotificationHandler.NOTIF_TOKEN_KEY);
+        props.putValue(SnapyrNotificationHandler.NOTIF_TOKEN_KEY, token)
+                .putValue("interactionType", "notificationPressed");
+
+        // if autocancel = true....
+        // Dismiss source notification
+        NotificationManagerCompat.from(applicationContext).cancel(notificationId);
+        // Close notification drawer (so newly opened activity isn't behind anything)
+        // NOTE (BS): I don't think we need this anymore & it was causing permission errors b/c it
+        // can be called from other activities. I'll leave it commented out for now
+        //applicationContext.sendBroadcast(new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
+
+        this.pushNotificationClicked(props);
+    }
+
+    /** @deprecated */
+    public enum BundledIntegration {
+        AMPLITUDE("Amplitude"),
+        APPS_FLYER("AppsFlyer"),
+        APPTIMIZE("Apptimize"),
+        BUGSNAG("Bugsnag"),
+        COUNTLY("Countly"),
+        CRITTERCISM("Crittercism"),
+        FLURRY("Flurry"),
+        GOOGLE_ANALYTICS("Google Analytics"),
+        KAHUNA("Kahuna"),
+        LEANPLUM("Leanplum"),
+        LOCALYTICS("Localytics"),
+        MIXPANEL("Mixpanel"),
+        QUANTCAST("Quantcast"),
+        TAPLYTICS("Taplytics"),
+        TAPSTREAM("Tapstream"),
+        UXCAM("UXCam");
+
+        /** The key that identifies this integration in our API. */
+        final String key;
+
+        BundledIntegration(String key) {
+            this.key = key;
         }
     }
 
@@ -1144,7 +1347,7 @@ public class Snapyr {
 
     static class DummyActionHandler implements SnapyrActionHandler {
 
-        private Logger logger;
+        private final Logger logger;
 
         DummyActionHandler(Logger logger) {
             this.logger = logger;
@@ -1161,7 +1364,8 @@ public class Snapyr {
     public static class Builder {
 
         private final Application application;
-        private String writeKey;
+        private final String writeKey;
+        private final List<Integration.Factory> factories = new ArrayList<>();
         private boolean collectDeviceID = Utils.DEFAULT_COLLECT_DEVICE_ID;
         private int flushQueueSize = Utils.DEFAULT_FLUSH_QUEUE_SIZE;
         private long flushIntervalInMillis = Utils.DEFAULT_FLUSH_INTERVAL;
@@ -1171,7 +1375,6 @@ public class Snapyr {
         private ExecutorService networkExecutor;
         private ExecutorService executor;
         private ConnectionFactory connectionFactory;
-        private final List<Integration.Factory> factories = new ArrayList<>();
         private List<Middleware> sourceMiddleware;
         private Map<String, List<Middleware>> destinationMiddleware;
         private JSMiddleware edgeFunctionMiddleware;
@@ -1604,7 +1807,7 @@ public class Snapyr {
             List<Middleware> srcMiddleware = Utils.immutableCopyOf(this.sourceMiddleware);
             Map<String, List<Middleware>> destMiddleware =
                     Utils.isNullOrEmpty(this.destinationMiddleware)
-                            ? Collections.<String, List<Middleware>>emptyMap()
+                            ? Collections.emptyMap()
                             : Utils.immutableCopyOf(this.destinationMiddleware);
 
             ExecutorService executor = this.executor;
@@ -1645,198 +1848,5 @@ public class Snapyr {
                     useNewLifecycleMethods,
                     snapyrPush);
         }
-    }
-
-    // Handler Logic.
-    private static final long SETTINGS_REFRESH_INTERVAL = 1000 * 60 * 60 * 24; // 24 hours
-    private static final long SETTINGS_RETRY_INTERVAL = 1000 * 60; // 1 minute
-
-    private ProjectSettings downloadSettings() {
-        try {
-            ProjectSettings projectSettings =
-                    networkExecutor
-                            .submit(
-                                    new Callable<ProjectSettings>() {
-                                        @Override
-                                        public ProjectSettings call() throws Exception {
-                                            Client.Connection connection = null;
-                                            try {
-                                                connection = client.fetchSettings();
-                                                Map<String, Object> map =
-                                                        cartographer.fromJson(
-                                                                Utils.buffer(connection.is));
-                                                if (!map.containsKey("integrations")) {
-                                                    map.put(
-                                                            "integrations",
-                                                            new ValueMap()
-                                                                    .putValue(
-                                                                            "Snapyr",
-                                                                            new ValueMap()
-                                                                                    .putValue(
-                                                                                            "apiKey",
-                                                                                            writeKey)));
-                                                }
-                                                if (!map.containsKey("metadata")) {
-                                                    map.put(
-                                                            "metadata",
-                                                            new ValueMap()
-                                                                    .putValue(
-                                                                            "platform", "Android"));
-                                                }
-                                                return ProjectSettings.create(map);
-                                            } finally {
-                                                Utils.closeQuietly(connection);
-                                            }
-                                        }
-                                    })
-                            .get();
-            projectSettingsCache.set(projectSettings);
-            return projectSettings;
-        } catch (InterruptedException e) {
-            logger.error(e, "Thread interrupted while fetching settings.");
-        } catch (ExecutionException e) {
-            logger.error(
-                    e, "Unable to fetch settings. Retrying in %s ms.", SETTINGS_RETRY_INTERVAL);
-        }
-        return null;
-    }
-
-    /**
-     * Retrieve settings from the cache or the network: 1. If the cache is empty, fetch new
-     * settings. 2. If the cache is not stale, use it. 2. If the cache is stale, try to get new
-     * settings.
-     */
-    @Private
-    ProjectSettings getSettings(boolean force) {
-        ProjectSettings cachedSettings = projectSettingsCache.get();
-        if (isNullOrEmpty(cachedSettings) || force) {
-            return downloadSettings();
-        }
-
-        long expirationTime = cachedSettings.timestamp() + getSettingsRefreshInterval();
-        if (expirationTime > System.currentTimeMillis()) {
-            return cachedSettings;
-        }
-
-        ProjectSettings downloadedSettings = downloadSettings();
-        if (isNullOrEmpty(downloadedSettings)) {
-            return cachedSettings;
-        }
-        return downloadedSettings;
-    }
-
-    private long getSettingsRefreshInterval() {
-        long returnInterval = SETTINGS_REFRESH_INTERVAL;
-        if (logger.logLevel == LogLevel.DEBUG) {
-            returnInterval = 60 * 1000; // 1 minute
-        }
-        return returnInterval;
-    }
-
-    void performInitializeIntegrations(ProjectSettings projectSettings) throws AssertionError {
-        if (isNullOrEmpty(projectSettings)) {
-            throw new AssertionError("ProjectSettings is empty!");
-        }
-        ValueMap integrationSettings = projectSettings.integrations();
-
-        integrations = new LinkedHashMap<>(factories.size());
-        for (int i = 0; i < factories.size(); i++) {
-            if (Utils.isNullOrEmpty(integrationSettings)) {
-                logger.debug("Integration settings are empty");
-                continue;
-            }
-            Integration.Factory factory = factories.get(i);
-            String key = factory.key();
-            if (Utils.isNullOrEmpty(key)) {
-                throw new AssertionError("The factory key is empty!");
-            }
-            ValueMap settings = integrationSettings.getValueMap(key);
-            if (!(factory instanceof WebhookIntegration.WebhookIntegrationFactory)
-                    && Utils.isNullOrEmpty(settings)) {
-                logger.debug("Integration %s is not enabled.", key);
-                continue;
-            }
-            Integration integration = factory.create(settings, this);
-            if (integration == null) {
-                logger.info("Factory %s couldn't create integration.", factory);
-            } else {
-                integrations.put(key, integration);
-                bundledIntegrations.put(key, false);
-            }
-        }
-        factories = null;
-    }
-
-    /** Runs the given operation on all integrations. */
-    void performRun(IntegrationOperation operation) {
-        for (Map.Entry<String, Integration<?>> entry : integrations.entrySet()) {
-            String key = entry.getKey();
-            long startTime = System.nanoTime();
-            operation.run(key, entry.getValue(), projectSettings);
-            long endTime = System.nanoTime();
-            long durationInMillis = TimeUnit.NANOSECONDS.toMillis(endTime - startTime);
-            stats.dispatchIntegrationOperation(key, durationInMillis);
-            logger.debug("Ran %s on integration %s in %d ns.", operation, key, endTime - startTime);
-        }
-    }
-
-    @Private
-    <T> void performCallback(String key, Callback<T> callback) {
-        for (Map.Entry<String, Integration<?>> entry : integrations.entrySet()) {
-            if (key.equals(entry.getKey())) {
-                callback.onReady((T) entry.getValue().getUnderlyingInstance());
-                return;
-            }
-        }
-    }
-
-    /**
-     * Previously (until version 4.1.7) shared preferences were not namespaced by a tag. This meant
-     * that all analytics instances shared the same shared preferences. This migration checks if the
-     * namespaced shared preferences instance contains {@code namespaceSharedPreferences: true}. If
-     * it does, the migration is already run and does not need to be run again. If it doesn't, it
-     * copies the legacy shared preferences mapping into the namespaced shared preferences, and sets
-     * namespaceSharedPreferences to false.
-     */
-    private void namespaceSharedPreferences() {
-        SharedPreferences newSharedPreferences = Utils.getSnapyrSharedPreferences(application, tag);
-        BooleanPreference namespaceSharedPreferences =
-                new BooleanPreference(newSharedPreferences, "namespaceSharedPreferences", true);
-
-        if (namespaceSharedPreferences.get()) {
-            SharedPreferences legacySharedPreferences =
-                    application.getSharedPreferences("analytics-android", Context.MODE_PRIVATE);
-            Utils.copySharedPreferences(legacySharedPreferences, newSharedPreferences);
-            namespaceSharedPreferences.set(false);
-        }
-    }
-
-    public void trackNotificationInteraction(Intent intent) {
-        Context applicationContext = this.getApplication().getApplicationContext();
-
-        String deepLinkUrl = intent.getStringExtra(SnapyrNotificationHandler.NOTIF_DEEP_LINK_KEY);
-        String actionId = intent.getStringExtra(SnapyrNotificationHandler.ACTION_ID_KEY);
-        int notificationId = intent.getIntExtra("notificationId", 0);
-
-        String token;
-
-        Properties props =
-                new Properties()
-                        .putValue("deepLinkUrl", deepLinkUrl)
-                        .putValue("actionId", actionId);
-
-        token = intent.getStringExtra(SnapyrNotificationHandler.NOTIF_TOKEN_KEY);
-        props.putValue(SnapyrNotificationHandler.NOTIF_TOKEN_KEY, token)
-                .putValue("interactionType", "notificationPressed");
-
-        // if autocancel = true....
-        // Dismiss source notification
-        NotificationManagerCompat.from(applicationContext).cancel(notificationId);
-        // Close notification drawer (so newly opened activity isn't behind anything)
-        // NOTE (BS): I don't think we need this anymore & it was causing permission errors b/c it
-        // can be called from other activities. I'll leave it commented out for now
-        //applicationContext.sendBroadcast(new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
-
-        this.pushNotificationClicked(props);
     }
 }

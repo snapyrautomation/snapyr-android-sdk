@@ -24,20 +24,20 @@
 
 <resources>
 
-  <string name="app_name">Snapyr Sample</string>
+    <string name="app_name">Snapyr Sample</string>
 
-  <string name="action_view_docs">Docs</string>
-  <string name="no_browser_available">No browser to open link</string>
+    <string name="action_view_docs">Docs</string>
+    <string name="no_browser_available">No browser to open link</string>
 
-  <string name="button_a">Button A</string>
-  <string name="button_b">Button B</string>
+    <string name="button_a">Button A</string>
+    <string name="button_b">Button B</string>
 
-  <string name="show_notification">Show Local Notification</string>
+    <string name="show_notification">Show Local Notification</string>
 
-  <string name="flush">Flush Events</string>
+    <string name="flush">Flush Events</string>
 
-  <string name="identify_button">Identify User</string>
-  <string name="identify_user_id">Type in an ID to identify the user</string>
-  <string name="id_required">User ID should not be blank or empty</string>
+    <string name="identify_button">Identify User</string>
+    <string name="identify_user_id">Type in an ID to identify the user</string>
+    <string name="id_required">User ID should not be blank or empty</string>
 
 </resources>

@@ -1,18 +1,18 @@
 /**
  * The MIT License (MIT)
- *
+ * <p>
  * Copyright (c) 2014 Segment.io, Inc.
- *
+ * <p>
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * <p>
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- *
+ * <p>
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,6 +26,35 @@ package com.snapyr.sdk.internal;
 import java.util.Date;
 
 public class NanoDate extends Date {
+    private final long nanos;
+
+    public NanoDate() {
+        this(NanoClock.currentTimeNanos());
+    }
+
+    public NanoDate(Date d) {
+        this(d.getTime() * 1_000_000);
+    }
+
+    public NanoDate(long nanos) {
+        super(nanos / 1_000_000);
+        this.nanos = nanos;
+    }
+
+    public long nanos() {
+        return nanos;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof NanoDate) {
+            return ((NanoDate) obj).nanos() == nanos();
+        } else if (obj instanceof Date) {
+            return super.equals(obj) && nanos % 1_000_000 == 0;
+        }
+        return false;
+    }
+
     /*
      * Java Genetic Algorithm Library (@__identifier__@).
      * Copyright (c) @__year__@ Franz Wilhelmstötter
@@ -56,6 +85,10 @@ public class NanoDate extends Date {
         private static final long NANO_START = System.nanoTime();
         private static final long OFFSET_NANOS = EPOCH_NANOS - NANO_START;
 
+        public static long currentTimeNanos() {
+            return new NanoClock().nanos();
+        }
+
         /**
          * This returns the nanosecond-based instant, measured from 1970-01-01T00:00Z (UTC). This
          * method will return valid values till the year 2262.
@@ -65,38 +98,5 @@ public class NanoDate extends Date {
         private long nanos() {
             return System.nanoTime() + OFFSET_NANOS;
         }
-
-        public static long currentTimeNanos() {
-            return new NanoClock().nanos();
-        }
-    }
-
-    private long nanos;
-
-    public NanoDate() {
-        this(NanoClock.currentTimeNanos());
-    }
-
-    public NanoDate(Date d) {
-        this(d.getTime() * 1_000_000);
-    }
-
-    public NanoDate(long nanos) {
-        super(nanos / 1_000_000);
-        this.nanos = nanos;
-    }
-
-    public long nanos() {
-        return nanos;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj instanceof NanoDate) {
-            return ((NanoDate) obj).nanos() == nanos();
-        } else if (obj instanceof Date) {
-            return super.equals(obj) && nanos % 1_000_000 == 0;
-        }
-        return false;
     }
 }

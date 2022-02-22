@@ -26,10 +26,6 @@ package com.snapyr.sdk
 import android.Manifest
 import com.google.common.util.concurrent.MoreExecutors
 import com.snapyr.sdk.integrations.Integration
-import java.lang.AssertionError
-import java.lang.IllegalStateException
-import java.lang.reflect.Field
-import kotlin.jvm.Throws
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.junit.Before
@@ -41,6 +37,7 @@ import org.mockito.MockitoAnnotations.initMocks
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
+import java.lang.reflect.Field
 
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE)
@@ -77,7 +74,10 @@ class EdgeFunctionMiddlewareTest {
                 .defaultProjectSettings(projectSettings)
                 .use(
                     object : Integration.Factory {
-                        override fun create(settings: ValueMap, analytics: Snapyr): Integration<*>? {
+                        override fun create(
+                            settings: ValueMap,
+                            analytics: Snapyr
+                        ): Integration<*>? {
                             return integrationFoo
                         }
 
@@ -87,7 +87,10 @@ class EdgeFunctionMiddlewareTest {
                     })
                 .use(
                     object : Integration.Factory {
-                        override fun create(settings: ValueMap, analytics: Snapyr): Integration<*>? {
+                        override fun create(
+                            settings: ValueMap,
+                            analytics: Snapyr
+                        ): Integration<*>? {
                             return integrationBar
                         }
 
@@ -109,8 +112,9 @@ class EdgeFunctionMiddlewareTest {
 
         analytics.track("foo")
 
-        val privateEdgeFunctions: Field = Snapyr::class.java.getDeclaredField("edgeFunctionMiddleware")
-        assertThat(privateEdgeFunctions).isNotNull()
+        val privateEdgeFunctions: Field =
+            Snapyr::class.java.getDeclaredField("edgeFunctionMiddleware")
+        assertThat(privateEdgeFunctions).isNotNull
     }
 
     @Test

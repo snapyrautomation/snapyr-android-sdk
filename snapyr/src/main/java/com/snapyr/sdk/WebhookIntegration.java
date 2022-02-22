@@ -1,18 +1,18 @@
 /**
  * The MIT License (MIT)
- *
+ * <p>
  * Copyright (c) 2014 Segment.io, Inc.
- *
+ * <p>
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * <p>
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- *
+ * <p>
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,6 +24,7 @@
 package com.snapyr.sdk;
 
 import android.util.Log;
+
 import com.snapyr.sdk.integrations.AliasPayload;
 import com.snapyr.sdk.integrations.GroupPayload;
 import com.snapyr.sdk.integrations.IdentifyPayload;
@@ -31,6 +32,7 @@ import com.snapyr.sdk.integrations.Integration;
 import com.snapyr.sdk.integrations.ScreenPayload;
 import com.snapyr.sdk.integrations.TrackPayload;
 import com.snapyr.sdk.internal.Utils;
+
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,29 +43,10 @@ import java.util.concurrent.ExecutorService;
 
 public class WebhookIntegration extends Integration<Void> {
 
-    public static class WebhookIntegrationFactory implements Factory {
-        private String key, webhookUrl;
-
-        public WebhookIntegrationFactory(String key, String webhookUrl) {
-            this.key = key;
-            this.webhookUrl = webhookUrl;
-        }
-
-        @Override
-        public Integration<?> create(ValueMap settings, Snapyr analytics) {
-            return new WebhookIntegration(
-                    webhookUrl, analytics.tag, key(), analytics.networkExecutor);
-        }
-
-        @Override
-        public String key() {
-            return "webhook_" + key;
-        }
-    }
-
-    private String webhookUrl, tag, key;
-    private ExecutorService networkExecutor;
-
+    private final String webhookUrl;
+    private final String tag;
+    private final String key;
+    private final ExecutorService networkExecutor;
     public WebhookIntegration(
             String webhookUrl, String tag, String key, ExecutorService networkExecutor) {
         this.webhookUrl = webhookUrl;
@@ -117,7 +100,7 @@ public class WebhookIntegration extends Integration<Void> {
                                     } catch (IOException e) {
                                         responseBody =
                                                 "Could not read response body for rejected message: "
-                                                        + e.toString();
+                                                        + e;
                                     } finally {
                                         if (inputStream != null) {
                                             inputStream.close();
@@ -160,5 +143,26 @@ public class WebhookIntegration extends Integration<Void> {
     @Override
     public void screen(ScreenPayload screen) {
         sendPayloadToWebhook(screen);
+    }
+
+    public static class WebhookIntegrationFactory implements Factory {
+        private final String key;
+        private final String webhookUrl;
+
+        public WebhookIntegrationFactory(String key, String webhookUrl) {
+            this.key = key;
+            this.webhookUrl = webhookUrl;
+        }
+
+        @Override
+        public Integration<?> create(ValueMap settings, Snapyr analytics) {
+            return new WebhookIntegration(
+                    webhookUrl, analytics.tag, key(), analytics.networkExecutor);
+        }
+
+        @Override
+        public String key() {
+            return "webhook_" + key;
+        }
     }
 }

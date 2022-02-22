@@ -7,6 +7,6 @@ android.libraryVariants.all { variant ->
         task.dependsOn variant.javaCompile
         // Include Java classes
         task.from variant.javaCompile.destinationDir
-        artifacts.add('archives', task);
+        artifacts.add('archives', task)
     }
 }
