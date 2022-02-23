@@ -845,39 +845,13 @@ public class Snapyr {
             // userId is not set, retrieve from cached traits and set for payload
             builder.userId(cachedUserId);
         }
-        enqueue(builder.build());
-    }
-
-
-    void enqueue(BasePayload payload) {
+        BasePayload payload = builder.build();
         if (optOut.get()) {
             return;
         }
 
         logger.verbose("Created payload %s.", payload);
         this.sendQueue.performEnqueue(payload);
-    }
-
-    void handleEvent(BasePayload payload){
-        switch (payload.type()) {
-            case identify:
-                identify((IdentifyPayload) payload);
-                break;
-            case alias:
-                alias((AliasPayload) payload);
-                break;
-            case group:
-                group((GroupPayload) payload);
-                break;
-            case track:
-                track((TrackPayload) payload);
-                break;
-            case screen:
-                screen((ScreenPayload) payload);
-                break;
-            default:
-                throw new AssertionError("unknown type " + payload.type());
-        }
     }
 
     /**
