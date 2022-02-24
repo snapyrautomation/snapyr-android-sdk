@@ -58,7 +58,7 @@ import java.util.concurrent.ExecutorService
 
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE)
-class SnapyrIntegrationTest {
+class snapyrQueueTest {
 
     @Rule
     @JvmField
@@ -97,58 +97,9 @@ class SnapyrIntegrationTest {
     @Throws(IOException::class)
     fun enqueueAddsToQueueFile() {
         val payloadQueue = PersistentQueue(queueFile)
-        val snapyrIntegration = SnapyrBuilder().payloadQueue(payloadQueue).build()
-        snapyrIntegration.performEnqueue(TRACK_PAYLOAD)
+        val snapyrQueue = SnapyrBuilder().payloadQueue(payloadQueue).build()
+        snapyrQueue.performEnqueue(TRACK_PAYLOAD)
         assertThat(payloadQueue.size()).isEqualTo(1)
-    }
-
-    @Test
-    @Throws(IOException::class)
-    fun enqueueWritesIntegrations() {
-        val integrations = LinkedHashMap<String, Boolean>()
-        integrations["All"] = false // should overwrite existing values in the map.
-        integrations["Snapyr"] = false // should ignore Snapyr setting in payload.
-        integrations["foo"] = true // should add new values.
-        val payloadQueue = mock(PayloadQueue::class.java)
-        val snapyrIntegration =
-            SnapyrBuilder()
-                .payloadQueue(payloadQueue)
-                .integrations(integrations)
-                .build()
-
-        val trackPayload =
-            Builder()
-                .messageId("a161304c-498c-4830-9291-fcfb8498877b")
-                .timestamp(parseISO8601Date("2014-12-15T13:32:44-0700"))
-                .event("foo")
-                .userId("userId")
-                .build()
-
-        snapyrIntegration.performEnqueue(trackPayload)
-        val expected =
-            (
-                    """
-                      {
-                        "channel": "mobile",
-                        "type": "track",
-                        "messageId": "a161304c-498c-4830-9291-fcfb8498877b",
-                        "timestamp": "2014-12-15T20:32:44.000Z",
-                        "context": {},
-                        "integrations": {
-                            "All": false,
-                            "foo": true
-                        },
-                        "userId": "userId",                                                                                                            
-                        "anonymousId": null,
-                        "event": "foo",
-                        "properties": {}
-                      }  
-                """.trimIndent().replace("\n", "").replace(" ", "")
-                    )
-        val captor = forClass(ByteArray::class.java)
-        verify(payloadQueue).add(captor.capture())
-        val got = String(captor.value, UTF_8)
-        assertThat(got).isEqualTo(expected)
     }
 
     @Test
@@ -157,9 +108,9 @@ class SnapyrIntegrationTest {
         val payloadQueue = mock(PayloadQueue::class.java)
         // We want to trigger a remove, but not a flush.
         whenever(payloadQueue.size()).thenReturn(0, MAX_QUEUE_SIZE, MAX_QUEUE_SIZE, 0)
-        val snapyrIntegration = SnapyrBuilder().payloadQueue(payloadQueue).build()
+        val snapyrQueue = SnapyrBuilder().payloadQueue(payloadQueue).build()
 
-        snapyrIntegration.performEnqueue(TRACK_PAYLOAD)
+        snapyrQueue.performEnqueue(TRACK_PAYLOAD)
 
         verify(payloadQueue).remove(1) // Oldest entry is removed.
         verify(payloadQueue).add(any(ByteArray::class.java)) // Newest entry is added.
@@ -171,10 +122,10 @@ class SnapyrIntegrationTest {
         val payloadQueue = mock(PayloadQueue::class.java)
         doThrow(IOException("no remove for you.")).whenever(payloadQueue).remove(1)
         whenever(payloadQueue.size()).thenReturn(MAX_QUEUE_SIZE) // trigger a remove
-        val snapyrIntegration = SnapyrBuilder().payloadQueue(payloadQueue).build()
+        val snapyrQueue = SnapyrBuilder().payloadQueue(payloadQueue).build()
 
         try {
-            snapyrIntegration.performEnqueue(TRACK_PAYLOAD)
+            snapyrQueue.performEnqueue(TRACK_PAYLOAD)
         } catch (unexpected: IOError) {
             fail("did not expect QueueFile to throw an error.")
         }
@@ -189,18 +140,18 @@ class SnapyrIntegrationTest {
         val client = mock(Client::class.java)
         val connection = mockConnection()
         whenever(client.upload()).thenReturn(connection)
-        val snapyrIntegration =
+        val snapyrQueue =
             SnapyrBuilder()
                 .client(client)
                 .flushSize(5)
                 .payloadQueue(payloadQueue)
                 .build()
         for (i in 0 until 4) {
-            snapyrIntegration.performEnqueue(TRACK_PAYLOAD)
+            snapyrQueue.performEnqueue(TRACK_PAYLOAD)
         }
         verifyZeroInteractions(client)
         // Only the last enqueue should trigger an upload.
-        snapyrIntegration.performEnqueue(TRACK_PAYLOAD)
+        snapyrQueue.performEnqueue(TRACK_PAYLOAD)
 
         verify(client).upload()
     }
@@ -211,7 +162,7 @@ class SnapyrIntegrationTest {
         val payloadQueue = PersistentQueue(queueFile)
         val client = mock(Client::class.java)
         whenever(client.upload()).thenReturn(mockConnection())
-        val snapyrIntegration =
+        val snapyrQueue =
             SnapyrBuilder()
                 .client(client)
                 .payloadQueue(payloadQueue)
@@ -221,7 +172,7 @@ class SnapyrIntegrationTest {
             queueFile.add(bytes)
         }
 
-        snapyrIntegration.submitFlush()
+        snapyrQueue.submitFlush()
 
         assertThat(queueFile.size()).isEqualTo(0)
     }
@@ -273,9 +224,9 @@ class SnapyrIntegrationTest {
             connectivityManager
         )
         val client = mock(Client::class.java)
-        val snapyrIntegration = SnapyrBuilder().context(context).client(client).build()
+        val snapyrQueue = SnapyrBuilder().context(context).client(client).build()
 
-        snapyrIntegration.submitFlush()
+        snapyrQueue.submitFlush()
 
         verify(client, never()).upload()
     }
@@ -287,13 +238,13 @@ class SnapyrIntegrationTest {
         whenever(payloadQueue.size()).thenReturn(0)
         val context: Context = mockApplication()
         val client = mock(Client::class.java)
-        val snapyrIntegration = SnapyrBuilder()
+        val snapyrQueue = SnapyrBuilder()
             .payloadQueue(payloadQueue)
             .context(context)
             .client(client)
             .build()
 
-        snapyrIntegration.submitFlush()
+        snapyrQueue.submitFlush()
 
         verifyZeroInteractions(context)
         verify(client, never()).upload()
@@ -308,13 +259,13 @@ class SnapyrIntegrationTest {
         val urlConnection = mock(HttpURLConnection::class.java)
         val connection = mockConnection(urlConnection)
         whenever(client.upload()).thenReturn(connection)
-        val snapyrIntegration =
+        val snapyrQueue =
             SnapyrBuilder()
                 .client(client)
                 .payloadQueue(payloadQueue)
                 .build()
 
-        snapyrIntegration.submitFlush()
+        snapyrQueue.submitFlush()
 
         verify(urlConnection, times(2)).disconnect()
     }
@@ -337,7 +288,7 @@ class SnapyrIntegrationTest {
                         throw Client.HTTPException(400, "Bad Request", "bad request")
                     }
                 })
-        val snapyrIntegration =
+        val snapyrQueue =
             SnapyrBuilder()
                 .client(client)
                 .payloadQueue(payloadQueue)
@@ -346,7 +297,7 @@ class SnapyrIntegrationTest {
             payloadQueue.add(TRACK_PAYLOAD_JSON.toByteArray())
         }
 
-        snapyrIntegration.submitFlush()
+        snapyrQueue.submitFlush()
 
         assertThat(queueFile.size()).isEqualTo(0)
         verify(client).upload()
@@ -372,14 +323,14 @@ class SnapyrIntegrationTest {
                         )
                     }
                 })
-        val snapyrIntegration = SnapyrBuilder()
+        val snapyrQueue = SnapyrBuilder()
             .client(client)
             .payloadQueue(payloadQueue)
             .build()
         for (i in 0..3) {
             payloadQueue.add(TRACK_PAYLOAD_JSON.toByteArray())
         }
-        snapyrIntegration.submitFlush()
+        snapyrQueue.submitFlush()
         assertThat(queueFile.size()).isEqualTo(4)
         verify(client).upload()
     }
@@ -404,14 +355,14 @@ class SnapyrIntegrationTest {
                         throw Client.HTTPException(429, "Too Many Requests", "too many requests")
                     }
                 })
-        val snapyrIntegration = SnapyrBuilder()
+        val snapyrQueue = SnapyrBuilder()
             .client(client)
             .payloadQueue(payloadQueue)
             .build()
         for (i in 0..3) {
             payloadQueue.add(TRACK_PAYLOAD_JSON.toByteArray())
         }
-        snapyrIntegration.submitFlush()
+        snapyrQueue.submitFlush()
 
         // Verify that messages were not removed from the queue when server returned a 429.
         assertThat(queueFile.size()).isEqualTo(4)
@@ -424,19 +375,19 @@ class SnapyrIntegrationTest {
         val payloadQueue = mock(PayloadQueue::class.java)
         val cartographer = mock(Cartographer::class.java)
         val payload = Builder().event("event").userId("userId").build()
-        val snapyrIntegration = SnapyrBuilder()
+        val snapyrQueue = SnapyrBuilder()
             .cartographer(cartographer)
             .payloadQueue(payloadQueue)
             .build()
 
         // Serialized json is null.
         whenever(cartographer.toJson(any(Map::class.java))).thenReturn(null)
-        snapyrIntegration.performEnqueue(payload)
+        snapyrQueue.performEnqueue(payload)
         verify(payloadQueue, never()).add(any<Any>() as ByteArray?)
 
         // Serialized json is empty.
         whenever(cartographer.toJson(any(Map::class.java))).thenReturn("")
-        snapyrIntegration.performEnqueue(payload)
+        snapyrQueue.performEnqueue(payload)
         verify(payloadQueue, never()).add(any<Any>() as ByteArray?)
 
         // Serialized json is too large (> MAX_PAYLOAD_SIZE).
@@ -445,7 +396,7 @@ class SnapyrIntegrationTest {
             stringBuilder.append("a")
         }
         whenever(cartographer.toJson(any(Map::class.java))).thenReturn(stringBuilder.toString())
-        snapyrIntegration.performEnqueue(payload)
+        snapyrQueue.performEnqueue(payload)
         verify(payloadQueue, never()).add(any<Any>() as ByteArray?)
     }
 
@@ -453,9 +404,9 @@ class SnapyrIntegrationTest {
     @Throws(IOException::class)
     fun shutDown() {
         val payloadQueue = mock(PayloadQueue::class.java)
-        val snapyrIntegration = SnapyrBuilder().payloadQueue(payloadQueue).build()
+        val snapyrQueue = SnapyrBuilder().payloadQueue(payloadQueue).build()
 
-        snapyrIntegration.shutdown()
+        snapyrQueue.shutdown()
 
         verify(payloadQueue).close()
     }
@@ -644,6 +595,7 @@ class SnapyrIntegrationTest {
                 flushSize,
                 logger,
                 Crypto.none(),
+                payloadQueue,
                 actionHandler
             )
         }

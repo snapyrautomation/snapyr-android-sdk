@@ -219,6 +219,7 @@ public class Snapyr {
                 flushQueueSize,
                 getLogger(),
                 crypto,
+                null,
                 actionHandler);
 
         namespaceSharedPreferences();
@@ -994,6 +995,10 @@ public class Snapyr {
         if (shutdown) {
             return;
         }
+
+        flush();
+        sendQueue.shutdown();
+
         application.unregisterActivityLifecycleCallbacks(activityLifecycleCallback);
         application.unregisterActivityLifecycleCallbacks(notificationLifecycleCallbacks);
         if (useNewLifecycleMethods) {
@@ -1007,6 +1012,7 @@ public class Snapyr {
         if (networkExecutor instanceof Utils.AnalyticsNetworkExecutorService) {
             networkExecutor.shutdown();
         }
+
         stats.shutdown();
         shutdown = true;
     }

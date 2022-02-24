@@ -33,6 +33,8 @@ import android.os.Message;
 import android.util.JsonWriter;
 import android.util.Log;
 
+import androidx.annotation.Nullable;
+
 import com.snapyr.sdk.integrations.BasePayload;
 import com.snapyr.sdk.integrations.Logger;
 import com.snapyr.sdk.internal.Private;
@@ -126,6 +128,7 @@ class SnapyrWriteQueue {
             int flushQueueSize,
             Logger logger,
             Crypto crypto,
+            @Nullable  PayloadQueue queueOverride,
             SnapyrActionHandler actionHandler) {
         this.context = context;
         this.client = client;
@@ -139,14 +142,16 @@ class SnapyrWriteQueue {
         this.actionHandler = actionHandler;
         this.crypto = crypto;
 
-        PayloadQueue payloadQueue = null;
-        try {
-            File folder = context.getDir("snapyr-disk-queue", Context.MODE_PRIVATE);
-            QueueFile queueFile = createQueueFile(folder, "payload_queue");
-            payloadQueue = new PayloadQueue.PersistentQueue(queueFile);
-        } catch (IOException e) {
-            logger.error(e, "Could not create disk queue. Falling back to memory queue.");
-            payloadQueue = new PayloadQueue.MemoryQueue();
+        PayloadQueue payloadQueue = queueOverride;
+        if (payloadQueue == null) {
+            try {
+                File folder = context.getDir("snapyr-disk-queue", Context.MODE_PRIVATE);
+                QueueFile queueFile = createQueueFile(folder, "payload_queue");
+                payloadQueue = new PayloadQueue.PersistentQueue(queueFile);
+            } catch (IOException e) {
+                logger.error(e, "Could not create disk queue. Falling back to memory queue.");
+                payloadQueue = new PayloadQueue.MemoryQueue();
+            }
         }
         this.payloadQueue = payloadQueue;
 
