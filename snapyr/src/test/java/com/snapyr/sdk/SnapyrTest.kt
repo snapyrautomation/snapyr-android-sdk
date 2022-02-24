@@ -1294,34 +1294,7 @@ open class SnapyrTest {
         assertThat(analytics.activityLifecycleCallback).isSameAs(registeredActivityCallback.get())
         assertThat(analytics.notificationLifecycleCallbacks).isSameAs(registeredNotificationCallback.get())
         assertThat(analytics.activityLifecycleCallback).isSameAs(unregisteredActivityCallback.get())
-        assertThat(analytics.notificationLifecycleCallbacks).isSameAs(unregisteredActivityCallback.get())
-
-        val activity = Mockito.mock(Activity::class.java)
-        val bundle = Bundle()
-
-//        // Verify callbacks do not call through after shutdown
-//        registeredCallback.get().onActivityCreated(activity, bundle)
-//        verify(integration, never()).onActivityCreated(activity, bundle)
-//
-//        registeredCallback.get().onActivityStarted(activity)
-//        verify(integration, never()).onActivityStarted(activity)
-//
-//        registeredCallback.get().onActivityResumed(activity)
-//        verify(integration, never()).onActivityResumed(activity)
-//
-//        registeredCallback.get().onActivityPaused(activity)
-//        verify(integration, never()).onActivityPaused(activity)
-//
-//        registeredCallback.get().onActivityStopped(activity)
-//        verify(integration, never()).onActivityStopped(activity)
-//
-//        registeredCallback.get().onActivitySaveInstanceState(activity, bundle)
-//        verify(integration, never()).onActivitySaveInstanceState(activity, bundle)
-//
-//        registeredCallback.get().onActivityDestroyed(activity)
-//        verify(integration, never()).onActivityDestroyed(activity)
-//
-//        verifyNoMoreInteractions(integration)
+        assertThat(analytics.notificationLifecycleCallbacks).isSameAs(unregisteredNotificationCallback.get())
     }
 
     @Test
