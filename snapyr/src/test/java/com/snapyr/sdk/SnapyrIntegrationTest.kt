@@ -36,7 +36,8 @@ import com.snapyr.sdk.TestUtils.*
 import com.snapyr.sdk.integrations.Logger
 import com.snapyr.sdk.integrations.Logger.with
 import com.snapyr.sdk.integrations.TrackPayload.Builder
-import com.snapyr.sdk.internal.Utils.*
+import com.snapyr.sdk.internal.Utils.DEFAULT_FLUSH_INTERVAL
+import com.snapyr.sdk.internal.Utils.DEFAULT_FLUSH_QUEUE_SIZE
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.junit.After
@@ -45,7 +46,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
-import org.mockito.ArgumentCaptor.forClass
 import org.mockito.Matchers.any
 import org.mockito.Mockito.*
 import org.mockito.MockitoAnnotations.initMocks

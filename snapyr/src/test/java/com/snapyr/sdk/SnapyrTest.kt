@@ -251,7 +251,7 @@ open class SnapyrTest {
 
     @Test
     fun identifySavesPreviousTraits() {
-        var analytics = makeAnalytics();
+        var analytics = makeAnalytics()
         analytics.identify("userId", Traits().putUsername("username"), null)
         analytics.identify("userId")
 
@@ -367,7 +367,7 @@ open class SnapyrTest {
     @Test
     @Throws(IOException::class)
     fun optOutDisablesEvents() {
-        var analytics = makeAnalytics();
+        var analytics = makeAnalytics()
         analytics.optOut(true)
         analytics.track("foo")
         verifyNoMoreInteractions(actionHandler)
@@ -376,7 +376,7 @@ open class SnapyrTest {
     @Test
     @Throws(IOException::class)
     fun emptyTrackingPlan() {
-        var analytics = makeAnalytics();
+        var analytics = makeAnalytics()
         analytics.projectSettings = create(
             Cartographer.INSTANCE.fromJson(
                 """
@@ -409,7 +409,7 @@ open class SnapyrTest {
     @Test
     @Throws(IOException::class)
     fun emptyEventPlan() {
-        var analytics = makeAnalytics();
+        var analytics = makeAnalytics()
         analytics.projectSettings = create(
             Cartographer.INSTANCE.fromJson(
                 """
@@ -728,7 +728,7 @@ open class SnapyrTest {
 
         val mockLifecycleOwner = Mockito.mock(LifecycleOwner::class.java)
 
-        var analytics = makeAnalytics();
+        var analytics = makeAnalytics()
 
         callback.get().onCreate(mockLifecycleOwner)
 
@@ -923,7 +923,7 @@ open class SnapyrTest {
                     })
             )
 
-        var analytics = makeAnalytics();
+        var analytics = makeAnalytics()
 
         val expectedURL = "app://track.com/open?utm_id=12345&gclid=abcd&nope="
 
@@ -970,7 +970,7 @@ open class SnapyrTest {
                     })
             )
 
-        var analytics = makeAnalytics();
+        var analytics = makeAnalytics()
 
         val activity = Mockito.mock(Activity::class.java)
 
@@ -1008,7 +1008,7 @@ open class SnapyrTest {
                     })
             )
 
-        var analytics = makeAnalytics();
+        var analytics = makeAnalytics()
 
         val activity = Mockito.mock(Activity::class.java)
 
@@ -1050,33 +1050,33 @@ open class SnapyrTest {
                     })
             )
 
-       var analytics = makeAnalytics();
+       var analytics = makeAnalytics()
 
-  /*      val activity = Mockito.mock(Activity::class.java)
-        val bundle = Bundle()
+        /*      val activity = Mockito.mock(Activity::class.java)
+              val bundle = Bundle()
 
-        callback.get().onActivityCreated(activity, bundle)
-        verify(actionHandler).onActivityCreated(activity, bundle)
+              callback.get().onActivityCreated(activity, bundle)
+              verify(actionHandler).onActivityCreated(activity, bundle)
 
-        callback.get().onActivityStarted(activity)
-        verify(actionHandler).onActivityStarted(activity)
+              callback.get().onActivityStarted(activity)
+              verify(actionHandler).onActivityStarted(activity)
 
-        callback.get().onActivityResumed(activity)
-        verify(actionHandler).onActivityResumed(activity)
+              callback.get().onActivityResumed(activity)
+              verify(actionHandler).onActivityResumed(activity)
 
-        callback.get().onActivityPaused(activity)
-        verify(actionHandler).onActivityPaused(activity)
+              callback.get().onActivityPaused(activity)
+              verify(actionHandler).onActivityPaused(activity)
 
-        callback.get().onActivityStopped(activity)
-        verify(actionHandler).onActivityStopped(activity)
+              callback.get().onActivityStopped(activity)
+              verify(actionHandler).onActivityStopped(activity)
 
-        callback.get().onActivitySaveInstanceState(activity, bundle)
-        verify(actionHandler).onActivitySaveInstanceState(activity, bundle)
+              callback.get().onActivitySaveInstanceState(activity, bundle)
+              verify(actionHandler).onActivitySaveInstanceState(activity, bundle)
 
-        callback.get().onActivityDestroyed(activity)
-        verify(actionHandler).onActivityDestroyed(activity)
+              callback.get().onActivityDestroyed(activity)
+              verify(actionHandler).onActivityDestroyed(activity)
 
-        verifyNoMoreInteractions(integration)*/
+              verifyNoMoreInteractions(integration)*/
     }
 
     @Test
@@ -1101,7 +1101,7 @@ open class SnapyrTest {
 
         val mockLifecycleOwner = Mockito.mock(LifecycleOwner::class.java)
 
-        var analytics = makeAnalytics();
+        var analytics = makeAnalytics()
 
         callback.get().onCreate(mockLifecycleOwner)
         callback.get().onStart(mockLifecycleOwner)
@@ -1142,7 +1142,7 @@ open class SnapyrTest {
 
         val mockLifecycleOwner = Mockito.mock(LifecycleOwner::class.java)
 
-        var analytics = makeAnalytics();
+        var analytics = makeAnalytics()
 
         val backgroundedActivity = Mockito.mock(Activity::class.java)
         whenever(backgroundedActivity.isChangingConfigurations).thenReturn(false)
@@ -1185,7 +1185,7 @@ open class SnapyrTest {
 
         val mockLifecycleOwner = Mockito.mock(LifecycleOwner::class.java)
 
-        var analytics = makeAnalytics();
+        var analytics = makeAnalytics()
 
         callback.get().onCreate(mockLifecycleOwner)
         callback.get().onStart(mockLifecycleOwner)

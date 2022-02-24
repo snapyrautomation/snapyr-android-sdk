@@ -30,7 +30,6 @@ import android.os.Bundle;
 
 import androidx.core.app.NotificationManagerCompat;
 
-import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.internal.TrackerUtil;
 import com.snapyr.sdk.internal.Utils;
 
