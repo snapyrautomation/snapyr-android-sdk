@@ -33,14 +33,10 @@ import android.os.Message;
 import android.util.JsonWriter;
 import android.util.Log;
 
-import com.snapyr.sdk.integrations.AliasPayload;
+import androidx.annotation.Nullable;
+
 import com.snapyr.sdk.integrations.BasePayload;
-import com.snapyr.sdk.integrations.GroupPayload;
-import com.snapyr.sdk.integrations.IdentifyPayload;
-import com.snapyr.sdk.integrations.Integration;
 import com.snapyr.sdk.integrations.Logger;
-import com.snapyr.sdk.integrations.ScreenPayload;
-import com.snapyr.sdk.integrations.TrackPayload;
 import com.snapyr.sdk.internal.Private;
 import com.snapyr.sdk.internal.Utils;
 
@@ -54,9 +50,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -65,7 +59,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /** Entity that queues payloads on disks and uploads them periodically. */
-class SnapyrIntegration extends Integration<Void> {
+class SnapyrWriteQueue {
 
     /**
      * Drop old payloads if queue contains more than 1000 items. Since each item can be at most
@@ -85,30 +79,7 @@ class SnapyrIntegration extends Integration<Void> {
     @Private
     static final Charset UTF_8 = StandardCharsets.UTF_8;
     static final String SNAPYR_KEY = "Snapyr";
-    static final Integration.Factory FACTORY =
-            new Integration.Factory() {
-                @Override
-                public Integration<?> create(ValueMap settings, Snapyr snapyr) {
-                    return SnapyrIntegration.create(
-                            snapyr.getApplication(),
-                            snapyr.client,
-                            snapyr.cartographer,
-                            snapyr.networkExecutor,
-                            snapyr.stats,
-                            Collections.unmodifiableMap(snapyr.bundledIntegrations),
-                            snapyr.tag,
-                            snapyr.flushIntervalInMillis,
-                            snapyr.flushQueueSize,
-                            snapyr.getLogger(),
-                            snapyr.crypto,
-                            snapyr.actionHandler);
-                }
 
-                @Override
-                public String key() {
-                    return SNAPYR_KEY;
-                }
-            };
     private static final String SNAPYR_THREAD_NAME = Utils.THREAD_PREFIX + "SnapyrDispatcher";
     /**
      * We don't want to stop adding payloads to our disk queue when we're uploading payloads. So we
@@ -141,39 +112,48 @@ class SnapyrIntegration extends Integration<Void> {
     private final Handler handler;
     private final HandlerThread snapyrThread;
     private final Logger logger;
-    private final Map<String, Boolean> bundledIntegrations;
     private final Cartographer cartographer;
     private final ExecutorService networkExecutor;
     private final ScheduledExecutorService flushScheduler;
     private final SnapyrActionHandler actionHandler;
     private final Crypto crypto;
 
-    SnapyrIntegration(
+    SnapyrWriteQueue(
             Context context,
             Client client,
             Cartographer cartographer,
             ExecutorService networkExecutor,
-            PayloadQueue payloadQueue,
             Stats stats,
-            Map<String, Boolean> bundledIntegrations,
             long flushIntervalInMillis,
             int flushQueueSize,
             Logger logger,
             Crypto crypto,
+            @Nullable  PayloadQueue queueOverride,
             SnapyrActionHandler actionHandler) {
         this.context = context;
         this.client = client;
         this.networkExecutor = networkExecutor;
-        this.payloadQueue = payloadQueue;
         this.stats = stats;
         this.logger = logger;
-        this.bundledIntegrations = bundledIntegrations;
         this.cartographer = cartographer;
         this.flushQueueSize = flushQueueSize;
         this.flushScheduler =
                 Executors.newScheduledThreadPool(1, new Utils.AnalyticsThreadFactory());
         this.actionHandler = actionHandler;
         this.crypto = crypto;
+
+        PayloadQueue payloadQueue = queueOverride;
+        if (payloadQueue == null) {
+            try {
+                File folder = context.getDir("snapyr-disk-queue", Context.MODE_PRIVATE);
+                QueueFile queueFile = createQueueFile(folder, "payload_queue");
+                payloadQueue = new PayloadQueue.PersistentQueue(queueFile);
+            } catch (IOException e) {
+                logger.error(e, "Could not create disk queue. Falling back to memory queue.");
+                payloadQueue = new PayloadQueue.MemoryQueue();
+            }
+        }
+        this.payloadQueue = payloadQueue;
 
         snapyrThread = new HandlerThread(SNAPYR_THREAD_NAME, THREAD_PRIORITY_BACKGROUND);
         snapyrThread.start();
@@ -213,88 +193,14 @@ class SnapyrIntegration extends Integration<Void> {
         }
     }
 
-    static synchronized SnapyrIntegration create(
-            Context context,
-            Client client,
-            Cartographer cartographer,
-            ExecutorService networkExecutor,
-            Stats stats,
-            Map<String, Boolean> bundledIntegrations,
-            String tag,
-            long flushIntervalInMillis,
-            int flushQueueSize,
-            Logger logger,
-            Crypto crypto,
-            SnapyrActionHandler actionHandler) {
-        PayloadQueue payloadQueue;
-        try {
-            File folder = context.getDir("snapyr-disk-queue", Context.MODE_PRIVATE);
-            QueueFile queueFile = createQueueFile(folder, tag);
-            payloadQueue = new PayloadQueue.PersistentQueue(queueFile);
-        } catch (IOException e) {
-            logger.error(e, "Could not create disk queue. Falling back to memory queue.");
-            payloadQueue = new PayloadQueue.MemoryQueue();
-        }
-        return new SnapyrIntegration(
-                context,
-                client,
-                cartographer,
-                networkExecutor,
-                payloadQueue,
-                stats,
-                bundledIntegrations,
-                flushIntervalInMillis,
-                flushQueueSize,
-                logger,
-                crypto,
-                actionHandler);
-    }
-
-    @Override
-    public void identify(IdentifyPayload identify) {
-        dispatchEnqueue(identify);
-    }
-
-    @Override
-    public void group(GroupPayload group) {
-        dispatchEnqueue(group);
-    }
-
-    @Override
-    public void track(TrackPayload track) {
-        dispatchEnqueue(track);
-    }
-
-    @Override
-    public void alias(AliasPayload alias) {
-        dispatchEnqueue(alias);
-    }
-
-    @Override
-    public void screen(ScreenPayload screen) {
-        dispatchEnqueue(screen);
-    }
-
-    private void dispatchEnqueue(BasePayload payload) {
-        handler.sendMessage(
-                handler.obtainMessage(SnapyrDispatcherHandler.REQUEST_ENQUEUE, payload));
-    }
-
     void performEnqueue(BasePayload original) {
         // Override any user provided values with anything that was bundled.
         // e.g. If user did Mixpanel: true and it was bundled, this would correctly override it with
         // false so that the server doesn't send that event as well.
         ValueMap providedIntegrations = original.integrations();
-        LinkedHashMap<String, Object> combinedIntegrations =
-                new LinkedHashMap<>(providedIntegrations.size() + bundledIntegrations.size());
-        combinedIntegrations.putAll(providedIntegrations);
-        combinedIntegrations.putAll(bundledIntegrations);
-        combinedIntegrations.remove("Snapyr"); // don't include the Snapyr integration.
         // Make a copy of the payload so we don't mutate the original.
         ValueMap payload = new ValueMap();
         payload.putAll(original);
-        payload.put("integrations", combinedIntegrations);
-
         if (payloadQueue.size() >= MAX_QUEUE_SIZE) {
             synchronized (flushLock) {
                 // Double checked locking, the network executor could have removed payload from the
@@ -336,7 +242,6 @@ class SnapyrIntegration extends Integration<Void> {
     }
 
     /** Enqueues a flush message to the handler. */
-    @Override
     public void flush() {
         handler.sendMessage(handler.obtainMessage(SnapyrDispatcherHandler.REQUEST_FLUSH));
     }
@@ -509,7 +414,6 @@ class SnapyrIntegration extends Integration<Void> {
     }
 
     static class PayloadWriter implements PayloadQueue.ElementVisitor {
-
         final BatchPayloadWriter writer;
         final Crypto crypto;
         int size;
@@ -540,7 +444,6 @@ class SnapyrIntegration extends Integration<Void> {
 
     /** A wrapper that emits a JSON formatted batch payload to the underlying writer. */
     static class BatchPayloadWriter implements Closeable {
-
         public static final boolean DEBUG_MODE = false;
         private final JsonWriter jsonWriter;
         /** Keep around for writing payloads as Strings. */
@@ -634,13 +537,12 @@ class SnapyrIntegration extends Integration<Void> {
     }
 
     static class SnapyrDispatcherHandler extends Handler {
-
         static final int REQUEST_FLUSH = 1;
         @Private
         static final int REQUEST_ENQUEUE = 0;
-        private final SnapyrIntegration snapyrIntegration;
+        private final SnapyrWriteQueue snapyrIntegration;
 
-        SnapyrDispatcherHandler(Looper looper, SnapyrIntegration snapyrIntegration) {
+        SnapyrDispatcherHandler(Looper looper, SnapyrWriteQueue snapyrIntegration) {
             super(looper);
             this.snapyrIntegration = snapyrIntegration;
         }

@@ -27,7 +27,6 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
-import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -35,6 +34,8 @@ import androidx.lifecycle.DefaultLifecycleObserver;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
+
+import com.snapyr.sdk.internal.TrackerUtil;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -156,7 +157,6 @@ class SnapyrActivityLifecycleCallbacks
 
     @Override
     public void onActivityCreated(Activity activity, Bundle bundle) {
-        snapyr.runOnMainThread(IntegrationOperation.onActivityCreated(activity, bundle));
         Intent launchIntent = activity.getIntent();
         Bundle x = launchIntent.getExtras();
         if (!useNewLifecycleMethods) {
@@ -164,40 +164,21 @@ class SnapyrActivityLifecycleCallbacks
         }
 
         if (trackDeepLinks) {
-            trackDeepLink(activity);
+            TrackerUtil.trackDeepLink(activity, activity.getIntent());
         }
     }
 
-    private void trackDeepLink(Activity activity) {
-        Intent intent = activity.getIntent();
-        if (intent == null || intent.getData() == null) {
-            return;
-        }
 
-        Properties properties = new Properties();
-        Uri uri = intent.getData();
-        for (String parameter : uri.getQueryParameterNames()) {
-            String value = uri.getQueryParameter(parameter);
-            if (value != null && !value.trim().isEmpty()) {
-                properties.put(parameter, value);
-            }
-        }
-
-        properties.put("url", uri.toString());
-        snapyr.track("Deep Link Opened", properties);
-    }
 
     @Override
     public void onActivityStarted(Activity activity) {
         if (shouldRecordScreenViews) {
             snapyr.recordScreenViews(activity);
         }
-        snapyr.runOnMainThread(IntegrationOperation.onActivityStarted(activity));
     }
 
     @Override
     public void onActivityResumed(Activity activity) {
-        snapyr.runOnMainThread(IntegrationOperation.onActivityResumed(activity));
         if (!useNewLifecycleMethods) {
             onStart(stubOwner);
         }
@@ -205,7 +186,6 @@ class SnapyrActivityLifecycleCallbacks
 
     @Override
     public void onActivityPaused(Activity activity) {
-        snapyr.runOnMainThread(IntegrationOperation.onActivityPaused(activity));
         if (!useNewLifecycleMethods) {
             onPause(stubOwner);
         }
@@ -213,7 +193,6 @@ class SnapyrActivityLifecycleCallbacks
 
     @Override
     public void onActivityStopped(Activity activity) {
-        snapyr.runOnMainThread(IntegrationOperation.onActivityStopped(activity));
         if (!useNewLifecycleMethods) {
             onStop(stubOwner);
         }
@@ -221,12 +200,10 @@ class SnapyrActivityLifecycleCallbacks
 
     @Override
     public void onActivitySaveInstanceState(Activity activity, Bundle bundle) {
-        snapyr.runOnMainThread(IntegrationOperation.onActivitySaveInstanceState(activity, bundle));
     }
 
     @Override
     public void onActivityDestroyed(Activity activity) {
-        snapyr.runOnMainThread(IntegrationOperation.onActivityDestroyed(activity));
         if (!useNewLifecycleMethods) {
             onDestroy(stubOwner);
         }

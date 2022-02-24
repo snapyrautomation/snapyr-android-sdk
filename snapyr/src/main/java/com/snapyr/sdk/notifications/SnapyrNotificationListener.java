@@ -30,7 +30,7 @@ import android.os.Bundle;
 
 import androidx.core.app.NotificationManagerCompat;
 
-import com.snapyr.sdk.Snapyr;
+import com.snapyr.sdk.internal.TrackerUtil;
 import com.snapyr.sdk.internal.Utils;
 
 
@@ -51,8 +51,7 @@ public class SnapyrNotificationListener extends Activity {
         String deepLink = intent.getStringExtra(SnapyrNotificationHandler.ACTION_DEEP_LINK_KEY);
         int notificationId = intent.getIntExtra(SnapyrNotificationHandler.NOTIFICATION_ID, -1);
 
-        Snapyr snapyr = Snapyr.with(this);
-        snapyr.trackNotificationInteraction(intent);
+        TrackerUtil.trackNotificationInteraction(this, intent);
 
         // Dismiss source notification
         NotificationManagerCompat.from(this.getApplicationContext()).cancel(notificationId);

@@ -23,7 +23,7 @@
  */
 package com.snapyr.sdk
 
-import com.snapyr.sdk.SnapyrIntegration.BatchPayloadWriter
+import com.snapyr.sdk.SnapyrWriteQueue.BatchPayloadWriter
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith

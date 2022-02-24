@@ -26,7 +26,6 @@ package com.example.kotlin_sample
 import android.app.Application
 import android.util.Log
 import android.widget.Toast
-import com.snapyr.sdk.Middleware
 import com.snapyr.sdk.Snapyr
 import com.snapyr.sdk.ValueMap
 import com.snapyr.sdk.integrations.BasePayload
@@ -75,55 +74,17 @@ class SampleApp : Application() {
                             )
                     )
             )
-            .useSourceMiddleware(
-                Middleware { chain ->
-                    if (chain.payload().type() == BasePayload.Type.track) {
-                        val payload = chain.payload() as TrackPayload
-                        if (payload.event()
-                                .equals("Button B Clicked", ignoreCase = true)
-                        ) {
-                            chain.proceed(payload.toBuilder().build())
-                            return@Middleware
-                        }
-                    }
-                    chain.proceed(chain.payload())
-                }
-            )
-            .useDestinationMiddleware(
-                "Snapyr",
-                Middleware { chain ->
-                    if (chain.payload().type() == BasePayload.Type.track) {
-                        val payload = chain.payload() as TrackPayload
-                        if (payload.event()
-                                .equals("Button B Clicked", ignoreCase = true)
-                        ) {
-                            chain.proceed(payload.toBuilder().build())
-                            return@Middleware
-                        }
-                    }
-                    chain.proceed(chain.payload())
-                }
-            )
             .flushQueueSize(1)
             .recordScreenViews()
-            .actionHandler {
-                Toast.makeText(
-                    this,
-                    "Action received: ${it.getString("action")}",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
+//            .actionHandler {
+//                Toast.makeText(
+//                    this,
+//                    "Action received: ${it.getString("action")}",
+//                    Toast.LENGTH_SHORT
+//                ).show()
+//            }
             .build()
 
         Snapyr.setSingletonInstance(builder)
-
-        val analytics = Snapyr.with(this)
-
-        analytics.onIntegrationReady(
-            "Snapyr",
-            Snapyr.Callback<Any?> {
-                Log.d("Snapyr Sample", "Snapyr integration ready.")
-            }
-        )
     }
 }

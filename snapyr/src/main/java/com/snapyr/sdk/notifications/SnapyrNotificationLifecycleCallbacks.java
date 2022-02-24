@@ -12,6 +12,7 @@ import androidx.lifecycle.LifecycleOwner;
 
 import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.integrations.Logger;
+import com.snapyr.sdk.internal.TrackerUtil;
 
 public class SnapyrNotificationLifecycleCallbacks
         implements Application.ActivityLifecycleCallbacks, DefaultLifecycleObserver {
@@ -46,7 +47,8 @@ public class SnapyrNotificationLifecycleCallbacks
             return;
         }
 
-        snapyr.trackNotificationInteraction(activity.getIntent());
+
+        TrackerUtil.trackDeepLink(activity, activity.getIntent());
     }
 
 
