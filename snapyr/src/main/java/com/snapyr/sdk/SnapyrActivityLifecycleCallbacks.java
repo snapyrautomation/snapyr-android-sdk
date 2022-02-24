@@ -36,6 +36,8 @@ import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
 
+import com.snapyr.sdk.internal.TrackerUtil;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -163,28 +165,11 @@ class SnapyrActivityLifecycleCallbacks
         }
 
         if (trackDeepLinks) {
-            trackDeepLink(activity);
+            TrackerUtil.trackDeepLink(activity, activity.getIntent());
         }
     }
 
-    private void trackDeepLink(Activity activity) {
-        Intent intent = activity.getIntent();
-        if (intent == null || intent.getData() == null) {
-            return;
-        }
 
-        Properties properties = new Properties();
-        Uri uri = intent.getData();
-        for (String parameter : uri.getQueryParameterNames()) {
-            String value = uri.getQueryParameter(parameter);
-            if (value != null && !value.trim().isEmpty()) {
-                properties.put(parameter, value);
-            }
-        }
-
-        properties.put("url", uri.toString());
-        snapyr.track("Deep Link Opened", properties);
-    }
 
     @Override
     public void onActivityStarted(Activity activity) {

@@ -42,50 +42,6 @@ class OptionsTest {
         options = Options()
     }
 
-    @Test
-    @Throws(Exception::class)
-    fun disallowsDisablingSnapyrIntegration() {
-        try {
-            options.setIntegration("Snapyr", true)
-            fail("shouldn't be able to set option for Snapyr integration.")
-        } catch (expected: IllegalArgumentException) {
-            assertThat(expected)
-                .hasMessage("Snapyr integration cannot be enabled or disabled.")
-        }
-    }
-
-    @Test
-    @Throws(Exception::class)
-    fun setIntegration() {
-        options.setIntegration("Mixpanel", true)
-        options.setIntegration("All", false)
-        options.setIntegration(Snapyr.BundledIntegration.BUGSNAG, false)
-        options.setIntegrationOptions(
-            "Amplitude",
-            ImmutableMap.Builder<String, Any>().put("email", "foo").build()
-        )
-
-        options.setIntegrationOptions(
-            Snapyr.BundledIntegration.TAPSTREAM,
-            ImmutableMap.Builder<String, Any>().put("appId", "bar").build()
-        )
-
-        assertThat(options.integrations()).isEqualTo(
-            ImmutableMap.Builder<String, Any>()
-                .put("Mixpanel", true)
-                .put("All", false)
-                .put("Bugsnag", false)
-                .put(
-                    "Amplitude",
-                    ImmutableMap.Builder<String, Any>().put("email", "foo").build()
-                )
-                .put(
-                    "Tapstream",
-                    ImmutableMap.Builder<String, Any>().put("appId", "bar").build()
-                )
-                .build()
-        )
-    }
 
     @Test
     fun setOptions() {

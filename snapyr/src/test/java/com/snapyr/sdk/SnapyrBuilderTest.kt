@@ -54,7 +54,6 @@ class SnapyrBuilderTest {
     fun setUp() {
         MockitoAnnotations.initMocks(this)
         context = TestUtils.mockApplication()
-        Snapyr.INSTANCES.clear()
         whenever(context.applicationContext).thenReturn(context)
     }
 

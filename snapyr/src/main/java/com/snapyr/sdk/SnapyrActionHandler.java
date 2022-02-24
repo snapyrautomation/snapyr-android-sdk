@@ -23,6 +23,17 @@
  */
 package com.snapyr.sdk;
 
-public interface SnapyrActionHandler {
+import com.snapyr.sdk.integrations.AliasPayload;
+import com.snapyr.sdk.integrations.GroupPayload;
+import com.snapyr.sdk.integrations.IdentifyPayload;
+import com.snapyr.sdk.integrations.ScreenPayload;
+import com.snapyr.sdk.integrations.TrackPayload;
+
+public interface SnapyrActionHandler  {
     void handleAction(SnapyrAction action);
+    void onIdentify(IdentifyPayload payload);
+    void onTrack(TrackPayload payload);
+    void onAlias(AliasPayload payload);
+    void onGroup(GroupPayload payload);
+    void onScreen(ScreenPayload payload);
 }

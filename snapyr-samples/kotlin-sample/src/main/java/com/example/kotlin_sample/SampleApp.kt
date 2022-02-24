@@ -76,13 +76,13 @@ class SampleApp : Application() {
             )
             .flushQueueSize(1)
             .recordScreenViews()
-            .actionHandler {
-                Toast.makeText(
-                    this,
-                    "Action received: ${it.getString("action")}",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
+//            .actionHandler {
+//                Toast.makeText(
+//                    this,
+//                    "Action received: ${it.getString("action")}",
+//                    Toast.LENGTH_SHORT
+//                ).show()
+//            }
             .build()
 
         Snapyr.setSingletonInstance(builder)

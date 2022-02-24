@@ -104,7 +104,6 @@ public class Snapyr {
     @Private
     static final String OPT_OUT_PREFERENCE_KEY = "opt-out";
     static final String WRITE_KEY_RESOURCE_IDENTIFIER = "analytics_write_key";
-    static final List<String> INSTANCES = new ArrayList<>(1);
     @Private
     static final Properties EMPTY_PROPERTIES = new Properties();
     private static final String VERSION_KEY = "version";
@@ -211,7 +210,7 @@ public class Snapyr {
         this.actionHandler = actionHandler;
         this.PushTemplates = null;
         this.sendQueue = new SnapyrWriteQueue(
-                application.getApplicationContext(),
+                application,
                 client,
                 cartographer,
                 networkExecutor,
@@ -301,7 +300,7 @@ public class Snapyr {
 
         notificationLifecycleCallbacks =
                 new SnapyrNotificationLifecycleCallbacks(
-                        this, this.logger, enableSnapyrPushHandling);
+                        this, this.logger, trackDeepLinks);
         application.registerActivityLifecycleCallbacks(notificationLifecycleCallbacks);
 
         if (enableSnapyrPushHandling) {
@@ -375,6 +374,17 @@ public class Snapyr {
 
     public static boolean Valid() {
         return singleton != null;
+    }
+
+    /**
+     * Set the global instance returned from {@link #with}.
+     *
+     * <p>This method must be called before any calls to {@link #with} and may only be called once.
+     */
+    public static void clearSingleton() {
+        synchronized (Snapyr.class) {
+            singleton = null;
+        }
     }
 
     /**
@@ -838,7 +848,6 @@ public class Snapyr {
 
         builder.context(contextCopy);
         builder.anonymousId(contextCopy.traits().anonymousId());
-        builder.integrations(finalOptions.integrations());
         builder.nanosecondTimestamps(nanosecondTimestamps);
         String cachedUserId = contextCopy.traits().userId();
         if (!builder.isUserIdSet() && !Utils.isNullOrEmpty(cachedUserId)) {
@@ -850,8 +859,36 @@ public class Snapyr {
             return;
         }
 
+        dispatchToHandler(payload);
+
         logger.verbose("Created payload %s.", payload);
         this.sendQueue.performEnqueue(payload);
+    }
+
+    private void dispatchToHandler(BasePayload payload){
+        if (actionHandler == null) {
+            return;
+        }
+
+        switch (payload.type()){
+            case alias:
+                actionHandler.onAlias((AliasPayload)payload);
+                break;
+            case track:
+                actionHandler.onTrack((TrackPayload) payload);
+                break;
+            case identify:
+                actionHandler.onIdentify((IdentifyPayload) payload);
+                break;
+            case screen:
+                actionHandler.onScreen((ScreenPayload) payload);
+                break;
+            case group:
+                actionHandler.onGroup((GroupPayload) payload);
+                break;
+            default:
+                break;
+        }
     }
 
     /**
@@ -871,11 +908,6 @@ public class Snapyr {
         // API
         //  for modifying the global context
         return snapyrContext;
-    }
-
-    /** Get a copy of the default {@link Options} used by this instance */
-    public Options getDefaultOptions() {
-        return new Options(defaultOptions.integrations(), defaultOptions.context());
     }
 
     /** Creates a {@link StatsSnapshot} of the current stats for this instance. */
@@ -977,9 +1009,6 @@ public class Snapyr {
         }
         stats.shutdown();
         shutdown = true;
-        synchronized (INSTANCES) {
-            INSTANCES.remove(tag);
-        }
     }
 
     private void assertNotShutdown() {
@@ -1091,62 +1120,6 @@ public class Snapyr {
         }
     }
 
-    public void trackNotificationInteraction(Intent intent) {
-        Context applicationContext = this.getApplication().getApplicationContext();
-
-        String deepLinkUrl = intent.getStringExtra(SnapyrNotificationHandler.NOTIF_DEEP_LINK_KEY);
-        String actionId = intent.getStringExtra(SnapyrNotificationHandler.ACTION_ID_KEY);
-        int notificationId = intent.getIntExtra("notificationId", 0);
-
-        String token;
-
-        Properties props =
-                new Properties()
-                        .putValue("deepLinkUrl", deepLinkUrl)
-                        .putValue("actionId", actionId);
-
-        token = intent.getStringExtra(SnapyrNotificationHandler.NOTIF_TOKEN_KEY);
-        props.putValue(SnapyrNotificationHandler.NOTIF_TOKEN_KEY, token)
-                .putValue("interactionType", "notificationPressed");
-
-        // if autocancel = true....
-        // Dismiss source notification
-        NotificationManagerCompat.from(applicationContext).cancel(notificationId);
-        // Close notification drawer (so newly opened activity isn't behind anything)
-        // NOTE (BS): I don't think we need this anymore & it was causing permission errors b/c it
-        // can be called from other activities. I'll leave it commented out for now
-        //applicationContext.sendBroadcast(new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
-
-        this.pushNotificationClicked(props);
-    }
-
-    /** @deprecated */
-    public enum BundledIntegration {
-        AMPLITUDE("Amplitude"),
-        APPS_FLYER("AppsFlyer"),
-        APPTIMIZE("Apptimize"),
-        BUGSNAG("Bugsnag"),
-        COUNTLY("Countly"),
-        CRITTERCISM("Crittercism"),
-        FLURRY("Flurry"),
-        GOOGLE_ANALYTICS("Google Analytics"),
-        KAHUNA("Kahuna"),
-        LEANPLUM("Leanplum"),
-        LOCALYTICS("Localytics"),
-        MIXPANEL("Mixpanel"),
-        QUANTCAST("Quantcast"),
-        TAPLYTICS("Taplytics"),
-        TAPSTREAM("Tapstream"),
-        UXCAM("UXCam");
-
-        /** The key that identifies this integration in our API. */
-        final String key;
-
-        BundledIntegration(String key) {
-            this.key = key;
-        }
-    }
-
     /** Controls the level of logging. */
     public enum LogLevel {
         /** No logging. */
@@ -1167,36 +1140,6 @@ public class Snapyr {
 
         public boolean log() {
             return this != NONE;
-        }
-    }
-
-    /**
-     * A callback interface that is invoked when the Analytics client initializes bundled
-     * integrations.
-     */
-    public interface Callback<T> {
-
-        /**
-         * This method will be invoked once for each callback.
-         *
-         * @param instance The underlying instance that has been initialized with the settings from
-         *     Snapyr.
-         */
-        void onReady(T instance);
-    }
-
-    static class DummyActionHandler implements SnapyrActionHandler {
-
-        private final Logger logger;
-
-        DummyActionHandler(Logger logger) {
-            this.logger = logger;
-        }
-
-        @Override
-        public void handleAction(SnapyrAction action) {
-            logger.info("warning: action handler not configured");
-            logger.info("received action message: " + action.getString("action"));
         }
     }
 
@@ -1307,15 +1250,6 @@ public class Snapyr {
             }
             // Make a defensive copy
             this.defaultOptions = new Options();
-            for (Map.Entry<String, Object> entry : defaultOptions.integrations().entrySet()) {
-                if (entry.getValue() instanceof Boolean) {
-                    this.defaultOptions.setIntegration(entry.getKey(), (Boolean) entry.getValue());
-                } else {
-                    // A value is provided for an integration, and it is not a boolean. Assume it is
-                    // enabled.
-                    this.defaultOptions.setIntegration(entry.getKey(), true);
-                }
-            }
             return this;
         }
 
@@ -1473,16 +1407,6 @@ public class Snapyr {
             if (Utils.isNullOrEmpty(tag)) {
                 tag = writeKey;
             }
-            synchronized (INSTANCES) {
-                if (INSTANCES.contains(tag)) {
-                    throw new IllegalStateException(
-                            "Duplicate analytics client created with tag: "
-                                    + tag
-                                    + ". If you want to use multiple Analytics clients, use a different writeKey "
-                                    + "or set a tag via the builder during construction.");
-                }
-                INSTANCES.add(tag);
-            }
 
             if (defaultOptions == null) {
                 defaultOptions = new Options();
@@ -1524,10 +1448,6 @@ public class Snapyr {
                     SnapyrContext.create(application, traitsCache.get(), collectDeviceID);
             CountDownLatch advertisingIdLatch = new CountDownLatch(1);
             snapyrContext.attachAdvertisingId(application, advertisingIdLatch, logger);
-
-            if (actionHandler == null) {
-                actionHandler = new DummyActionHandler(logger);
-            }
 
             ExecutorService executor = this.executor;
             if (executor == null) {
