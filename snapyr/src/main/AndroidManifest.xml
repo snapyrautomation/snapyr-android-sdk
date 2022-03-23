@@ -23,7 +23,11 @@
   -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.snapyr.sdk.core">
     <!-- Required for internet. -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Required to allow notification taps to dismiss the notification drawer -->
+    <uses-permission android:name="android.permission.BROADCAST_CLOSE_SYSTEM_DIALOGS"
+        tools:ignore="ProtectedPermissions" />
 </manifest>

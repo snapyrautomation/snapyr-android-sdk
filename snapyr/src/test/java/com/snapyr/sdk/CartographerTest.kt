@@ -24,6 +24,10 @@
 package com.snapyr.sdk
 
 import com.google.common.collect.ImmutableMap
+import java.io.IOException
+import java.io.Reader
+import java.io.StringWriter
+import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.assertj.core.data.MapEntry
@@ -32,10 +36,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
-import java.io.IOException
-import java.io.Reader
-import java.io.StringWriter
-import java.util.*
 
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE)

@@ -24,6 +24,7 @@
 package com.snapyr.sdk
 
 import android.util.Pair
+import java.io.IOException
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.assertj.core.data.MapEntry
@@ -32,7 +33,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
-import java.io.IOException
 
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE)

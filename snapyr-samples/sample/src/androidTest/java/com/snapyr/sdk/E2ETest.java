@@ -1,18 +1,18 @@
 /**
  * The MIT License (MIT)
- * <p>
+ *
  * Copyright (c) 2014 Segment.io, Inc.
- * <p>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * <p>
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * <p>
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -28,12 +28,17 @@ import static org.junit.Assert.fail;
 
 import androidx.test.rule.ActivityTestRule;
 import androidx.test.runner.AndroidJUnit4;
-
 import com.segment.backo.Backo;
 import com.snapyr.sdk.sample.BuildConfig;
 import com.snapyr.sdk.sample.MainActivity;
 import com.snapyr.sdk.webhook.WebhookService;
-
+import java.io.IOException;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import okhttp3.Credentials;
+import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -42,15 +47,6 @@ import org.junit.rules.MethodRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.Statement;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
-import okhttp3.Credentials;
-import okhttp3.Interceptor;
-import okhttp3.OkHttpClient;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.moshi.MoshiConverterFactory;
@@ -75,13 +71,17 @@ public class E2ETest {
     private static final String WEBHOOK_BUCKET = "android";
     /** Credentials to retrieve data from the webhook. */
     private static final String WEBHOOK_AUTH_USERNAME = BuildConfig.WEBHOOK_AUTH_USERNAME;
+
     private static final Backo BACKO =
             Backo.builder().base(TimeUnit.SECONDS, 1).cap(TimeUnit.MINUTES, 5).build();
+
     @Rule
     public final ActivityTestRule<MainActivity> activityActivityTestRule =
             new ActivityTestRule<>(MainActivity.class);
+
     @Rule
     public EndToEndTestsDisabledRule endToEndTestsDisabledRule = new EndToEndTestsDisabledRule();
+
     private Snapyr analytics;
     private WebhookService webhookService;
 

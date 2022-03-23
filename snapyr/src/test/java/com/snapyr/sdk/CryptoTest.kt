@@ -23,6 +23,7 @@
  */
 package com.snapyr.sdk
 
+import java.io.IOException
 import okio.Buffer
 import okio.ByteString
 import okio.Okio
@@ -31,7 +32,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
-import java.io.IOException
 
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE)

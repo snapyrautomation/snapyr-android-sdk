@@ -23,13 +23,16 @@
  */
 package com.snapyr.sdk.internal
 
+import java.text.ParseException
+import java.util.Calendar
+import java.util.Date
+import java.util.GregorianCalendar
+import java.util.TimeZone
+import java.util.concurrent.TimeUnit
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
-import java.text.ParseException
-import java.util.*
-import java.util.concurrent.TimeUnit
 
 class Iso8601UtilsTest {
 

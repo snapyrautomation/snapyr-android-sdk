@@ -1,18 +1,18 @@
 /**
  * The MIT License (MIT)
- * <p>
+ *
  * Copyright (c) 2014 Segment.io, Inc.
- * <p>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * <p>
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * <p>
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -32,14 +32,11 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.JsonWriter;
 import android.util.Log;
-
 import androidx.annotation.Nullable;
-
 import com.snapyr.sdk.integrations.BasePayload;
 import com.snapyr.sdk.integrations.Logger;
 import com.snapyr.sdk.internal.Private;
 import com.snapyr.sdk.internal.Utils;
-
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
@@ -49,7 +46,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -74,10 +70,9 @@ class SnapyrWriteQueue {
      * is not present in payloads themselves, but is added later, such as {@code sentAt}, {@code
      * integrations} and other json tokens.
      */
-    @Private
-    static final int MAX_BATCH_SIZE = 475000; // 475KB.
-    @Private
-    static final Charset UTF_8 = StandardCharsets.UTF_8;
+    @Private static final int MAX_BATCH_SIZE = 475000; // 475KB.
+
+    @Private static final Charset UTF_8 = Charset.forName("UTF-8");
     static final String SNAPYR_KEY = "Snapyr";
 
     private static final String SNAPYR_THREAD_NAME = Utils.THREAD_PREFIX + "SnapyrDispatcher";
@@ -102,8 +97,8 @@ class SnapyrWriteQueue {
      * <p>This lock is used ensure that the Dispatcher thread doesn't remove payloads when we're
      * uploading.
      */
-    @Private
-    final Object flushLock = new Object();
+    @Private final Object flushLock = new Object();
+
     private final Context context;
     private final PayloadQueue payloadQueue;
     private final Client client;
@@ -128,7 +123,7 @@ class SnapyrWriteQueue {
             int flushQueueSize,
             Logger logger,
             Crypto crypto,
-            @Nullable  PayloadQueue queueOverride,
+            @Nullable PayloadQueue queueOverride,
             SnapyrActionHandler actionHandler) {
         this.context = context;
         this.client = client;
@@ -308,9 +303,7 @@ class SnapyrWriteQueue {
                     try {
                         responseBody = Utils.readFully(inputStream);
                     } catch (IOException e) {
-                        responseBody =
-                                "Could not read response body for rejected message: "
-                                        + e;
+                        responseBody = "Could not read response body for rejected message: " + e;
                     } finally {
                         if (inputStream != null) {
                             inputStream.close();
@@ -448,6 +441,7 @@ class SnapyrWriteQueue {
         private final JsonWriter jsonWriter;
         /** Keep around for writing payloads as Strings. */
         private final BufferedWriter bufferedWriter;
+
         StringBuilder debugString = new StringBuilder();
         private boolean needsComma = false;
 
@@ -538,8 +532,7 @@ class SnapyrWriteQueue {
 
     static class SnapyrDispatcherHandler extends Handler {
         static final int REQUEST_FLUSH = 1;
-        @Private
-        static final int REQUEST_ENQUEUE = 0;
+        @Private static final int REQUEST_ENQUEUE = 0;
         private final SnapyrWriteQueue snapyrIntegration;
 
         SnapyrDispatcherHandler(Looper looper, SnapyrWriteQueue snapyrIntegration) {

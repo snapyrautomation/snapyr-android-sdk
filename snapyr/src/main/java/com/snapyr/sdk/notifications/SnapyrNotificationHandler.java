@@ -1,18 +1,18 @@
 /**
  * The MIT License (MIT)
- * <p>
+ *
  * Copyright (c) 2014 Segment.io, Inc.
- * <p>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * <p>
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * <p>
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -22,7 +22,6 @@
  * SOFTWARE.
  */
 package com.snapyr.sdk.notifications;
-
 
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -36,12 +35,10 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Build;
 import android.util.Log;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
-
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.messaging.FirebaseMessaging;
@@ -49,7 +46,6 @@ import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.core.R;
 import com.snapyr.sdk.internal.ActionButton;
 import com.snapyr.sdk.internal.PushTemplate;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -148,15 +144,17 @@ public class SnapyrNotificationHandler {
         ts.addNextIntent(getLaunchIntent());
         ts.addNextIntent(trackIntent);
 
-        builder.setContentIntent(
-                ts.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT));
+        builder.setContentIntent(ts.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT));
 
         PushTemplate pushTemplate = (PushTemplate) data.get(ACTION_BUTTONS_KEY);
         if (pushTemplate != null) {
             String token = (String) data.get(NOTIF_TOKEN_KEY);
-            pushTemplate.getButtons().forEach((button) -> {
-                createActionButton(builder, notificationId, button, token);
-            });
+            pushTemplate
+                    .getButtons()
+                    .forEach(
+                            (button) -> {
+                                createActionButton(builder, notificationId, button, token);
+                            });
         }
 
         // Image handling - fetch from URL
@@ -186,7 +184,8 @@ public class SnapyrNotificationHandler {
             if (launchIntent == null) {
                 // No launch intent specified / found for this app. Default to ACTION_MAIN
                 launchIntent = new Intent(Intent.ACTION_MAIN);
-                launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                launchIntent.addFlags(
+                        Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 launchIntent.setPackage(applicationContext.getPackageName());
             }
             return launchIntent;
@@ -196,9 +195,11 @@ public class SnapyrNotificationHandler {
         }
     }
 
-    private void createActionButton(NotificationCompat.Builder builder,
-                                    int notificationId, ActionButton template,
-                                    String actionToken) {
+    private void createActionButton(
+            NotificationCompat.Builder builder,
+            int notificationId,
+            ActionButton template,
+            String actionToken) {
         Intent trackIntent = new Intent(this.context, SnapyrNotificationListener.class);
         trackIntent.setAction(NOTIFICATION_ACTION);
         trackIntent.putExtra(ACTION_ID_KEY, template.id);
@@ -210,7 +211,9 @@ public class SnapyrNotificationHandler {
         ts.addNextIntent(getLaunchIntent());
         ts.addNextIntent(trackIntent);
 
-        builder.addAction(R.drawable.ic_snapyr_logo_only, template.title,
+        builder.addAction(
+                R.drawable.ic_snapyr_logo_only,
+                template.title,
                 ts.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT));
     }
 
@@ -224,15 +227,20 @@ public class SnapyrNotificationHandler {
                 .setAutoCancel(true);
         int notificationId = ++nextMessageId;
 
-        createActionButton(builder, notificationId,
-                new ActionButton("button_one", "button_one", "button_one",
-                        "snapyrsample://test"), "");
+        createActionButton(
+                builder,
+                notificationId,
+                new ActionButton("button_one", "button_one", "button_one", "snapyrsample://test"),
+                "");
 
-        createActionButton(builder, notificationId,
-                new ActionButton("button_two", "button_two", "button_two",
-                        ""), "");
+        createActionButton(
+                builder,
+                notificationId,
+                new ActionButton("button_two", "button_two", "button_two", ""),
+                "");
 
-        builder.setContentIntent(PendingIntent.getActivity(applicationContext, 0, getLaunchIntent(), 0));
+        builder.setContentIntent(
+                PendingIntent.getActivity(applicationContext, 0, getLaunchIntent(), 0));
         Notification notification = builder.build();
         notificationMgr.notify(nextMessageId++, notification);
     }

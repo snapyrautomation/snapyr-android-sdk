@@ -1,18 +1,18 @@
 /**
  * The MIT License (MIT)
- * <p>
+ *
  * Copyright (c) 2014 Segment.io, Inc.
- * <p>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * <p>
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * <p>
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,25 +25,21 @@ package com.snapyr.sdk.notifications;
 
 import android.os.Build;
 import android.util.Log;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
-
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.ValueMap;
 import com.snapyr.sdk.internal.PushTemplate;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class SnapyrFirebaseMessagingService extends FirebaseMessagingService {
     private SnapyrNotificationListener activityHandler;
@@ -73,7 +69,9 @@ public class SnapyrFirebaseMessagingService extends FirebaseMessagingService {
         try {
             jsonData = new JSONObject(snapyrDataJson);
         } catch (JSONException e) {
-            Log.e("Snapyr", "onMessageReceived: No 'snapyr' data found on notification payload (not a Snapyr notification?); returning.");
+            Log.e(
+                    "Snapyr",
+                    "onMessageReceived: No 'snapyr' data found on notification payload (not a Snapyr notification?); returning.");
             return;
         }
 
@@ -114,9 +112,11 @@ public class SnapyrFirebaseMessagingService extends FirebaseMessagingService {
             String modifiedStr = jsonData.getString("modified");
             TemporalAccessor ta = DateTimeFormatter.ISO_INSTANT.parse(modifiedStr);
             modified = Date.from(Instant.from(ta));
-            //modified =  LocalDateTime.parse(modifiedDate);
+            // modified =  LocalDateTime.parse(modifiedDate);
         } catch (JSONException e) {
-            Log.e("Snapyr", "processPushTemplate: invalid template data found on object; returning.");
+            Log.e(
+                    "Snapyr",
+                    "processPushTemplate: invalid template data found on object; returning.");
             return null;
         }
         if (templateId == null) {
