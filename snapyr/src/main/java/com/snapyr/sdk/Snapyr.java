@@ -1,18 +1,18 @@
 /**
  * The MIT License (MIT)
- * <p>
+ *
  * Copyright (c) 2014 Segment.io, Inc.
- * <p>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * <p>
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * <p>
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -39,13 +39,11 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.ProcessLifecycleOwner;
-
 import com.snapyr.sdk.integrations.AliasPayload;
 import com.snapyr.sdk.integrations.BasePayload;
 import com.snapyr.sdk.integrations.GroupPayload;
@@ -59,7 +57,6 @@ import com.snapyr.sdk.internal.PushTemplate;
 import com.snapyr.sdk.internal.Utils;
 import com.snapyr.sdk.notifications.SnapyrNotificationHandler;
 import com.snapyr.sdk.notifications.SnapyrNotificationLifecycleCallbacks;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -97,11 +94,9 @@ public class Snapyr {
                     throw new AssertionError("Unknown handler message received: " + msg.what);
                 }
             };
-    @Private
-    static final String OPT_OUT_PREFERENCE_KEY = "opt-out";
+    @Private static final String OPT_OUT_PREFERENCE_KEY = "opt-out";
     static final String WRITE_KEY_RESOURCE_IDENTIFIER = "analytics_write_key";
-    @Private
-    static final Properties EMPTY_PROPERTIES = new Properties();
+    @Private static final Properties EMPTY_PROPERTIES = new Properties();
     private static final String VERSION_KEY = "version";
     private static final String BUILD_KEY = "build";
     private static final String TRAITS_KEY = "traits";
@@ -111,34 +106,25 @@ public class Snapyr {
     /* This is intentional since we're only using the application context. */
     @SuppressLint("StaticFieldLeak")
     static volatile Snapyr singleton = null;
+
     final ExecutorService networkExecutor;
     final Stats stats;
-    @Private
-    final Options defaultOptions;
-    @Private
-    final Traits.Cache traitsCache;
-    @Private
-    final SnapyrContext snapyrContext;
+    @Private final Options defaultOptions;
+    @Private final Traits.Cache traitsCache;
+    @Private final SnapyrContext snapyrContext;
     final String tag;
     final Client client;
     final Cartographer cartographer;
     final Crypto crypto;
-    @Private
-    final SnapyrActivityLifecycleCallbacks activityLifecycleCallback;
-    @Private
-    final SnapyrNotificationLifecycleCallbacks notificationLifecycleCallbacks;
-    @Private
-    final Lifecycle lifecycle;
-    @Private
-    final SnapyrActionHandler actionHandler;
-    @Private
-    final String writeKey;
+    @Private final SnapyrActivityLifecycleCallbacks activityLifecycleCallback;
+    @Private final SnapyrNotificationLifecycleCallbacks notificationLifecycleCallbacks;
+    @Private final Lifecycle lifecycle;
+    @Private final SnapyrActionHandler actionHandler;
+    @Private final String writeKey;
     final int flushQueueSize;
     final long flushIntervalInMillis;
-    @Private
-    final boolean nanosecondTimestamps;
-    @Private
-    final boolean useNewLifecycleMethods;
+    @Private final boolean nanosecondTimestamps;
+    @Private final boolean useNewLifecycleMethods;
     private final Application application;
     private final Logger logger;
     private final ProjectSettings.Cache projectSettingsCache;
@@ -152,7 +138,7 @@ public class Snapyr {
     private SnapyrNotificationHandler notificationHandler;
     private String pushToken;
     private Map<String, PushTemplate> PushTemplates;
-    private  final SnapyrWriteQueue sendQueue;
+    private final SnapyrWriteQueue sendQueue;
 
     Snapyr(
             Application application,
@@ -205,18 +191,19 @@ public class Snapyr {
         this.useNewLifecycleMethods = useNewLifecycleMethods;
         this.actionHandler = actionHandler;
         this.PushTemplates = null;
-        this.sendQueue = new SnapyrWriteQueue(
-                application,
-                client,
-                cartographer,
-                networkExecutor,
-                stats,
-                flushIntervalInMillis,
-                flushQueueSize,
-                getLogger(),
-                crypto,
-                null,
-                actionHandler);
+        this.sendQueue =
+                new SnapyrWriteQueue(
+                        application,
+                        client,
+                        cartographer,
+                        networkExecutor,
+                        stats,
+                        flushIntervalInMillis,
+                        flushQueueSize,
+                        getLogger(),
+                        crypto,
+                        null,
+                        actionHandler);
 
         namespaceSharedPreferences();
 
@@ -296,14 +283,12 @@ public class Snapyr {
         }
 
         notificationLifecycleCallbacks =
-                new SnapyrNotificationLifecycleCallbacks(
-                        this, this.logger, trackDeepLinks);
+                new SnapyrNotificationLifecycleCallbacks(this, this.logger, trackDeepLinks);
         application.registerActivityLifecycleCallbacks(notificationLifecycleCallbacks);
 
         if (enableSnapyrPushHandling) {
             this.notificationHandler = new SnapyrNotificationHandler(application);
             notificationHandler.autoRegisterFirebaseToken(this);
-
 
             // Add lifecycle callback observer so we can track user behavior on notifications
             // (i.e. tapping a notification or tapping an action button on notification)
@@ -364,7 +349,6 @@ public class Snapyr {
                     singleton = builder.build();
                 }
             }
-
         }
         return singleton;
     }
@@ -862,14 +846,14 @@ public class Snapyr {
         this.sendQueue.performEnqueue(payload);
     }
 
-    private void dispatchToHandler(BasePayload payload){
+    private void dispatchToHandler(BasePayload payload) {
         if (actionHandler == null) {
             return;
         }
 
-        switch (payload.type()){
+        switch (payload.type()) {
             case alias:
-                actionHandler.onAlias((AliasPayload)payload);
+                actionHandler.onAlias((AliasPayload) payload);
                 break;
             case track:
                 actionHandler.onTrack((TrackPayload) payload);

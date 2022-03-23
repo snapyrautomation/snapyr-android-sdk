@@ -1,34 +1,54 @@
+/**
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2014 Segment.io, Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 package com.snapyr.sdk.internal;
 
 /* Example payload:
-     "pushTemplates": [
-            {
-                "id": "d3cd39ac-6917-4bce-a16f-448d579be9b4",
-                "modified": "2022-02-11T15:03:41.658Z",
-                "actions": [
-                    {
-                        "id": "127974f8-893e-4cdf-bf78-c2d86d4426e9",
-                        "actionId": "asdlkj",
-                        "title": "Button1",
-                        "deepLinkUrl": "snapyrtest://dltest?msg=Hello%20World!&type=success"
-                    },
-                    {
-                        "id": "16b78326-8cec-40a0-a54e-41efc570c051",
-                        "actionId": "asdlfkji",
-                        "title": "Button2",
-                        "deepLinkUrl": "snapyrtest://dltest?msg=Hello%20World!&type=failure"
-                    }
-                ]
-            }
-        ]
- */
+    "pushTemplates": [
+           {
+               "id": "d3cd39ac-6917-4bce-a16f-448d579be9b4",
+               "modified": "2022-02-11T15:03:41.658Z",
+               "actions": [
+                   {
+                       "id": "127974f8-893e-4cdf-bf78-c2d86d4426e9",
+                       "actionId": "asdlkj",
+                       "title": "Button1",
+                       "deepLinkUrl": "snapyrtest://dltest?msg=Hello%20World!&type=success"
+                   },
+                   {
+                       "id": "16b78326-8cec-40a0-a54e-41efc570c051",
+                       "actionId": "asdlfkji",
+                       "title": "Button2",
+                       "deepLinkUrl": "snapyrtest://dltest?msg=Hello%20World!&type=failure"
+                   }
+               ]
+           }
+       ]
+*/
 
 import android.os.Build;
-
 import androidx.annotation.RequiresApi;
-
 import com.snapyr.sdk.ValueMap;
-
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
@@ -40,9 +60,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * PushTemplate
- * Defines a push template from the control plane. Handles parsing of the template from the
- * json blob recieved during the sdk configuration update.
+ * PushTemplate Defines a push template from the control plane. Handles parsing of the template from
+ * the json blob recieved during the sdk configuration update.
  */
 public class PushTemplate {
     String id;
@@ -60,21 +79,23 @@ public class PushTemplate {
         this.buttons = new ArrayList<>();
 
         ArrayList<Map<String, Object>> buttonsRaw = (ArrayList) src.get("actions");
-        buttonsRaw.forEach((v) -> {
-            this.buttons.add(new ActionButton(v));
-        });
+        buttonsRaw.forEach(
+                (v) -> {
+                    this.buttons.add(new ActionButton(v));
+                });
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public static Map<String, PushTemplate> ParseTemplate(ValueMap metadata) {
-        ArrayList<Map<String, Object>> templates = (ArrayList<Map<String, Object>>) metadata.get("pushTemplates");
+        ArrayList<Map<String, Object>> templates =
+                (ArrayList<Map<String, Object>>) metadata.get("pushTemplates");
         HashMap<String, PushTemplate> parsed = new HashMap<String, PushTemplate>();
 
-        templates.forEach((v) -> {
-            PushTemplate t = new PushTemplate(v);
-            parsed.put(t.id, t);
-        });
-
+        templates.forEach(
+                (v) -> {
+                    PushTemplate t = new PushTemplate(v);
+                    parsed.put(t.id, t);
+                });
 
         return parsed;
     }
