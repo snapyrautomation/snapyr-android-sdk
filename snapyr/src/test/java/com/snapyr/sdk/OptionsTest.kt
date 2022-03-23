@@ -41,7 +41,6 @@ class OptionsTest {
         options = Options()
     }
 
-
     @Test
     fun setOptions() {
         options.putContext("foo", "bar")

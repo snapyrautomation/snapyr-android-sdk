@@ -28,7 +28,20 @@ import android.content.Context
 import android.content.pm.PackageManager
 import com.google.common.collect.ImmutableMap
 import com.nhaarman.mockitokotlin2.whenever
-import com.snapyr.sdk.internal.Utils.*
+import com.snapyr.sdk.internal.Utils.NullableConcurrentHashMap
+import com.snapyr.sdk.internal.Utils.assertNotNull
+import com.snapyr.sdk.internal.Utils.assertNotNullOrEmpty
+import com.snapyr.sdk.internal.Utils.buffer
+import com.snapyr.sdk.internal.Utils.coerceToFloat
+import com.snapyr.sdk.internal.Utils.copySharedPreferences
+import com.snapyr.sdk.internal.Utils.hasFeature
+import com.snapyr.sdk.internal.Utils.hasPermission
+import com.snapyr.sdk.internal.Utils.isConnected
+import com.snapyr.sdk.internal.Utils.isNullOrEmpty
+import com.snapyr.sdk.internal.Utils.newSet
+import com.snapyr.sdk.internal.Utils.readFully
+import com.snapyr.sdk.internal.Utils.transform
+import java.io.IOException
 import okio.Buffer
 import org.assertj.android.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThat
@@ -43,7 +56,6 @@ import org.mockito.MockitoAnnotations.initMocks
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
-import java.io.IOException
 
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE)

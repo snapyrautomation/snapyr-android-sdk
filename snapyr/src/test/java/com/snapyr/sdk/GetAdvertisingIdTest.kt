@@ -27,13 +27,13 @@ import android.content.ContentResolver
 import android.content.Context
 import android.provider.Settings.Secure
 import com.snapyr.sdk.integrations.Logger
+import java.util.concurrent.CountDownLatch
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
-import java.util.concurrent.CountDownLatch
 
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE)

@@ -29,6 +29,10 @@ import com.snapyr.sdk.internal.Private
 import com.squareup.okhttp.mockwebserver.MockResponse
 import com.squareup.okhttp.mockwebserver.MockWebServer
 import com.squareup.okhttp.mockwebserver.RecordedRequest
+import java.io.IOException
+import java.io.InputStream
+import java.io.OutputStream
+import java.net.HttpURLConnection
 import org.assertj.core.api.AbstractAssert
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
@@ -41,10 +45,6 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
-import java.io.IOException
-import java.io.InputStream
-import java.io.OutputStream
-import java.net.HttpURLConnection
 
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE)
@@ -158,8 +158,8 @@ class ClientTest {
             assertThat(e)
                 .hasMessage(
                     "HTTP 300: bar. " +
-                            "Response: Could not read response body for rejected message: " +
-                            "java.io.IOException: Underlying input stream returned zero bytes"
+                        "Response: Could not read response body for rejected message: " +
+                        "java.io.IOException: Underlying input stream returned zero bytes"
                 )
         }
         verify(mockConnection).disconnect()
@@ -213,7 +213,7 @@ class ClientTest {
 
     internal class RecordedRequestAssert constructor(actual: RecordedRequest) :
         AbstractAssert<RecordedRequestAssert,
-                RecordedRequest>(actual, RecordedRequestAssert::class.java) {
+            RecordedRequest>(actual, RecordedRequestAssert::class.java) {
 
         fun containsHeader(name: String, expectedHeader: String): RecordedRequestAssert {
             isNotNull

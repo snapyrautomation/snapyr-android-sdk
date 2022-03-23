@@ -25,6 +25,9 @@ package com.snapyr.sdk
 
 import com.squareup.burst.BurstJUnit4
 import com.squareup.burst.annotation.Burst
+import java.io.File
+import java.io.IOException
+import java.io.InputStream
 import okio.ByteString
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
@@ -32,9 +35,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
-import java.io.File
-import java.io.IOException
-import java.io.InputStream
 
 @RunWith(BurstJUnit4::class)
 class PayloadQueueTest {

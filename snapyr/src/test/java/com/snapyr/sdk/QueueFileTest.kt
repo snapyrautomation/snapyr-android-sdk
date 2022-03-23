@@ -25,6 +25,15 @@ package com.snapyr.sdk
 
 import com.snapyr.sdk.QueueFile.Element
 import com.snapyr.sdk.QueueFile.HEADER_LENGTH
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.IOException
+import java.io.RandomAccessFile
+import java.util.LinkedList
+import java.util.Queue
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.logging.Logger
+import kotlin.NoSuchElementException
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.junit.Assert
@@ -32,13 +41,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.IOException
-import java.io.RandomAccessFile
-import java.util.*
-import java.util.concurrent.atomic.AtomicInteger
-import java.util.logging.Logger
 
 class QueueFileTest {
     private val logger = Logger.getLogger(QueueFileTest::class.java.name)
