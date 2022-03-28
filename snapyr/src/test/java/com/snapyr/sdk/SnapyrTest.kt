@@ -33,6 +33,7 @@ import android.content.pm.ActivityInfo
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.NameNotFoundException
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import androidx.annotation.Nullable
@@ -161,8 +162,9 @@ open class SnapyrTest {
             lifecycle,
             false,
             true,
-            false
-        )
+            false,
+            0,
+            Color.BLACK)
     }
 
     @Before
@@ -677,8 +679,9 @@ open class SnapyrTest {
             lifecycle,
             false,
             true,
-            false
-        )
+            false,
+            0,
+            Color.BLACK)
 
         callback.get().onCreate(mockLifecycleOwner)
 
@@ -809,8 +812,9 @@ open class SnapyrTest {
             lifecycle,
             false,
             true,
-            false
-        )
+            false,
+            0,
+            Color.BLACK)
 
         val activity = Mockito.mock(Activity::class.java)
         val packageManager = Mockito.mock(PackageManager::class.java)
@@ -884,8 +888,10 @@ open class SnapyrTest {
             lifecycle,
             false,
             true,
-            false
-        )
+            false,
+            0,
+            Color.BLACK)
+
         Snapyr.setSingletonInstance(analytics)
 
         val expectedURL = "app://track.com/open?utm_id=12345&gclid=abcd&nope="
@@ -1288,8 +1294,9 @@ open class SnapyrTest {
             lifecycle,
             false,
             true,
-            false
-        )
+            false,
+            0,
+            Color.BLACK)
 
         assertThat(analytics.shutdown).isFalse
         analytics.shutdown()
@@ -1359,8 +1366,9 @@ open class SnapyrTest {
             lifecycle,
             false,
             true,
-            false
-        )
+            false,
+            0,
+            Color.BLACK)
 
         assertThat(analytics.shutdown).isFalse
         analytics.shutdown()
@@ -1430,8 +1438,9 @@ open class SnapyrTest {
             lifecycle,
             false,
             true,
-            false
-        )
+            false,
+            0,
+            Color.BLACK)
 
         assertThat(analytics.projectSettings).hasSize(3)
         assertThat(analytics.projectSettings.integrations()).containsKey("Snapyr")
@@ -1474,8 +1483,9 @@ open class SnapyrTest {
             lifecycle,
             false,
             true,
-            false
-        )
+            false,
+            0,
+            Color.BLACK)
 
         assertThat(analytics.projectSettings).hasSize(3)
         assertThat(analytics.projectSettings).containsKey("integrations")
@@ -1529,8 +1539,9 @@ open class SnapyrTest {
             lifecycle,
             false,
             true,
-            false
-        )
+            false,
+            0,
+            Color.BLACK)
 
         assertThat(analytics.projectSettings).hasSize(3)
         assertThat(analytics.projectSettings).containsKey("integrations")
@@ -1587,8 +1598,9 @@ open class SnapyrTest {
             lifecycle,
             true,
             true,
-            false
-        )
+            false,
+            0,
+            Color.BLACK)
 
         analytics.track("event")
         val payload = ArgumentCaptor.forClass(TrackPayload::class.java)

@@ -24,6 +24,7 @@
 package com.snapyr.sdk.sample;
 
 import android.app.Application;
+import android.graphics.Color;
 import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.ValueMap;
 import io.github.inflationx.calligraphy3.CalligraphyConfig;
@@ -34,7 +35,7 @@ public class SampleApp extends Application {
 
     // https://segment.com/segment-engineering/sources/android-test/settings/keys
     //    private static final String ANALYTICS_WRITE_KEY = "HO63Z36e0Ufa8AAgbjDomDuKxFuUICqI";
-    private static final String ANALYTICS_WRITE_KEY = "JLIfT7Q8gAkXDqkMbENkF1tKoaHRF552";
+    private static final String ANALYTICS_WRITE_KEY = "RSLG3AdcWnHBvqxdGvZJ6FtkNAmudjtX";
 
     @Override
     public void onCreate() {
@@ -57,6 +58,7 @@ public class SampleApp extends Application {
                         .experimentalNanosecondTimestamps()
                         .trackApplicationLifecycleEvents()
                         .trackDeepLinks()
+                        .notificationOptions(R.drawable.ic_snapyr_logo_only_delete_me, Color.BLUE)
                         .defaultProjectSettings(
                                 new ValueMap()
                                         .putValue(
