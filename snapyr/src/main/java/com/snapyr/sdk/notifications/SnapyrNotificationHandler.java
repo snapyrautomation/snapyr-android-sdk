@@ -125,7 +125,7 @@ public class SnapyrNotificationHandler {
 
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(this.context, channelId);
-        builder.setSmallIcon(R.drawable.ic_snapyr_logo_only)
+        builder.setSmallIcon(applicationContext.getApplicationInfo().icon)
                 .setContentTitle((String) data.get(NOTIF_TITLE_KEY))
                 .setContentText((String) data.get(NOTIF_CONTENT_KEY))
                 .setSubText((String) data.get(NOTIF_SUBTITLE_KEY))
