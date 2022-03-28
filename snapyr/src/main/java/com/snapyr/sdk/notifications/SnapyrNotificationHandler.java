@@ -83,9 +83,13 @@ public class SnapyrNotificationHandler {
             "Displays all Snapyr-managed notifications by default";
     public int defaultChannelImportance = NotificationManagerCompat.IMPORTANCE_HIGH;
     private int nextMessageId = 0;
+    private int notificationIcon;
+    private int notificationColor;
 
-    public SnapyrNotificationHandler(Context ctx) {
+    public SnapyrNotificationHandler(Context ctx, int notificationIcon, int notificationColor) {
         context = ctx;
+        this.notificationIcon = notificationIcon;
+        this.notificationColor = notificationColor;
         applicationContext = context.getApplicationContext();
         notificationMgr = NotificationManagerCompat.from(applicationContext);
         registerChannel(
@@ -125,7 +129,8 @@ public class SnapyrNotificationHandler {
 
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(this.context, channelId);
-        builder.setSmallIcon(R.drawable.ic_snapyr_logo_only)
+        builder.setSmallIcon(this.notificationIcon)
+                .setColor(this.notificationColor)
                 .setContentTitle((String) data.get(NOTIF_TITLE_KEY))
                 .setContentText((String) data.get(NOTIF_CONTENT_KEY))
                 .setSubText((String) data.get(NOTIF_SUBTITLE_KEY))

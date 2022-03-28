@@ -35,6 +35,7 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -57,6 +58,7 @@ import com.snapyr.sdk.internal.PushTemplate;
 import com.snapyr.sdk.internal.Utils;
 import com.snapyr.sdk.notifications.SnapyrNotificationHandler;
 import com.snapyr.sdk.notifications.SnapyrNotificationLifecycleCallbacks;
+import com.snapyr.sdk.core.R;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -167,7 +169,9 @@ public class Snapyr {
             @NonNull Lifecycle lifecycle,
             boolean nanosecondTimestamps,
             boolean useNewLifecycleMethods,
-            boolean enableSnapyrPushHandling) {
+            boolean enableSnapyrPushHandling,
+            int notificationIcon,
+            int notificationColor) {
         this.application = application;
         this.networkExecutor = networkExecutor;
         this.stats = stats;
@@ -287,7 +291,8 @@ public class Snapyr {
         application.registerActivityLifecycleCallbacks(notificationLifecycleCallbacks);
 
         if (enableSnapyrPushHandling) {
-            this.notificationHandler = new SnapyrNotificationHandler(application);
+            this.notificationHandler = new SnapyrNotificationHandler(application,
+                    notificationIcon, notificationColor);
             notificationHandler.autoRegisterFirebaseToken(this);
 
             // Add lifecycle callback observer so we can track user behavior on notifications
@@ -1154,6 +1159,8 @@ public class Snapyr {
         private boolean useNewLifecycleMethods = true; // opt-out feature
         private ConnectionFactory.Environment snapyrEnvironment =
                 ConnectionFactory.Environment.PROD;
+        private int notificationIcon = R.drawable.ic_snapyr_logo_only;
+        private int notificationColor = Color.BLUE;
 
         /** Start building a new {@link Snapyr} instance. */
         public Builder(Context context, String writeKey) {
@@ -1193,6 +1200,15 @@ public class Snapyr {
                         "flushQueueSize must be less than or equal to 250.");
             }
             this.flushQueueSize = flushQueueSize;
+            return this;
+        }
+
+        /**
+         * Set the color and icon displayed when the sdk receives a push notification
+         */
+        public Builder notificationOptions(int notificationIcon, int notificationColor) {
+            this.notificationIcon = notificationIcon;
+            this.notificationColor = notificationColor;
             return this;
         }
 
@@ -1468,7 +1484,9 @@ public class Snapyr {
                     lifecycle,
                     nanosecondTimestamps,
                     useNewLifecycleMethods,
-                    snapyrPush);
+                    snapyrPush,
+                    notificationIcon,
+                    notificationColor);
         }
     }
 }
