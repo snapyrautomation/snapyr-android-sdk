@@ -45,6 +45,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.ProcessLifecycleOwner;
+import com.snapyr.sdk.core.R;
 import com.snapyr.sdk.integrations.AliasPayload;
 import com.snapyr.sdk.integrations.BasePayload;
 import com.snapyr.sdk.integrations.GroupPayload;
@@ -58,7 +59,6 @@ import com.snapyr.sdk.internal.PushTemplate;
 import com.snapyr.sdk.internal.Utils;
 import com.snapyr.sdk.notifications.SnapyrNotificationHandler;
 import com.snapyr.sdk.notifications.SnapyrNotificationLifecycleCallbacks;
-import com.snapyr.sdk.core.R;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -291,8 +291,8 @@ public class Snapyr {
         application.registerActivityLifecycleCallbacks(notificationLifecycleCallbacks);
 
         if (enableSnapyrPushHandling) {
-            this.notificationHandler = new SnapyrNotificationHandler(application,
-                    notificationIcon, notificationColor);
+            this.notificationHandler =
+                    new SnapyrNotificationHandler(application, notificationIcon, notificationColor);
             notificationHandler.autoRegisterFirebaseToken(this);
 
             // Add lifecycle callback observer so we can track user behavior on notifications
@@ -1203,9 +1203,7 @@ public class Snapyr {
             return this;
         }
 
-        /**
-         * Set the color and icon displayed when the sdk receives a push notification
-         */
+        /** Set the color and icon displayed when the sdk receives a push notification */
         public Builder notificationOptions(int notificationIcon, int notificationColor) {
             this.notificationIcon = notificationIcon;
             this.notificationColor = notificationColor;

@@ -34,8 +34,9 @@ import io.github.inflationx.viewpump.ViewPump;
 public class SampleApp extends Application {
 
     // https://segment.com/segment-engineering/sources/android-test/settings/keys
-    //    private static final String ANALYTICS_WRITE_KEY = "HO63Z36e0Ufa8AAgbjDomDuKxFuUICqI";
-    private static final String ANALYTICS_WRITE_KEY = "RSLG3AdcWnHBvqxdGvZJ6FtkNAmudjtX";
+    private static final String ANALYTICS_WRITE_KEY = "HO63Z36e0Ufa8AAgbjDomDuKxFuUICqI";
+    // private static final String ANALYTICS_WRITE_KEY = "HO63Z36e0Ufa8AAgbjDomDuKxFuUICqI"; // dev,
+    // default ws
 
     @Override
     public void onCreate() {
@@ -58,7 +59,7 @@ public class SampleApp extends Application {
                         .experimentalNanosecondTimestamps()
                         .trackApplicationLifecycleEvents()
                         .trackDeepLinks()
-                        .notificationOptions(R.drawable.ic_snapyr_logo_only_delete_me, Color.BLUE)
+                        .notificationOptions(R.drawable.ic_snapyr_logo_only, Color.BLUE)
                         .defaultProjectSettings(
                                 new ValueMap()
                                         .putValue(

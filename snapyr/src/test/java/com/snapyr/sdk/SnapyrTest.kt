@@ -164,7 +164,8 @@ open class SnapyrTest {
             true,
             false,
             0,
-            Color.BLACK)
+            Color.BLACK
+        )
     }
 
     @Before
@@ -681,7 +682,8 @@ open class SnapyrTest {
             true,
             false,
             0,
-            Color.BLACK)
+            Color.BLACK
+        )
 
         callback.get().onCreate(mockLifecycleOwner)
 
@@ -814,7 +816,8 @@ open class SnapyrTest {
             true,
             false,
             0,
-            Color.BLACK)
+            Color.BLACK
+        )
 
         val activity = Mockito.mock(Activity::class.java)
         val packageManager = Mockito.mock(PackageManager::class.java)
@@ -890,7 +893,8 @@ open class SnapyrTest {
             true,
             false,
             0,
-            Color.BLACK)
+            Color.BLACK
+        )
 
         Snapyr.setSingletonInstance(analytics)
 
@@ -1296,7 +1300,8 @@ open class SnapyrTest {
             true,
             false,
             0,
-            Color.BLACK)
+            Color.BLACK
+        )
 
         assertThat(analytics.shutdown).isFalse
         analytics.shutdown()
@@ -1368,7 +1373,8 @@ open class SnapyrTest {
             true,
             false,
             0,
-            Color.BLACK)
+            Color.BLACK
+        )
 
         assertThat(analytics.shutdown).isFalse
         analytics.shutdown()
@@ -1440,7 +1446,8 @@ open class SnapyrTest {
             true,
             false,
             0,
-            Color.BLACK)
+            Color.BLACK
+        )
 
         assertThat(analytics.projectSettings).hasSize(3)
         assertThat(analytics.projectSettings.integrations()).containsKey("Snapyr")
@@ -1485,7 +1492,8 @@ open class SnapyrTest {
             true,
             false,
             0,
-            Color.BLACK)
+            Color.BLACK
+        )
 
         assertThat(analytics.projectSettings).hasSize(3)
         assertThat(analytics.projectSettings).containsKey("integrations")
@@ -1541,7 +1549,8 @@ open class SnapyrTest {
             true,
             false,
             0,
-            Color.BLACK)
+            Color.BLACK
+        )
 
         assertThat(analytics.projectSettings).hasSize(3)
         assertThat(analytics.projectSettings).containsKey("integrations")
@@ -1600,7 +1609,8 @@ open class SnapyrTest {
             true,
             false,
             0,
-            Color.BLACK)
+            Color.BLACK
+        )
 
         analytics.track("event")
         val payload = ArgumentCaptor.forClass(TrackPayload::class.java)
