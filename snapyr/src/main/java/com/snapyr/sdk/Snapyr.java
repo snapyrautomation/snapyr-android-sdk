@@ -880,6 +880,7 @@ public class Snapyr {
         if (shutdown) {
             throw new IllegalStateException("Cannot enqueue messages after client is shutdown.");
         }
+        sendQueue.flush();
     }
 
     /** Get the {@link SnapyrContext} used by this instance. */
