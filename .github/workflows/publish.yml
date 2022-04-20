@@ -22,8 +22,8 @@ jobs:
         uses: gradle/wrapper-validation-action@v1
       - name: Configure GPG
         run: |
-          mkdir -p $HOME/keys
-          export SIGNING_SECRET_KEY_RING_FILE=$HOME/keys/secret_key.gpg
+          mkdir -p ${{ github.workspace }}/keys
+          export SIGNING_SECRET_KEY_RING_FILE=${{ github.workspace }}/keys/secret_key.gpg
           echo $SIGNING_SECRET_KEY_RING_FILE_DATA | base64 -d > $SIGNING_SECRET_KEY_RING_FILE
         env:
           SIGNING_SECRET_KEY_RING_FILE_DATA: ${{secrets.SIGNING_SECRET_KEY_RING_FILE_DATA}}
