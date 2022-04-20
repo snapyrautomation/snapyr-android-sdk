@@ -57,7 +57,7 @@ public class NanoDate extends Date {
 
     /*
      * Java Genetic Algorithm Library (@__identifier__@).
-     * Copyright (c) @__year__@ Franz Wilhelmstötter
+     * Copyright (c) @__year__@ Franz Wilhelmstoetter
      *
      * Licensed under the Apache License, Version 2.0 (the "License");
      * you may not use this file except in compliance with the License.
@@ -72,7 +72,7 @@ public class NanoDate extends Date {
      * limitations under the License.
      *
      * Author:
-     *    Franz Wilhelmstötter (franz.wilhelmstoetter@gmail.com)
+     *    Franz Wilhelmstoetter (franz.wilhelmstoetter@gmail.com)
      */
     public static final class NanoClock {
         /**
