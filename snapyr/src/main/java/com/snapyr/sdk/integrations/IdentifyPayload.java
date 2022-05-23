@@ -28,8 +28,12 @@ import static com.snapyr.sdk.internal.Utils.isNullOrEmpty;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import com.snapyr.sdk.Traits;
+import com.snapyr.sdk.ValueMap;
+import com.snapyr.sdk.ValueMapUtils;
 import com.snapyr.sdk.internal.Private;
+
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -68,7 +72,8 @@ public class IdentifyPayload extends BasePayload {
      */
     @NonNull
     public Traits traits() {
-        return getValueMap(TRAITS_KEY, Traits.class);
+        ValueMap map = ValueMapUtils.getValueMap(this, TRAITS_KEY);
+        return new Traits(map);
     }
 
     @Override

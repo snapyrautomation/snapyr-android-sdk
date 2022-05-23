@@ -25,8 +25,8 @@ package com.snapyr.sdk;
 
 import static java.util.Collections.unmodifiableMap;
 
-import android.content.Context;
 import com.snapyr.sdk.internal.Private;
+
 import java.util.Map;
 
 public class ProjectSettings extends ValueMap {
@@ -48,11 +48,11 @@ public class ProjectSettings extends ValueMap {
     }
 
     long timestamp() {
-        return getLong(TIMESTAMP_KEY, 0L);
+        return ValueMapUtils.getLong(this, TIMESTAMP_KEY, 0L);
     }
 
     ValueMap plan() {
-        return getValueMap(PLAN_KEY);
+        return ValueMapUtils.getValueMap(this, PLAN_KEY);
     }
 
     ValueMap trackingPlan() {
@@ -60,14 +60,14 @@ public class ProjectSettings extends ValueMap {
         if (plan == null) {
             return null;
         }
-        return plan.getValueMap(TRACKING_PLAN_KEY);
+        return ValueMapUtils.getValueMap(plan, TRACKING_PLAN_KEY);
     }
 
     ValueMap integrations() {
-        return getValueMap(INTEGRATIONS_KEY);
+        return ValueMapUtils.getValueMap(this, INTEGRATIONS_KEY);
     }
 
     ValueMap edgeFunctions() {
-        return getValueMap(EDGE_FUNCTIONS_KEY);
+        return ValueMapUtils.getValueMap(this, EDGE_FUNCTIONS_KEY);
     }
 }

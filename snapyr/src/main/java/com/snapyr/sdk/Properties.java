@@ -24,6 +24,7 @@
 package com.snapyr.sdk;
 
 import com.snapyr.sdk.internal.Utils;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -69,7 +70,7 @@ public class Properties extends ValueMap {
     }
 
     // For deserialization
-    Properties(Map<String, Object> delegate) {
+    public Properties(Map<String, Object> delegate) {
         super(delegate);
     }
 
@@ -88,7 +89,7 @@ public class Properties extends ValueMap {
     }
 
     public double revenue() {
-        return getDouble(REVENUE_KEY, 0);
+        return ValueMapUtils.getDouble(this, REVENUE_KEY, 0);
     }
 
     /**
@@ -101,7 +102,7 @@ public class Properties extends ValueMap {
     }
 
     public double value() {
-        double value = getDouble(VALUE_KEY, 0);
+        double value = ValueMapUtils.getDouble(this, VALUE_KEY, 0);
         if (value != 0) {
             return value;
         }
@@ -114,7 +115,7 @@ public class Properties extends ValueMap {
     }
 
     public String currency() {
-        return getString(CURRENCY_KEY);
+        return ValueMapUtils.getString(this, CURRENCY_KEY);
     }
 
     /**
@@ -127,7 +128,7 @@ public class Properties extends ValueMap {
     }
 
     public String path() {
-        return getString(PATH_KEY);
+        return ValueMapUtils.getString(this, PATH_KEY);
     }
 
     /**
@@ -141,7 +142,7 @@ public class Properties extends ValueMap {
     }
 
     public String referrer() {
-        return getString(REFERRER_KEY);
+        return ValueMapUtils.getString(this, REFERRER_KEY);
     }
 
     /**
@@ -154,7 +155,7 @@ public class Properties extends ValueMap {
     }
 
     public String title() {
-        return getString(TITLE_KEY);
+        return ValueMapUtils.getString(this, TITLE_KEY);
     }
 
     /**
@@ -167,7 +168,7 @@ public class Properties extends ValueMap {
     }
 
     public String url() {
-        return getString(URL_KEY);
+        return ValueMapUtils.getString(this, URL_KEY);
     }
 
     /**
@@ -180,7 +181,7 @@ public class Properties extends ValueMap {
     }
 
     public String name() {
-        return getString(NAME_KEY);
+        return ValueMapUtils.getString(this, NAME_KEY);
     }
 
     /**
@@ -194,7 +195,7 @@ public class Properties extends ValueMap {
     }
 
     public String category() {
-        return getString(CATEGORY_KEY);
+        return ValueMapUtils.getString(this, CATEGORY_KEY);
     }
 
     /**
@@ -207,7 +208,7 @@ public class Properties extends ValueMap {
     }
 
     public String sku() {
-        return getString(SKU_KEY);
+        return ValueMapUtils.getString(this, SKU_KEY);
     }
 
     /**
@@ -220,7 +221,7 @@ public class Properties extends ValueMap {
     }
 
     public double price() {
-        return getDouble(PRICE_KEY, 0);
+        return ValueMapUtils.getDouble(this, PRICE_KEY, 0);
     }
 
     /**
@@ -233,7 +234,7 @@ public class Properties extends ValueMap {
     }
 
     public String productId() {
-        return getString(ID_KEY);
+        return ValueMapUtils.getString(this, ID_KEY);
     }
 
     /**
@@ -246,7 +247,7 @@ public class Properties extends ValueMap {
     }
 
     public String orderId() {
-        return getString(ORDER_ID_KEY);
+        return ValueMapUtils.getString(this, ORDER_ID_KEY);
     }
 
     /**
@@ -259,7 +260,7 @@ public class Properties extends ValueMap {
     }
 
     public double total() {
-        double total = getDouble(TOTAL_KEY, 0);
+        double total = ValueMapUtils.getDouble(this, TOTAL_KEY, 0);
         if (total != 0) {
             return total;
         }
@@ -287,7 +288,7 @@ public class Properties extends ValueMap {
     }
 
     public double subtotal() {
-        return getDouble(SUBTOTAL_KEY, 0);
+        return ValueMapUtils.getDouble(this, SUBTOTAL_KEY, 0);
     }
 
     /**
@@ -300,7 +301,7 @@ public class Properties extends ValueMap {
     }
 
     public double shipping() {
-        return getDouble(SHIPPING_KEY, 0);
+        return ValueMapUtils.getDouble(this, SHIPPING_KEY, 0);
     }
 
     /**
@@ -313,7 +314,7 @@ public class Properties extends ValueMap {
     }
 
     public double tax() {
-        return getDouble(TAX_KEY, 0);
+        return ValueMapUtils.getDouble(this, TAX_KEY, 0);
     }
 
     /**
@@ -326,7 +327,7 @@ public class Properties extends ValueMap {
     }
 
     public double discount() {
-        return getDouble(DISCOUNT_KEY, 0);
+        return ValueMapUtils.getDouble(this, DISCOUNT_KEY, 0);
     }
 
     /**
@@ -339,7 +340,7 @@ public class Properties extends ValueMap {
     }
 
     public String coupon() {
-        return getString(COUPON_KEY);
+        return ValueMapUtils.getString(this, COUPON_KEY);
     }
 
     /**
@@ -362,7 +363,8 @@ public class Properties extends ValueMap {
     }
 
     public List<Product> products() {
-        return getList(PRODUCTS_KEY, Product.class);
+        List<ValueMap> map = ValueMapUtils.getList(this, PRODUCTS_KEY);
+        return ValueMapUtils.toProducts(map);
     }
 
     /**
@@ -375,7 +377,7 @@ public class Properties extends ValueMap {
     }
 
     public boolean isRepeatCustomer() {
-        return getBoolean(REPEAT_KEY, false);
+        return ValueMapUtils.getBoolean(this, REPEAT_KEY, false);
     }
 
     /**
@@ -407,7 +409,7 @@ public class Properties extends ValueMap {
         }
 
         // For deserialization
-        private Product(Map<String, Object> map) {
+        public Product(Map<String, Object> map) {
             super(map);
         }
 
@@ -417,19 +419,19 @@ public class Properties extends ValueMap {
         }
 
         public String name() {
-            return getString(NAME_KEY);
+            return ValueMapUtils.getString(this, NAME_KEY);
         }
 
         public String id() {
-            return getString(ID_KEY);
+            return ValueMapUtils.getString(this, ID_KEY);
         }
 
         public String sku() {
-            return getString(SKU_KEY);
+            return ValueMapUtils.getString(this, SKU_KEY);
         }
 
         public double price() {
-            return getDouble(PRICE_KEY, 0);
+            return ValueMapUtils.getDouble(this, PRICE_KEY, 0);
         }
 
         @Override

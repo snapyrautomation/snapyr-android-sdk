@@ -42,10 +42,12 @@ import android.telephony.TelephonyManager;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.WindowManager;
+
 import com.snapyr.sdk.core.BuildConfig;
 import com.snapyr.sdk.integrations.Logger;
 import com.snapyr.sdk.internal.Private;
 import com.snapyr.sdk.internal.Utils;
+
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -118,7 +120,7 @@ public class SnapyrContext extends ValueMap {
     private static final String SDK_META_KEY = "sdkMeta";
 
     // For deserialization and wrapping
-    SnapyrContext(Map<String, Object> delegate) {
+    public SnapyrContext(Map<String, Object> delegate) {
         super(delegate);
     }
 
@@ -197,7 +199,8 @@ public class SnapyrContext extends ValueMap {
      * <p>Return the {@link Traits} attached to this instance.
      */
     public Traits traits() {
-        return getValueMap(TRAITS_KEY, Traits.class);
+        ValueMap map = ValueMapUtils.getValueMap(this, TRAITS_KEY);
+        return new Traits(map);
     }
 
     /**
@@ -227,7 +230,8 @@ public class SnapyrContext extends ValueMap {
     }
 
     public Campaign campaign() {
-        return getValueMap(CAMPAIGN_KEY, Campaign.class);
+        ValueMap map = ValueMapUtils.getValueMap(this, CAMPAIGN_KEY);
+        return new Campaign(map);
     }
 
     /** Fill this instance with device info from the provided {@link Context}. */
@@ -243,7 +247,8 @@ public class SnapyrContext extends ValueMap {
     }
 
     public Device device() {
-        return getValueMap(DEVICE_KEY, Device.class);
+        ValueMap map = ValueMapUtils.getValueMap(this, DEVICE_KEY);
+        return new Device(map);
     }
 
     /** Set a device token. Convenience method for {@link Device#putDeviceToken(String)} */
@@ -266,7 +271,8 @@ public class SnapyrContext extends ValueMap {
     }
 
     public Location location() {
-        return getValueMap(LOCATION_KEY, Location.class);
+        ValueMap map = ValueMapUtils.getValueMap(this, LOCATION_KEY);
+        return new Location(map);
     }
 
     /**
@@ -371,7 +377,7 @@ public class SnapyrContext extends ValueMap {
         }
 
         public String name() {
-            return getString(CAMPAIGN_NAME_KEY);
+            return ValueMapUtils.getString(this, CAMPAIGN_NAME_KEY);
         }
 
         /** Set the UTM campaign source. */
@@ -380,7 +386,7 @@ public class SnapyrContext extends ValueMap {
         }
 
         public String source() {
-            return getString(CAMPAIGN_SOURCE_KEY);
+            return ValueMapUtils.getString(this, CAMPAIGN_SOURCE_KEY);
         }
 
         /** Set the UTM campaign medium. */
@@ -389,7 +395,7 @@ public class SnapyrContext extends ValueMap {
         }
 
         public String medium() {
-            return getString(CAMPAIGN_MEDIUM_KEY);
+            return ValueMapUtils.getString(this, CAMPAIGN_MEDIUM_KEY);
         }
 
         /** Set the UTM campaign term. */
@@ -403,7 +409,7 @@ public class SnapyrContext extends ValueMap {
         }
 
         public String term() {
-            return getString(CAMPAIGN_TERM_KEY);
+            return ValueMapUtils.getString(this, CAMPAIGN_TERM_KEY);
         }
 
         /** Set the UTM campaign content. */
@@ -412,7 +418,7 @@ public class SnapyrContext extends ValueMap {
         }
 
         public String content() {
-            return getString(CAMPAIGN_CONTENT_KEY);
+            return ValueMapUtils.getString(this, CAMPAIGN_CONTENT_KEY);
         }
     }
 
@@ -483,7 +489,7 @@ public class SnapyrContext extends ValueMap {
         }
 
         public double latitude() {
-            return getDouble(LOCATION_LATITUDE_KEY, 0);
+            return ValueMapUtils.getDouble(this, LOCATION_LATITUDE_KEY, 0);
         }
 
         /** Set the longitude for the location of the device. */
@@ -492,7 +498,7 @@ public class SnapyrContext extends ValueMap {
         }
 
         public double longitude() {
-            return getDouble(LOCATION_LONGITUDE_KEY, 0);
+            return ValueMapUtils.getDouble(this, LOCATION_LONGITUDE_KEY, 0);
         }
 
         /** Set the speed of the device. */
@@ -501,7 +507,7 @@ public class SnapyrContext extends ValueMap {
         }
 
         public double speed() {
-            return getDouble(LOCATION_SPEED_KEY, 0);
+            return ValueMapUtils.getDouble(this, LOCATION_SPEED_KEY, 0);
         }
     }
 
@@ -534,7 +540,7 @@ public class SnapyrContext extends ValueMap {
         }
 
         public String id() {
-            return getString(REFERRER_ID_KEY);
+            return ValueMapUtils.getString(this, REFERRER_ID_KEY);
         }
 
         /** Set the referrer link. */
@@ -543,7 +549,7 @@ public class SnapyrContext extends ValueMap {
         }
 
         public String link() {
-            return getString(REFERRER_LINK_KEY);
+            return ValueMapUtils.getString(this, REFERRER_LINK_KEY);
         }
 
         /** Set the referrer name. */
@@ -552,7 +558,7 @@ public class SnapyrContext extends ValueMap {
         }
 
         public String name() {
-            return getString(REFERRER_NAME_KEY);
+            return ValueMapUtils.getString(this, REFERRER_NAME_KEY);
         }
 
         /** Set the referrer type. */
@@ -561,7 +567,7 @@ public class SnapyrContext extends ValueMap {
         }
 
         public String type() {
-            return getString(REFERRER_TYPE_KEY);
+            return ValueMapUtils.getString(this, REFERRER_TYPE_KEY);
         }
 
         /** @deprecated Use {@link #putUrl(String)} */
@@ -575,7 +581,7 @@ public class SnapyrContext extends ValueMap {
         }
 
         public String url() {
-            return getString(REFERRER_URL_KEY);
+            return ValueMapUtils.getString(this, REFERRER_URL_KEY);
         }
     }
 }

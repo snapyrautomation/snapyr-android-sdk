@@ -1,5 +1,8 @@
+@file:JvmName("ValueMapUtils")
+
 package com.snapyr.sdk
 
+import com.snapyr.sdk.Properties.Product
 import com.snapyr.sdk.internal.Utils
 import org.json.JSONObject
 
@@ -135,9 +138,9 @@ fun ValueMap.getValueMap(key: Any?): ValueMap? {
  * Returns the value mapped by `key` if it exists and if it can be coerced to the given
  * type. The expected subclass MUST have a constructor that accepts a [Map].
  */
-fun <T : ValueMap?> ValueMap.getValueMap(key: String, clazz: Class<T>): T? {
+fun ValueMap.getValueMap(key: String): ValueMap {
     val value = get(key)
-    return coerceToValueMap(value, clazz)
+    return checkNotNull(coerceToValueMap(value))
 }
 
 /**
@@ -145,25 +148,20 @@ fun <T : ValueMap?> ValueMap.getValueMap(key: String, clazz: Class<T>): T? {
  * type. If not, it checks if the object a [Map] type, and feeds it to the constructor by
  * reflection.
  */
-private fun <T : ValueMap?> ValueMap.coerceToValueMap(`object`: Any?, clazz: Class<T>): T? {
-    if (`object` == null) return null
-    if (clazz.isAssignableFrom(`object`.javaClass)) {
-        return `object` as T
-    }
-    return if (`object` is Map<*, *>) ValueMap.createValueMap(`object` as Map<*, *>?, clazz) else null
-}
+private fun coerceToValueMap(value: Any?): ValueMap? =
+    if (value is Map<*, *>) valueMapOf(value) else null
 
 /**
  * Returns the value mapped by `key` if it exists and is a List of `T`. Returns null
  * otherwise.
  */
-fun <T : ValueMap?> ValueMap.getList(key: Any, clazz: Class<T>): List<T>? {
+fun ValueMap.getList(key: Any): List<ValueMap>? {
     val value = get(key)
     if (value is List<*>) {
         try {
-            val real = ArrayList<T>()
+            val real = ArrayList<ValueMap>()
             for (item in value) {
-                val typedValue = coerceToValueMap(item, clazz)
+                val typedValue = coerceToValueMap(item)
                 if (typedValue != null) {
                     real.add(typedValue)
                 }
@@ -185,3 +183,5 @@ fun ValueMap.toStringMap(): Map<String, String> =
     mapValues { (_, value) ->
         value.toString()
     }
+
+fun List<ValueMap>.toProducts(): List<Product> = map { Product(it) }

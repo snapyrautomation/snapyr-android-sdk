@@ -25,9 +25,9 @@ package com.snapyr.sdk;
 
 import static java.util.Collections.unmodifiableMap;
 
-import android.content.Context;
 import com.snapyr.sdk.internal.Private;
 import com.snapyr.sdk.internal.Utils;
+
 import java.text.ParseException;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -71,7 +71,7 @@ public class Traits extends ValueMap {
     private static final String ADDRESS_KEY = "address";
 
     @Private
-    Traits(Map<String, Object> delegate) {
+    public Traits(Map<String, Object> delegate) {
         super(delegate);
     }
 
@@ -106,7 +106,7 @@ public class Traits extends ValueMap {
     }
 
     public String userId() {
-        return getString(USER_ID_KEY);
+        return ValueMapUtils.getString(this, USER_ID_KEY);
     }
 
     Traits putAnonymousId(String id) {
@@ -114,7 +114,7 @@ public class Traits extends ValueMap {
     }
 
     public String anonymousId() {
-        return getString(ANONYMOUS_ID_KEY);
+        return ValueMapUtils.getString(this, ANONYMOUS_ID_KEY);
     }
 
     /**
@@ -132,7 +132,8 @@ public class Traits extends ValueMap {
     }
 
     public Address address() {
-        return getValueMap(ADDRESS_KEY, Address.class);
+        ValueMap map = ValueMapUtils.getValueMap(this, ADDRESS_KEY);
+        return new Address(map);
     }
 
     /** Set the age of a user. */
@@ -150,7 +151,7 @@ public class Traits extends ValueMap {
     }
 
     public String avatar() {
-        return getString(AVATAR_KEY);
+        return ValueMapUtils.getString(this, AVATAR_KEY);
     }
 
     /** Set the user's birthday. */
@@ -160,7 +161,7 @@ public class Traits extends ValueMap {
 
     public Date birthday() {
         try {
-            String birthday = getString(BIRTHDAY_KEY);
+            String birthday = ValueMapUtils.getString(this, BIRTHDAY_KEY);
             if (Utils.isNullOrEmpty(birthday)) return null;
             return Utils.toISO8601Date(birthday);
         } catch (ParseException e) {
@@ -178,7 +179,7 @@ public class Traits extends ValueMap {
     }
 
     public String createdAt() {
-        return getString(CREATED_AT_KEY);
+        return ValueMapUtils.getString(this, CREATED_AT_KEY);
     }
 
     /** Set a description of the user or group, like a personal bio. */
@@ -187,7 +188,7 @@ public class Traits extends ValueMap {
     }
 
     public String description() {
-        return getString(DESCRIPTION_KEY);
+        return ValueMapUtils.getString(this, DESCRIPTION_KEY);
     }
 
     /** Set the email address of a user or group. */
@@ -196,7 +197,7 @@ public class Traits extends ValueMap {
     }
 
     public String email() {
-        return getString(EMAIL_KEY);
+        return ValueMapUtils.getString(this, EMAIL_KEY);
     }
 
     /** Set the number of employees of a group, typically used for companies. */
@@ -205,7 +206,7 @@ public class Traits extends ValueMap {
     }
 
     public long employees() {
-        return getLong(EMPLOYEES_KEY, 0);
+        return ValueMapUtils.getLong(this, EMPLOYEES_KEY, 0);
     }
 
     /** Set the fax number of a user or group. */
@@ -214,7 +215,7 @@ public class Traits extends ValueMap {
     }
 
     public String fax() {
-        return getString(
+        return ValueMapUtils.getString(this,
                 FAX_KEY); // todo: maybe remove this, I doubt any bundled integration uses fax
     }
 
@@ -224,7 +225,7 @@ public class Traits extends ValueMap {
     }
 
     public String firstName() {
-        return getString(FIRST_NAME_KEY);
+        return ValueMapUtils.getString(this, FIRST_NAME_KEY);
     }
 
     /** Set the gender of a user. */
@@ -233,7 +234,7 @@ public class Traits extends ValueMap {
     }
 
     public String gender() {
-        return getString(GENDER_KEY);
+        return ValueMapUtils.getString(this, GENDER_KEY);
     }
 
     /** Set the industry the user works in, or a group is part of. */
@@ -242,7 +243,7 @@ public class Traits extends ValueMap {
     }
 
     public String industry() {
-        return getString(INDUSTRY_KEY);
+        return ValueMapUtils.getString(this, INDUSTRY_KEY);
     }
 
     /** Set the last name of a user. */
@@ -251,7 +252,7 @@ public class Traits extends ValueMap {
     }
 
     public String lastName() {
-        return getString(LAST_NAME_KEY);
+        return ValueMapUtils.getString(this, LAST_NAME_KEY);
     }
 
     /** Set the name of a user or group. */
@@ -260,7 +261,7 @@ public class Traits extends ValueMap {
     }
 
     public String name() {
-        String name = getString(NAME_KEY);
+        String name = ValueMapUtils.getString(this, NAME_KEY);
         if (Utils.isNullOrEmpty(name)
                 && Utils.isNullOrEmpty(firstName())
                 && Utils.isNullOrEmpty(lastName())) {
@@ -293,7 +294,7 @@ public class Traits extends ValueMap {
     }
 
     public String phone() {
-        return getString(PHONE_KEY);
+        return ValueMapUtils.getString(this, PHONE_KEY);
     }
 
     /**
@@ -305,7 +306,7 @@ public class Traits extends ValueMap {
     }
 
     public String title() {
-        return getString(TITLE_KEY);
+        return ValueMapUtils.getString(this, TITLE_KEY);
     }
 
     /**
@@ -317,7 +318,7 @@ public class Traits extends ValueMap {
     }
 
     public String username() {
-        return getString(USERNAME_KEY);
+        return ValueMapUtils.getString(this, USERNAME_KEY);
     }
 
     /** Set the website of a user or group. */
@@ -326,7 +327,7 @@ public class Traits extends ValueMap {
     }
 
     public String website() {
-        return getString(WEBSITE_KEY);
+        return ValueMapUtils.getString(this, WEBSITE_KEY);
     }
 
     @Override
@@ -363,7 +364,7 @@ public class Traits extends ValueMap {
         }
 
         public String city() {
-            return getString(ADDRESS_CITY_KEY);
+            return ValueMapUtils.getString(this, ADDRESS_CITY_KEY);
         }
 
         public Address putCountry(String country) {
@@ -371,7 +372,7 @@ public class Traits extends ValueMap {
         }
 
         public String country() {
-            return getString(ADDRESS_COUNTRY_KEY);
+            return ValueMapUtils.getString(this, ADDRESS_COUNTRY_KEY);
         }
 
         public Address putPostalCode(String postalCode) {
@@ -379,7 +380,7 @@ public class Traits extends ValueMap {
         }
 
         public String postalCode() {
-            return getString(ADDRESS_POSTAL_CODE_KEY);
+            return ValueMapUtils.getString(this, ADDRESS_POSTAL_CODE_KEY);
         }
 
         public Address putState(String state) {
@@ -387,7 +388,7 @@ public class Traits extends ValueMap {
         }
 
         public String state() {
-            return getString(ADDRESS_STATE_KEY);
+            return ValueMapUtils.getString(this, ADDRESS_STATE_KEY);
         }
 
         public Address putStreet(String street) {
@@ -395,7 +396,7 @@ public class Traits extends ValueMap {
         }
 
         public String street() {
-            return getString(ADDRESS_STREET_KEY);
+            return ValueMapUtils.getString(this, ADDRESS_STREET_KEY);
         }
     }
 }

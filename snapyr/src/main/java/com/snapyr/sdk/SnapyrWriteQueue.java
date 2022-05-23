@@ -32,11 +32,14 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.JsonWriter;
 import android.util.Log;
+
 import androidx.annotation.Nullable;
+
 import com.snapyr.sdk.integrations.BasePayload;
 import com.snapyr.sdk.integrations.Logger;
 import com.snapyr.sdk.internal.Private;
 import com.snapyr.sdk.internal.Utils;
+
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
@@ -391,7 +394,7 @@ class SnapyrWriteQueue {
                                         logger.error(
                                                 e,
                                                 "error handling action: "
-                                                        + action.getString("action"));
+                                                        + ValueMapUtils.getString(action, "action"));
                                     }
                                 }
                             });

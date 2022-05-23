@@ -34,9 +34,12 @@ import static com.snapyr.sdk.internal.Utils.toISO8601String;
 import androidx.annotation.CheckResult;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import com.snapyr.sdk.SnapyrContext;
 import com.snapyr.sdk.ValueMap;
+import com.snapyr.sdk.ValueMapUtils;
 import com.snapyr.sdk.internal.NanoDate;
+
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -88,7 +91,7 @@ public abstract class BasePayload extends ValueMap {
     /** The type of message. */
     @NonNull
     public Type type() {
-        return getEnum(Type.class, TYPE_KEY);
+        return ValueMapUtils.getEnum(this, Type.class, TYPE_KEY);
     }
 
     /**
@@ -97,7 +100,7 @@ public abstract class BasePayload extends ValueMap {
      */
     @Nullable
     public String userId() {
-        return getString(USER_ID_KEY);
+        return ValueMapUtils.getString(this, USER_ID_KEY);
     }
 
     /**
@@ -108,13 +111,13 @@ public abstract class BasePayload extends ValueMap {
      */
     @NonNull
     public String anonymousId() {
-        return getString(ANONYMOUS_ID_KEY);
+        return ValueMapUtils.getString(this, ANONYMOUS_ID_KEY);
     }
 
     /** A randomly generated unique id for this message. */
     @NonNull
     public String messageId() {
-        return getString(MESSAGE_ID);
+        return ValueMapUtils.getString(this, MESSAGE_ID);
     }
 
     /**
@@ -127,7 +130,7 @@ public abstract class BasePayload extends ValueMap {
     @Nullable
     public Date timestamp() {
         // It's unclear if this will ever be null. So we're being safe.
-        String timestamp = getString(TIMESTAMP_KEY);
+        String timestamp = ValueMapUtils.getString(this, TIMESTAMP_KEY);
         if (isNullOrEmpty(timestamp)) {
             return null;
         }
@@ -139,7 +142,7 @@ public abstract class BasePayload extends ValueMap {
      * name that applies when no key for a specific integration is found, and is case-insensitive.
      */
     public ValueMap integrations() {
-        return getValueMap(INTEGRATIONS_KEY);
+        return ValueMapUtils.getValueMap(this, INTEGRATIONS_KEY);
     }
 
     /**
@@ -149,7 +152,8 @@ public abstract class BasePayload extends ValueMap {
      * @see <a href="https://segment.com/docs/spec/common/#context">Context fields</a>
      */
     public SnapyrContext context() {
-        return getValueMap(CONTEXT_KEY, SnapyrContext.class);
+        ValueMap map = ValueMapUtils.getValueMap(this, CONTEXT_KEY);
+        return new SnapyrContext(map);
     }
 
     @Override
@@ -197,7 +201,7 @@ public abstract class BasePayload extends ValueMap {
         }
 
         Builder(BasePayload payload) {
-            String tsStr = payload.getString(TIMESTAMP_KEY);
+            String tsStr = ValueMapUtils.getString(payload, TIMESTAMP_KEY);
             if (tsStr != null
                     && tsStr.length() > 24) { // [yyyy-MM-ddThh:mm:ss.sssZ] format without nanos
                 nanosecondTimestamps = true;
