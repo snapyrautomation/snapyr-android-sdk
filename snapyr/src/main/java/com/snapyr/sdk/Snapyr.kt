@@ -35,28 +35,25 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
-import com.snapyr.sdk.internal.Private
-import com.snapyr.sdk.notifications.SnapyrNotificationLifecycleCallbacks
-import com.snapyr.sdk.notifications.SnapyrNotificationHandler
-import com.snapyr.sdk.internal.PushTemplate
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ProcessLifecycleOwner
 import com.snapyr.sdk.Snapyr
-import com.snapyr.sdk.integrations.IdentifyPayload
-import com.snapyr.sdk.internal.NanoDate
-import com.snapyr.sdk.integrations.GroupPayload
-import com.snapyr.sdk.integrations.TrackPayload
-import com.snapyr.sdk.integrations.ScreenPayload
+import com.snapyr.sdk.Snapyr.Builder
 import com.snapyr.sdk.integrations.AliasPayload
 import com.snapyr.sdk.integrations.BasePayload
-import com.snapyr.sdk.internal.Utils.AnalyticsNetworkExecutorService
-import androidx.lifecycle.ProcessLifecycleOwner
+import com.snapyr.sdk.integrations.GroupPayload
+import com.snapyr.sdk.integrations.IdentifyPayload
 import com.snapyr.sdk.integrations.Logger
+import com.snapyr.sdk.integrations.ScreenPayload
+import com.snapyr.sdk.integrations.TrackPayload
+import com.snapyr.sdk.internal.NanoDate
+import com.snapyr.sdk.internal.Private
+import com.snapyr.sdk.internal.PushTemplate
 import com.snapyr.sdk.internal.Utils
-import java.lang.AssertionError
-import java.lang.Exception
-import java.lang.UnsupportedOperationException
-import java.util.LinkedHashMap
+import com.snapyr.sdk.internal.Utils.AnalyticsNetworkExecutorService
+import com.snapyr.sdk.notifications.SnapyrNotificationHandler
+import com.snapyr.sdk.notifications.SnapyrNotificationLifecycleCallbacks
 import java.util.concurrent.Callable
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.ExecutionException
@@ -131,7 +128,7 @@ class Snapyr internal constructor(
     @Private
     val notificationLifecycleCallbacks: SnapyrNotificationLifecycleCallbacks
 
-    var projectSettings = ProjectSettings(emptyMap())
+    var projectSettings = ProjectSettings()
 
     @Volatile
     var shutdown = false
@@ -163,14 +160,14 @@ class Snapyr internal constructor(
                 // Backup mode - Enable the Snapyr integration and load the provided
                 // defaultProjectSettings
                 if (!defaultProjectSettings.containsKey("integrations")) {
-                    defaultProjectSettings["integrations"] = ValueMap()
+                    defaultProjectSettings["integrations"] = valueMapOf()
                 }
                 if (!defaultProjectSettings
                         .getValueMap("integrations")
                         .containsKey("Snapyr")
                 ) {
                     defaultProjectSettings
-                        .getValueMap("integrations")["Snapyr"] = ValueMap()
+                        .getValueMap("integrations")["Snapyr"] = valueMapOf()
                 }
                 if (!defaultProjectSettings
                         .getValueMap("integrations")
@@ -180,10 +177,10 @@ class Snapyr internal constructor(
                     defaultProjectSettings
                         .getValueMap("integrations")
                         .getValueMap("Snapyr")
-                        .putValue("apiKey", writeKey)
+                        .putValue<ValueMap>("apiKey", writeKey)
                 }
                 if (!defaultProjectSettings.containsKey("metadata")) {
-                    defaultProjectSettings["metadata"] = ValueMap()
+                    defaultProjectSettings["metadata"] = valueMapOf()
                 }
                 if (!defaultProjectSettings
                         .getValueMap("metadata")
@@ -192,7 +189,8 @@ class Snapyr internal constructor(
                     defaultProjectSettings
                         .getValueMap("metadata")["platform"] = "Android"
                 }
-                projectSettings = ProjectSettings.create(defaultProjectSettings)
+
+                projectSettings = ProjectSettings(defaultProjectSettings)
             }
         }
         logger.debug("Created analytics client for project with tag:%s.", tag)
@@ -341,14 +339,14 @@ class Snapyr internal constructor(
         ) { "Either userId or some traits must be provided." }
         val timestamp = NanoDate()
         analyticsExecutor?.submit {
-            val traits = traitsCache.getTraits()
+            val traits = traitsCache.get()?.asTraits()
             if (!Utils.isNullOrEmpty(userId)) {
-                traits.putUserId(userId)
+                traits?.userId = userId
             }
             if (!Utils.isNullOrEmpty(newTraits)) {
-                traits.putAll(newTraits!!)
+                traits?.putAll(newTraits!!)
             }
-            traitsCache.set(traits) // Save the new traits
+            traitsCache.set(traits as Map<*, *>) // Save the new traits
             snapyrContext.setTraits(traits) // Update the references
             val builder = IdentifyPayload.Builder()
                 .timestamp(timestamp)
@@ -572,7 +570,7 @@ class Snapyr internal constructor(
             val builder = AliasPayload.Builder()
                 .timestamp(timestamp)
                 .userId(newId)
-                .previousId(snapyrContext.traits().currentId())
+                .previousId(snapyrContext.traits().currentId()!!)
             fillAndEnqueue(builder, options)
         }
     }
@@ -608,9 +606,9 @@ class Snapyr internal constructor(
         contextCopy.putAll(finalOptions.context())
         contextCopy = contextCopy.unmodifiableCopy()
         builder.context(contextCopy)
-        builder.anonymousId(contextCopy.traits().anonymousId())
+        builder.anonymousId(contextCopy.traits().anonymousId!!)
         builder.nanosecondTimestamps(nanosecondTimestamps)
-        val cachedUserId = contextCopy.traits().userId()
+        val cachedUserId = contextCopy.traits().userId!!
         if (!builder.isUserIdSet && !Utils.isNullOrEmpty(cachedUserId)) {
             // userId is not set, retrieve from cached traits and set for payload
             builder.userId(cachedUserId)
@@ -689,8 +687,9 @@ class Snapyr internal constructor(
         editor.remove(TRAITS_KEY + "-" + tag)
         editor.apply()
         traitsCache.delete()
-        traitsCache.set(Traits.create())
-        snapyrContext.setTraits(traitsCache.getTraits())
+        val traits = Traits()
+        traitsCache.set(traits)
+        snapyrContext.setTraits(traits)
     }
 
     /**
@@ -747,24 +746,19 @@ class Snapyr internal constructor(
                             val map = cartographer.fromJson(
                                 Utils.buffer(connection.`is`)
                             )
+
                             if (!map.containsKey("integrations")) {
-                                map["integrations"] = ValueMap()
-                                    .putValue(
-                                        "Snapyr",
-                                        ValueMap()
-                                            .putValue(
-                                                "apiKey",
-                                                writeKey
-                                            )
+                                map["integrations"] = valueMapOf(
+                                    "Snapyr" to valueMapOf(
+                                        "apiKey" to writeKey,
                                     )
+                                )
                             }
                             if (!map.containsKey("metadata")) {
-                                map["metadata"] = ValueMap()
-                                    .putValue(
-                                        "platform", "Android"
-                                    )
+                                map["metadata"] = emptyValueMap()
+                                    .putValue("platform", "Android")
                             }
-                            return@Callable ProjectSettings.create(map)
+                            return@Callable valueMapOf(map).asProjectSettings()
                         } finally {
                             Utils.closeQuietly(connection)
                         }
@@ -789,11 +783,11 @@ class Snapyr internal constructor(
      */
     @Private
     fun getSettings(force: Boolean): ProjectSettings? {
-        val cachedSettings = projectSettingsCache.getProjectSettings()
+        val cachedSettings = projectSettingsCache.get()?.asProjectSettings()
         if (Utils.isNullOrEmpty(cachedSettings) || force) {
             return downloadSettings()
         }
-        val expirationTime = cachedSettings.timestamp() + settingsRefreshInterval
+        val expirationTime = (cachedSettings?.timestamp ?: 0) + settingsRefreshInterval
         if (expirationTime > System.currentTimeMillis()) {
             return cachedSettings
         }
@@ -879,7 +873,7 @@ class Snapyr internal constructor(
         private var snapyrPush = false
         private var nanosecondTimestamps = false
         private var crypto: Crypto? = null
-        private var defaultProjectSettings = ValueMap()
+        private var defaultProjectSettings = valueMapOf()
         private var useNewLifecycleMethods = true // opt-out feature
         private var snapyrEnvironment = ConnectionFactory.Environment.PROD
 
@@ -1115,11 +1109,11 @@ class Snapyr internal constructor(
             )
             val traitsCache = createTraitsCache(application, cartographer, tag!!)
             if (!traitsCache.isSet() || traitsCache.get() == null) {
-                val traits = Traits.create()
+                val traits = Traits()
                 traitsCache.set(traits)
             }
             val logger = Logger.with(logLevel)
-            val snapyrContext = SnapyrContext.create(application, traitsCache.getTraits(), collectDeviceID)
+            val snapyrContext = SnapyrContext.create(application, traitsCache.get()?.asTraits(), collectDeviceID)
             val advertisingIdLatch = CountDownLatch(1)
             snapyrContext.attachAdvertisingId(application, advertisingIdLatch, logger)
             var executor = executor

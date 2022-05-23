@@ -24,8 +24,11 @@
 package com.snapyr.sdk.sample;
 
 import android.app.Application;
+
+import com.snapyr.sdk.LegacyValueMap;
+import com.snapyr.sdk.ProjectSettings;
 import com.snapyr.sdk.Snapyr;
-import com.snapyr.sdk.ValueMap;
+
 import io.github.inflationx.calligraphy3.CalligraphyConfig;
 import io.github.inflationx.calligraphy3.CalligraphyInterceptor;
 import io.github.inflationx.viewpump.ViewPump;
@@ -58,19 +61,15 @@ public class SampleApp extends Application {
                         .trackApplicationLifecycleEvents()
                         .trackDeepLinks()
                         .defaultProjectSettings(
-                                new ValueMap()
-                                        .putValue(
-                                                "integrations",
-                                                new ValueMap()
-                                                        .putValue(
-                                                                "Snapyr",
-                                                                new ValueMap()
-                                                                        .putValue(
-                                                                                "apiKey",
-                                                                                ANALYTICS_WRITE_KEY)
-                                                                        .putValue(
-                                                                                "trackAttributionData",
-                                                                                true))))
+                                new ProjectSettings()
+                                        .putValue("integrations",
+                                                new LegacyValueMap()
+                                                        .putValue("Snapyr", new LegacyValueMap()
+                                                                .putValue("apiKey", ANALYTICS_WRITE_KEY)
+                                                                .putValue("trackAttributionData", true)
+                                                        )
+                                        )
+                        )
                         .flushQueueSize(1)
                         .enableSnapyrPushHandling()
                         .recordScreenViews();

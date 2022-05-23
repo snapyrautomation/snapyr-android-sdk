@@ -33,7 +33,7 @@ class ValueMapCache(
     }
 
     fun set(map: Map<*, *>) {
-        this.value = valueMapOf(map.filterStringKeys())
+        this.value = valueMapOf(map)
         val json = cartographer.toJson(value)
         preferences.edit().putString(key, json).apply()
     }
@@ -42,38 +42,3 @@ class ValueMapCache(
         preferences.edit().remove(key).apply()
     }
 }
-
-// Utils
-private fun Map<*, *>.filterStringKeys(): Map<String, Any?> {
-    val result = LinkedHashMap<String, Any?>()
-    for (entry in this) {
-        val key = entry.key
-        if (key is String) {
-            result[key] = entry.value
-        }
-    }
-    return result
-}
-
-fun valueMapOf(map: Map<*, *>): ValueMap = ValueMap(map.filterStringKeys())
-
-
-// Traits
-private const val TRAITS_CACHE_PREFIX = "traits-"
-fun createTraitsCache(
-    context: Context,
-    cartographer: Cartographer,
-    tag: String
-) = ValueMapCache(context, cartographer, TRAITS_CACHE_PREFIX + tag, tag)
-
-fun ValueMapCache.getTraits(): Traits = Traits(get())
-
-// ProjectSettings
-private const val PROJECT_SETTINGS_CACHE_KEY_PREFIX = "project-settings-plan-"
-fun createProjectSettingsCache(
-    context: Context,
-    cartographer: Cartographer,
-    tag: String
-) = ValueMapCache(context, cartographer, PROJECT_SETTINGS_CACHE_KEY_PREFIX + tag, tag)
-
-fun ValueMapCache.getProjectSettings(): ProjectSettings = ProjectSettings(get())

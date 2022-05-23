@@ -197,7 +197,7 @@ class SnapyrWriteQueue {
         // false so that the server doesn't send that event as well.
         ValueMap providedIntegrations = original.integrations();
         // Make a copy of the payload so we don't mutate the original.
-        ValueMap payload = new ValueMap();
+        ValueMap payload = new LegacyValueMap();
         payload.putAll(original);
         if (payloadQueue.size() >= MAX_QUEUE_SIZE) {
             synchronized (flushLock) {

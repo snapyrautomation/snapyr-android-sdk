@@ -10,7 +10,7 @@ import org.json.JSONObject
  * Returns the value mapped by `key` if it exists and is a integer or can be coerced to a
  * integer. Returns `defaultValue` otherwise.
  */
-fun ValueMap.getInt(key: String, defaultValue: Int): Int {
+fun ValueMap.getInt(key: String, defaultValue: Int? = null): Int? {
     val value = get(key)
     if (value is Int) {
         return value
@@ -30,7 +30,7 @@ fun ValueMap.getInt(key: String, defaultValue: Int): Int {
  * Returns the value mapped by `key` if it exists and is a long or can be coerced to a
  * long. Returns `defaultValue` otherwise.
  */
-fun ValueMap.getLong(key: String, defaultValue: Long): Long {
+fun ValueMap.getLong(key: String, defaultValue: Long? = null): Long? {
     val value = get(key)
     if (value is Long) {
         return value
@@ -146,6 +146,11 @@ fun <T : Enum<T>?> ValueMap.getEnum(enumType: Class<T>?, key: String): T? {
 fun ValueMap.getValueMap(key: String): ValueMap {
     val value = get(key)
     return checkNotNull(coerceToValueMap(value))
+}
+
+fun ValueMap.getValueMapOrNull(key: String): ValueMap? {
+    val value = get(key)
+    return coerceToValueMap(value)
 }
 
 /**

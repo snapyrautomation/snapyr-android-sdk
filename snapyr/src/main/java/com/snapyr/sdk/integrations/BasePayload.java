@@ -35,6 +35,7 @@ import androidx.annotation.CheckResult;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.snapyr.sdk.LegacyValueMap;
 import com.snapyr.sdk.SnapyrContext;
 import com.snapyr.sdk.ValueMap;
 import com.snapyr.sdk.ValueMapUtils;
@@ -52,7 +53,7 @@ import java.util.UUID;
  */
 // This ignores projectId, receivedAt and version that are set by the server.
 // sentAt is set on SegmentClient#BatchPayload
-public abstract class BasePayload extends ValueMap {
+public abstract class BasePayload extends LegacyValueMap implements ValueMap {
 
     static final String TYPE_KEY = "type";
     static final String ANONYMOUS_ID_KEY = "anonymousId";
@@ -154,12 +155,6 @@ public abstract class BasePayload extends ValueMap {
     public SnapyrContext context() {
         ValueMap map = ValueMapUtils.getValueMap(this, CONTEXT_KEY);
         return new SnapyrContext(map);
-    }
-
-    @Override
-    public BasePayload putValue(String key, Object value) {
-        super.putValue(key, value);
-        return this;
     }
 
     @NonNull

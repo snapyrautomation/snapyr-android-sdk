@@ -24,7 +24,8 @@
 package com.snapyr.sdk
 
 /**
- * A class that wraps an existing [Map] to expose value type functionality. All [ ] methods will simply be forwarded to a delegate map. This class is meant to
+ * A class that wraps an existing [Map] to expose value type functionality.
+ * All [ ] methods will simply be forwarded to a delegate map. This class is meant to
  * subclassed and provide methods to access values in keys.
  *
  *
@@ -36,10 +37,32 @@ package com.snapyr.sdk
  * serialization. You should use one of the coercion methods instead to get objects of a concrete
  * type.
  */
-open class ValueMap(map: Map<String, Any?> = emptyMap()) : MutableMap<String, Any?> by map.toMutableMap() {
+interface ValueMap : MutableMap<String, Any?> {
     /** Helper method to be able to chain put methods.  */
-    open fun putValue(key: String, value: Any): ValueMap {
+    open fun <T : ValueMap> putValue(key: String, value: Any): T {
         this[key] = value
-        return this
+        return this as T
     }
 }
+
+open class LegacyValueMap(var map: Map<String, Any?> = emptyMap()) : ValueMap,
+    MutableMap<String, Any?> by map.toMutableMap()
+
+// Utils
+private fun Map<*, *>.filterStringKeys(): Map<String, Any?> {
+    val result = LinkedHashMap<String, Any?>()
+    for (entry in this) {
+        val key = entry.key
+        if (key is String) {
+            result[key] = entry.value
+        }
+    }
+    return result
+}
+
+fun valueMapOf(map: Map<*, *> = emptyMap<String, Any?>()): ValueMap = LegacyValueMap(map.filterStringKeys())
+
+fun <V> valueMapOf(vararg pairs: Pair<String, V?>): Map<String, V?> =
+    if (pairs.isNotEmpty()) pairs.toMap(LinkedHashMap(pairs.size)) else emptyMap()
+
+fun emptyValueMap(): ValueMap = valueMapOf(emptyMap<String, Any?>())

@@ -39,7 +39,7 @@ import java.util.Map;
  * <p>Just like traits, we also accept some properties with semantic meaning, and you should only
  * ever use these property names for that purpose.
  */
-public class Properties extends ValueMap {
+public class Properties extends LegacyValueMap {
 
     // Common Properties
     private static final String REVENUE_KEY = "revenue";
@@ -386,7 +386,7 @@ public class Properties extends ValueMap {
      * you have only one product, {@link Properties} has methods on it directly to attach this
      * information.
      */
-    public static class Product extends ValueMap {
+    public static class Product extends LegacyValueMap {
 
         private static final String ID_KEY = "id";
         private static final String SKU_KEY = "sku";

@@ -105,10 +105,10 @@ class MainActivity : AppCompatActivity() {
                 Snapyr.with(this).identify(userId)
             }
             if (!isNullOrEmpty(name)) {
-                Snapyr.with(this).identify(Traits().putName(name))
+                Snapyr.with(this).identify(Traits().apply { this.name = name })
             }
             if (!isNullOrEmpty(email)) {
-                Snapyr.with(this).identify(Traits().putEmail(email))
+                Snapyr.with(this).identify(Traits().apply { this.email = email })
             }
 
             Toast.makeText(this, "Identification acknowledged", Toast.LENGTH_SHORT).show()
