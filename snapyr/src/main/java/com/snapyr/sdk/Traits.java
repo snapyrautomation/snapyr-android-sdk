@@ -70,7 +70,6 @@ public class Traits extends ValueMap {
     // Address
     private static final String ADDRESS_KEY = "address";
 
-    /** For deserialization from disk by {@link Traits.Cache}. */
     @Private
     Traits(Map<String, Object> delegate) {
         super(delegate);
@@ -397,24 +396,6 @@ public class Traits extends ValueMap {
 
         public String street() {
             return getString(ADDRESS_STREET_KEY);
-        }
-    }
-
-    static class Cache extends ValueMap.Cache<Traits> {
-
-        // todo: remove. This is legacy behaviour from before we started namespacing the entire
-        // shared
-        // preferences object and were namespacing keys instead.
-        private static final String TRAITS_CACHE_PREFIX = "traits-";
-
-        Cache(Context context, Cartographer cartographer, String tag) {
-            super(context, cartographer, TRAITS_CACHE_PREFIX + tag, tag, Traits.class);
-        }
-
-        @Override
-        public Traits create(Map<String, Object> map) {
-            // Analytics client can be called on any thread, so this instance should be thread safe.
-            return new Traits(new Utils.NullableConcurrentHashMap<>(map));
         }
     }
 }

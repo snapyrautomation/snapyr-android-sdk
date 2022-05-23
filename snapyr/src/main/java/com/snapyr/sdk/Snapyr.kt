@@ -91,7 +91,7 @@ class Snapyr internal constructor(
     val networkExecutor: ExecutorService,
     val stats: Stats,
     // TODO (major version change) hide internals (don't give out working copy), expose a better
-    @field:Private val traitsCache: Traits.Cache,
+    @field:Private val traitsCache: ValueMapCache,
     /** Get the [SnapyrContext] used by this instance.  */
     @field:Private val snapyrContext: SnapyrContext,
     @field:Private val defaultOptions: Options,
@@ -105,7 +105,7 @@ class Snapyr internal constructor(
     val tag: String?,
     val client: Client,
     val cartographer: Cartographer,
-    private val projectSettingsCache: ProjectSettings.Cache,
+    private val projectSettingsCache: ValueMapCache,
     @field:Private val writeKey: String?,
     val flushQueueSize: Int,
     val flushIntervalInMillis: Long,
@@ -340,8 +340,8 @@ class Snapyr internal constructor(
             ))
         ) { "Either userId or some traits must be provided." }
         val timestamp = NanoDate()
-        analyticsExecutor!!.submit {
-            val traits = traitsCache.get()
+        analyticsExecutor?.submit {
+            val traits = traitsCache.getTraits()
             if (!Utils.isNullOrEmpty(userId)) {
                 traits.putUserId(userId)
             }
@@ -352,7 +352,7 @@ class Snapyr internal constructor(
             snapyrContext.setTraits(traits) // Update the references
             val builder = IdentifyPayload.Builder()
                 .timestamp(timestamp)
-                .traits(traitsCache.get())
+                .traits(traits)
             fillAndEnqueue(builder, options)
         }
         if (pushToken != null) {
@@ -526,8 +526,7 @@ class Snapyr internal constructor(
         require(!Utils.isNullOrEmpty(event)) { "event must not be null or empty." }
         val timestamp = NanoDate()
         analyticsExecutor!!.submit {
-            val finalProperties: Properties
-            finalProperties = properties ?: EMPTY_PROPERTIES
+            val finalProperties: Properties = properties ?: EMPTY_PROPERTIES
             val builder = TrackPayload.Builder()
                 .timestamp(timestamp)
                 .event(event)
@@ -691,7 +690,7 @@ class Snapyr internal constructor(
         editor.apply()
         traitsCache.delete()
         traitsCache.set(Traits.create())
-        snapyrContext.setTraits(traitsCache.get())
+        snapyrContext.setTraits(traitsCache.getTraits())
     }
 
     /**
@@ -790,7 +789,7 @@ class Snapyr internal constructor(
      */
     @Private
     fun getSettings(force: Boolean): ProjectSettings? {
-        val cachedSettings = projectSettingsCache.get()
+        val cachedSettings = projectSettingsCache.getProjectSettings()
         if (Utils.isNullOrEmpty(cachedSettings) || force) {
             return downloadSettings()
         }
@@ -862,7 +861,7 @@ class Snapyr internal constructor(
 
     /** Fluent API for creating [Snapyr] instances.  */
     class Builder(context: Context?, writeKey: String?) {
-        private val application: Application?
+        private val application: Application
         private val writeKey: String?
         private var collectDeviceID = Utils.DEFAULT_COLLECT_DEVICE_ID
         private var flushQueueSize = Utils.DEFAULT_FLUSH_QUEUE_SIZE
@@ -888,8 +887,7 @@ class Snapyr internal constructor(
         init {
             requireNotNull(context) { "Context must not be null." }
             require(Utils.hasPermission(context, Manifest.permission.INTERNET)) { "INTERNET permission is required." }
-            application = context.applicationContext as? Application
-            requireNotNull(application) { "Application context must not be null." }
+            application = requireNotNull(context.applicationContext as? Application) { "Application context must not be null." }
             require(!Utils.isNullOrEmpty(writeKey)) { "writeKey must not be null or empty." }
             this.writeKey = writeKey
         }
@@ -1109,19 +1107,19 @@ class Snapyr internal constructor(
             val stats = Stats()
             val cartographer = Cartographer.INSTANCE
             val client = Client(writeKey, connectionFactory)
-            val projectSettingsCache = ProjectSettings.Cache(application, cartographer, tag)
+            val projectSettingsCache = createProjectSettingsCache(application, cartographer, tag!!)
             val optOut = BooleanPreference(
                 Utils.getSnapyrSharedPreferences(application, tag),
                 OPT_OUT_PREFERENCE_KEY,
                 false
             )
-            val traitsCache = Traits.Cache(application, cartographer, tag)
-            if (!traitsCache.isSet || traitsCache.get() == null) {
+            val traitsCache = createTraitsCache(application, cartographer, tag!!)
+            if (!traitsCache.isSet() || traitsCache.get() == null) {
                 val traits = Traits.create()
                 traitsCache.set(traits)
             }
             val logger = Logger.with(logLevel)
-            val snapyrContext = SnapyrContext.create(application, traitsCache.get(), collectDeviceID)
+            val snapyrContext = SnapyrContext.create(application, traitsCache.getTraits(), collectDeviceID)
             val advertisingIdLatch = CountDownLatch(1)
             snapyrContext.attachAdvertisingId(application, advertisingIdLatch, logger)
             var executor = executor
