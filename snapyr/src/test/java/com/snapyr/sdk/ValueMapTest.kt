@@ -54,16 +54,6 @@ class ValueMapTest {
 
     @Test
     @Throws(Exception::class)
-    fun disallowsNullMap() {
-        try {
-            ValueMap(null)
-            fail("Null Map should throw exception.")
-        } catch (ignored: IllegalArgumentException) {
-        }
-    }
-
-    @Test
-    @Throws(Exception::class)
     fun emptyMap() {
         assertThat(valueMap).hasSize(0).isEmpty()
     }
@@ -146,7 +136,6 @@ class ValueMapTest {
 
     @Test
     fun allowsNullValues() {
-        valueMap[null] = "foo"
         valueMap["foo"] = null
     }
 
@@ -366,9 +355,9 @@ class ValueMapTest {
         }
     }
 
-    class MixpanelSettings(delegate: Map<String, Any>) : ValueMap(delegate)
+    class MixpanelSettings(delegate: Map<String, Any?>) : ValueMap(delegate)
 
-    class AmplitudeSettings(delegate: Map<String, Any>) : ValueMap(delegate) {
+    class AmplitudeSettings(delegate: Map<String, Any?>) : ValueMap(delegate) {
         init {
             throw AssertionError("string constructors must not be called when deserializing")
         }
