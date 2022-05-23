@@ -140,21 +140,6 @@ fun <T : Enum<T>?> ValueMap.getEnum(enumType: Class<T>?, key: String): T? {
 }
 
 /**
- * Returns the value mapped by `key` if it exists and is a [ValueMap]. Returns null
- * otherwise.
- */
-fun ValueMap.getValueMap(key: Any?): ValueMap? {
-    val value = get(key)
-    return if (value is ValueMap) {
-        value
-    } else if (value is Map<*, *>) {
-        ValueMap(value as Map<String?, Any?>)
-    } else {
-        null
-    }
-}
-
-/**
  * Returns the value mapped by `key` if it exists and if it can be coerced to the given
  * type. The expected subclass MUST have a constructor that accepts a [Map].
  */

@@ -106,7 +106,7 @@ class Snapyr internal constructor(
     val client: Client,
     val cartographer: Cartographer,
     private val projectSettingsCache: ValueMapCache,
-    @field:Private val writeKey: String?,
+    @field:Private val writeKey: String,
     val flushQueueSize: Int,
     val flushIntervalInMillis: Long,
     private val analyticsExecutor: ExecutorService?,
@@ -860,9 +860,9 @@ class Snapyr internal constructor(
     }
 
     /** Fluent API for creating [Snapyr] instances.  */
-    class Builder(context: Context?, writeKey: String?) {
+    class Builder(context: Context, writeKey: String) {
         private val application: Application
-        private val writeKey: String?
+        private val writeKey: String
         private var collectDeviceID = Utils.DEFAULT_COLLECT_DEVICE_ID
         private var flushQueueSize = Utils.DEFAULT_FLUSH_QUEUE_SIZE
         private var flushIntervalInMillis = Utils.DEFAULT_FLUSH_INTERVAL.toLong()

@@ -23,6 +23,9 @@
  */
 package com.snapyr.sdk;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.snapyr.sdk.internal.Utils;
 
 import java.util.ArrayList;
@@ -65,17 +68,13 @@ public class Properties extends ValueMap {
 
     public Properties() {}
 
-    public Properties(int initialCapacity) {
-        super(initialCapacity);
-    }
-
     // For deserialization
     public Properties(Map<String, Object> delegate) {
         super(delegate);
     }
 
     @Override
-    public Properties putValue(String key, Object value) {
+    public Properties putValue(@NonNull String key, @Nullable Object value) {
         super.putValue(key, value);
         return this;
     }

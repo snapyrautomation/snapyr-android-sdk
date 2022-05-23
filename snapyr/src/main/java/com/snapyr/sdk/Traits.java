@@ -78,10 +78,6 @@ public class Traits extends ValueMap {
     // Public Constructor
     public Traits() {}
 
-    public Traits(int initialCapacity) {
-        super(initialCapacity);
-    }
-
     /**
      * Create a new Traits instance with an anonymous ID. Analytics client can be called on any
      * thread, so this instance is thread safe.
