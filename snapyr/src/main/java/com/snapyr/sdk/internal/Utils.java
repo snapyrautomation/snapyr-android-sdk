@@ -426,6 +426,7 @@ public final class Utils {
      * {@code null} values like the {@link JSONObject} map constructor, it cleans them up and
      * correctly converts them to {@link JSONObject#NULL}.
      */
+    @NonNull
     public static JSONObject toJsonObject(Map<String, ?> map) {
         JSONObject jsonObject = new JSONObject();
         for (Map.Entry<String, ?> entry : map.entrySet()) {
