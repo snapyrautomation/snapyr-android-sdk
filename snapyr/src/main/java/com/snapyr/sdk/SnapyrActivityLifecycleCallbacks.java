@@ -38,7 +38,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-class SnapyrActivityLifecycleCallbacks
+public class SnapyrActivityLifecycleCallbacks
         implements Application.ActivityLifecycleCallbacks, DefaultLifecycleObserver {
     // This is just a stub LifecycleOwner which is used when we need to call some lifecycle
     // methods without going through the actual lifecycle callbacks

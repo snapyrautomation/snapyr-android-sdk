@@ -29,7 +29,7 @@ import android.content.Context;
 import com.snapyr.sdk.internal.Private;
 import java.util.Map;
 
-class ProjectSettings extends ValueMap {
+public class ProjectSettings extends ValueMap {
 
     private static final String TIMESTAMP_KEY = "timestamp";
     private static final String PLAN_KEY = "plan";
