@@ -7,6 +7,26 @@ import com.snapyr.sdk.internal.Utils
 import org.json.JSONObject
 
 /**
+ * Returns the value mapped by `key` if it exists and is a integer or can be coerced to a
+ * integer. Returns `defaultValue` otherwise.
+ */
+fun ValueMap.getInt(key: String, defaultValue: Int): Int {
+    val value = get(key)
+    if (value is Int) {
+        return value
+    }
+    if (value is Number) {
+        return value.toInt()
+    } else if (value is String) {
+        try {
+            return Integer.valueOf(value)
+        } catch (ignored: java.lang.NumberFormatException) {
+        }
+    }
+    return defaultValue
+}
+
+/**
  * Returns the value mapped by `key` if it exists and is a long or can be coerced to a
  * long. Returns `defaultValue` otherwise.
  */

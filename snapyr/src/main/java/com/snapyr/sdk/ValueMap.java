@@ -23,19 +23,10 @@
  */
 package com.snapyr.sdk;
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import com.snapyr.sdk.internal.Utils;
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.json.JSONObject;
 
 /**
  * A class that wraps an existing {@link Map} to expose value type functionality. All {@link
@@ -66,21 +57,6 @@ public class ValueMap implements Map<String, Object> {
             throw new IllegalArgumentException("Map must not be null.");
         }
         this.delegate = map;
-    }
-
-    /**
-     * Uses reflection to create an instance of a subclass of {@link ValueMap}. The subclass
-     * <b>must</b> declare a map constructor.
-     */
-    static <T extends ValueMap> T createValueMap(Map map, Class<T> clazz) {
-        try {
-            Constructor<T> constructor = clazz.getDeclaredConstructor(Map.class);
-            constructor.setAccessible(true);
-            return constructor.newInstance(map);
-        } catch (Exception e) {
-            throw new AssertionError(
-                    "Could not create instance of " + clazz.getCanonicalName() + ".\n" + e);
-        }
     }
 
     @Override
@@ -163,26 +139,6 @@ public class ValueMap implements Map<String, Object> {
     public ValueMap putValue(String key, Object value) {
         delegate.put(key, value);
         return this;
-    }
-
-    /**
-     * Returns the value mapped by {@code key} if it exists and is a integer or can be coerced to a
-     * integer. Returns {@code defaultValue} otherwise.
-     */
-    public int getInt(String key, int defaultValue) {
-        Object value = get(key);
-        if (value instanceof Integer) {
-            return (int) value;
-        }
-        if (value instanceof Number) {
-            return ((Number) value).intValue();
-        } else if (value instanceof String) {
-            try {
-                return Integer.valueOf((String) value);
-            } catch (NumberFormatException ignored) {
-            }
-        }
-        return defaultValue;
     }
 
 }

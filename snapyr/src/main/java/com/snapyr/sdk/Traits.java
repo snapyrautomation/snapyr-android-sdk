@@ -142,7 +142,7 @@ public class Traits extends ValueMap {
     }
 
     public int age() {
-        return getInt(AGE_KEY, 0);
+        return ValueMapUtils.getInt(this, AGE_KEY, 0);
     }
 
     /** Set a URL to an avatar image for the user or group. */
