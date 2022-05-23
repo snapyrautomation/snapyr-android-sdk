@@ -1,7 +1,7 @@
 apply from: rootProject.file('gradle/versioning.gradle')
 
 buildscript {
-    ext.kotlin_version = '1.4.0'
+    ext.kotlin_version = '1.6.20'
     repositories {
         mavenCentral()
         google()
