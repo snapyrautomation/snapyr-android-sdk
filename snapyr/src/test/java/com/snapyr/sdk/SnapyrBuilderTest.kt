@@ -30,7 +30,6 @@ import android.content.pm.PackageManager.PERMISSION_DENIED
 import android.content.res.Resources
 import com.nhaarman.mockitokotlin2.whenever
 import com.snapyr.sdk.Snapyr.Builder
-import com.snapyr.sdk.Snapyr.WRITE_KEY_RESOURCE_IDENTIFIER
 import com.snapyr.sdk.core.BuildConfig
 import java.util.concurrent.TimeUnit
 import org.assertj.core.api.Assertions.assertThat
@@ -235,7 +234,7 @@ class SnapyrBuilderTest {
         whenever(context.resources).thenReturn(resources)
         whenever(
             resources.getIdentifier(
-                eq(WRITE_KEY_RESOURCE_IDENTIFIER),
+                eq(Snapyr.WRITE_KEY_RESOURCE_IDENTIFIER),
                 eq("string"),
                 eq("string")
             )
@@ -249,7 +248,7 @@ class SnapyrBuilderTest {
         try {
             Builder(context, "foo").defaultProjectSettings(null)
             fail("Null defaultProjectSettings should throw exception.")
-        } catch (expected: NullPointerException) {
+        } catch (expected: IllegalArgumentException) {
             assertThat(expected).hasMessage("defaultProjectSettings == null")
         }
     }

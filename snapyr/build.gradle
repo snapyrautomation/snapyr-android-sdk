@@ -1,6 +1,7 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'com.getkeepsafe.dexcount'
+apply plugin: 'kotlin-android-extensions'
 
 apply from: rootProject.file('gradle/android.gradle')
 
@@ -13,6 +14,9 @@ android {
 
 dependencies {
 	api rootProject.ext.deps.supportAnnotations
+
+	implementation "androidx.core:core-ktx:1.3.2"
+	implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
 	testImplementation fileTree(dir: 'libs', include: ['*.jar'])
 	testImplementation files('libs/objenesis-2.6.jar')
@@ -39,8 +43,6 @@ dependencies {
 	testImplementation group: 'net.bytebuddy', name: 'byte-buddy', version: '1.9.0'
 	testImplementation group: 'net.bytebuddy', name: 'byte-buddy-agent', version: '1.9.0'
 	testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0"
-	implementation "androidx.core:core-ktx:1.3.1"
-	implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }
 
 apply from: rootProject.file('gradle/mvn-publish.gradle')

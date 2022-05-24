@@ -29,8 +29,12 @@ import static com.snapyr.sdk.internal.Utils.isNullOrEmpty;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import com.snapyr.sdk.Properties;
+import com.snapyr.sdk.ValueMap;
+import com.snapyr.sdk.ValueMapUtils;
 import com.snapyr.sdk.internal.Private;
+
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -71,7 +75,7 @@ public class TrackPayload extends BasePayload {
      */
     @NonNull
     public String event() {
-        return getString(EVENT_KEY);
+        return ValueMapUtils.getString(this, EVENT_KEY);
     }
 
     /**
@@ -81,7 +85,8 @@ public class TrackPayload extends BasePayload {
      */
     @NonNull
     public Properties properties() {
-        return getValueMap(PROPERTIES_KEY, Properties.class);
+        ValueMap map = ValueMapUtils.getValueMap(this, PROPERTIES_KEY);
+        return new Properties(map);
     }
 
     @Override

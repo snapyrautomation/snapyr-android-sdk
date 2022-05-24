@@ -27,7 +27,10 @@ import static com.snapyr.sdk.internal.Utils.assertNotNullOrEmpty;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import com.snapyr.sdk.ValueMapUtils;
 import com.snapyr.sdk.internal.Private;
+
 import java.util.Date;
 import java.util.Map;
 
@@ -62,7 +65,7 @@ public class AliasPayload extends BasePayload {
      * with as their user ID, or the anonymous ID if you haven't identified the user yet.
      */
     public String previousId() {
-        return getString(PREVIOUS_ID_KEY);
+        return ValueMapUtils.getString(this, PREVIOUS_ID_KEY);
     }
 
     @Override

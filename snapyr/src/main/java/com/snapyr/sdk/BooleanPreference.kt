@@ -21,26 +21,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.snapyr.sdk;
+package com.snapyr.sdk
 
-import android.content.SharedPreferences;
+import android.content.SharedPreferences
 
-public class BooleanPreference {
-    private final SharedPreferences preferences;
-    private final String key;
-    private final boolean defaultValue;
-
-    public BooleanPreference(SharedPreferences preferences, String key, boolean defaultValue) {
-        this.preferences = preferences;
-        this.key = key;
-        this.defaultValue = defaultValue;
+class BooleanPreference(
+    private val preferences: SharedPreferences,
+    private val key: String,
+    private val defaultValue: Boolean
+) {
+    fun get(): Boolean {
+        return preferences.getBoolean(key, defaultValue)
     }
 
-    public boolean get() {
-        return preferences.getBoolean(key, defaultValue);
-    }
-
-    public void set(boolean value) {
-        preferences.edit().putBoolean(key, value).apply();
+    fun set(value: Boolean) {
+        preferences.edit().putBoolean(key, value).apply()
     }
 }

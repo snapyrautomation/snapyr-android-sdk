@@ -54,16 +54,6 @@ class ValueMapTest {
 
     @Test
     @Throws(Exception::class)
-    fun disallowsNullMap() {
-        try {
-            ValueMap(null)
-            fail("Null Map should throw exception.")
-        } catch (ignored: IllegalArgumentException) {
-        }
-    }
-
-    @Test
-    @Throws(Exception::class)
     fun emptyMap() {
         assertThat(valueMap).hasSize(0).isEmpty()
     }
@@ -146,7 +136,6 @@ class ValueMapTest {
 
     @Test
     fun allowsNullValues() {
-        valueMap[null] = "foo"
         valueMap["foo"] = null
     }
 
@@ -337,13 +326,13 @@ class ValueMapTest {
     @Test
     fun getValueMapWithClass() {
         valueMap["foo"] = "not a map"
-        assertThat(valueMap.getValueMap("foo", Traits::class.java)).isNull()
+        assertThat(valueMap.getValueMap("foo")).isNull()
     }
 
     @Test
     fun getList() {
         valueMap["foo"] = "not a list"
-        assertThat(valueMap.getList("foo", Traits::class.java)).isNull()
+        assertThat(valueMap.getList("foo")).isNull()
     }
 
     @Test
@@ -361,22 +350,20 @@ class ValueMapTest {
 
     class Settings : ValueMap() {
         class Settings(map: Map<String, Any>) : ValueMap(map) {
-
-            fun getAmplitudeSettings(): AmplitudeSettings {
-                return getValueMap("Amplitude", AmplitudeSettings::class.java)
-            }
-
-            fun getMixpanelSettings(): MixpanelSettings {
-                return getValueMap("Mixpanel", MixpanelSettings::class.java)
-            }
+            fun getAmplitudeSettings(): AmplitudeSettings = getValueMap("Amplitude").toAmplitudeSettings()
+            fun getMixpanelSettings(): MixpanelSettings = getValueMap("Mixpanel").toMixpanelSettings()
         }
     }
 
-    class MixpanelSettings(delegate: Map<String, Any>) : ValueMap(delegate)
+    class MixpanelSettings(delegate: Map<String, Any?>) : ValueMap(delegate)
 
-    class AmplitudeSettings : ValueMap() {
+    class AmplitudeSettings(delegate: Map<String, Any?>) : ValueMap(delegate) {
         init {
             throw AssertionError("string constructors must not be called when deserializing")
         }
     }
 }
+
+private fun ValueMap.toAmplitudeSettings() = ValueMapTest.AmplitudeSettings(this)
+
+private fun ValueMap.toMixpanelSettings() = ValueMapTest.MixpanelSettings(this)

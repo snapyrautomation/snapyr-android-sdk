@@ -34,19 +34,17 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE)
 class ValueMapCacheTest {
-    private lateinit var traitsCache: ValueMap.Cache<Traits>
+    private lateinit var traitsCache: ValueMapCache
     private lateinit var cartographer: Cartographer
 
     @Before
     fun setUp() {
         cartographer = Cartographer.INSTANCE
         traitsCache =
-            ValueMap.Cache<Traits>(
+            createTraitsCache(
                 RuntimeEnvironment.application,
                 cartographer,
                 "traits-cache-test",
-                "tag",
-                Traits::class.java
             )
         traitsCache.delete()
         assertThat(traitsCache.get()).isNullOrEmpty()
@@ -63,18 +61,16 @@ class ValueMapCacheTest {
     @Test
     @Throws(Exception::class)
     fun cacheWithSameKeyHasSameValue() {
-        assertThat(traitsCache.isSet).isFalse
+        assertThat(traitsCache.isSet()).isFalse
         val traits = Traits().putValue("foo", "bar")
         traitsCache.set(traits)
 
         val traitsCacheDuplicate =
-            ValueMap.Cache<Traits>(
+            createTraitsCache(
                 RuntimeEnvironment.application,
                 cartographer,
                 "traits-cache-test",
-                "tag",
-                Traits::class.java
             )
-        assertThat(traitsCacheDuplicate.isSet).isTrue
+        assertThat(traitsCacheDuplicate.isSet()).isTrue
     }
 }

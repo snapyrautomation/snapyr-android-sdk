@@ -28,8 +28,12 @@ import static com.snapyr.sdk.internal.Utils.isNullOrEmpty;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import com.snapyr.sdk.Properties;
+import com.snapyr.sdk.ValueMap;
+import com.snapyr.sdk.ValueMapUtils;
 import com.snapyr.sdk.internal.Private;
+
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -75,13 +79,13 @@ public class ScreenPayload extends BasePayload {
     @Nullable
     @Deprecated
     public String category() {
-        return getString(CATEGORY_KEY);
+        return ValueMapUtils.getString(this, CATEGORY_KEY);
     }
 
     /** The name of the page or screen. We recommend using title case, like "About". */
     @Nullable
     public String name() {
-        return getString(NAME_KEY);
+        return ValueMapUtils.getString(this, NAME_KEY);
     }
 
     /** Either the name or category of the screen payload. */
@@ -97,7 +101,8 @@ public class ScreenPayload extends BasePayload {
     /** The page and screen methods also take a properties dictionary, just like track. */
     @NonNull
     public Properties properties() {
-        return getValueMap(PROPERTIES_KEY, Properties.class);
+        ValueMap map = ValueMapUtils.getValueMap(this, PROPERTIES_KEY);
+        return new Properties(map);
     }
 
     @Override

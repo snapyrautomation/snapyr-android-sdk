@@ -25,21 +25,26 @@ package com.snapyr.sdk.notifications;
 
 import android.os.Build;
 import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+import com.snapyr.sdk.LegacyValueMap;
 import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.ValueMap;
 import com.snapyr.sdk.internal.PushTemplate;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class SnapyrFirebaseMessagingService extends FirebaseMessagingService {
     private SnapyrNotificationListener activityHandler;
@@ -75,7 +80,7 @@ public class SnapyrFirebaseMessagingService extends FirebaseMessagingService {
             return;
         }
 
-        ValueMap data = new ValueMap();
+        ValueMap data = new LegacyValueMap();
 
         for (Iterator<String> it = jsonData.keys(); it.hasNext(); ) {
             String key = it.next();

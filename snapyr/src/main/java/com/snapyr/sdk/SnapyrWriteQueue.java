@@ -32,11 +32,14 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.JsonWriter;
 import android.util.Log;
+
 import androidx.annotation.Nullable;
+
 import com.snapyr.sdk.integrations.BasePayload;
 import com.snapyr.sdk.integrations.Logger;
 import com.snapyr.sdk.internal.Private;
 import com.snapyr.sdk.internal.Utils;
+
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
@@ -194,7 +197,7 @@ class SnapyrWriteQueue {
         // false so that the server doesn't send that event as well.
         ValueMap providedIntegrations = original.integrations();
         // Make a copy of the payload so we don't mutate the original.
-        ValueMap payload = new ValueMap();
+        ValueMap payload = new LegacyValueMap();
         payload.putAll(original);
         if (payloadQueue.size() >= MAX_QUEUE_SIZE) {
             synchronized (flushLock) {
@@ -391,7 +394,7 @@ class SnapyrWriteQueue {
                                         logger.error(
                                                 e,
                                                 "error handling action: "
-                                                        + action.getString("action"));
+                                                        + ValueMapUtils.getString(action, "action"));
                                     }
                                 }
                             });

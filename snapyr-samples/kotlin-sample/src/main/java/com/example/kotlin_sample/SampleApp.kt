@@ -24,12 +24,9 @@
 package com.example.kotlin_sample
 
 import android.app.Application
-import android.util.Log
-import android.widget.Toast
+import com.snapyr.sdk.LegacyValueMap
 import com.snapyr.sdk.Snapyr
 import com.snapyr.sdk.ValueMap
-import com.snapyr.sdk.integrations.BasePayload
-import com.snapyr.sdk.integrations.TrackPayload
 import io.github.inflationx.calligraphy3.CalligraphyConfig
 import io.github.inflationx.calligraphy3.CalligraphyInterceptor
 import io.github.inflationx.viewpump.ViewPump
@@ -59,14 +56,14 @@ class SampleApp : Application() {
             .trackApplicationLifecycleEvents()
             .logLevel(Snapyr.LogLevel.DEBUG)
             .defaultProjectSettings(
-                ValueMap()
+                LegacyValueMap()
                     .putValue(
                         "integrations",
-                        ValueMap()
+                        LegacyValueMap()
                             .putValue(
                                 "adjust",
-                                ValueMap()
-                                    .putValue("appToken", "<>")
+                                LegacyValueMap()
+                                    .putValue<ValueMap>("appToken", "<>")
                                     .putValue(
                                         "trackAttributionData",
                                         true

@@ -32,12 +32,14 @@ public final class Utils {
 
     /** Create a {@link Traits} with only a randomly generated anonymous ID. */
     public static Traits createTraits() {
-        return Traits.create();
+        return new Traits();
     }
 
     /** Create a {@link Traits} object with the given {@code userId}. */
     public static Traits createTraits(String userId) {
-        return createTraits().putUserId(userId);
+        Traits traits = createTraits();
+        traits.setUserId(userId);
+        return traits;
     }
 
     /** Create an {@link SnapyrContext} with the given {@code traits}. */

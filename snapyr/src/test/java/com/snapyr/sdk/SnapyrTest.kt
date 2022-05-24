@@ -105,7 +105,7 @@ open class SnapyrTest {
             """.trimMargin()
 
     @Mock
-    private lateinit var traitsCache: Traits.Cache
+    private lateinit var traitsCache: ValueMapCache
 
     @Spy
     private lateinit var networkExecutor: AnalyticsNetworkExecutorService
@@ -120,7 +120,7 @@ open class SnapyrTest {
     private lateinit var stats: Stats
 
     @Mock
-    private lateinit var projectSettingsCache: ProjectSettings.Cache
+    private lateinit var projectSettingsCache: ValueMapCache
 
     @Mock
     lateinit var lifecycle: Lifecycle
