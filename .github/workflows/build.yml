@@ -27,5 +27,4 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_DEV_S3_SAMPLE_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_DEV_S3_SAMPLE_ACCESS_KEY }}
           aws-region: us-east-1
-
-      - run: aws s3 cp snapyr/build/outputs/aar s3://sample-apps.snapyrdev.com/android/ --acl public-read
+      - run: aws s3 cp snapyr/build/outputs/aar s3://sample-apps.snapyrdev.com/android/  --recursive --acl public-read
