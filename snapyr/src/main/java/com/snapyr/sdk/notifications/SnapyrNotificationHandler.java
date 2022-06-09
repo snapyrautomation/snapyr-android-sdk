@@ -23,6 +23,8 @@
  */
 package com.snapyr.sdk.notifications;
 
+import static com.snapyr.sdk.internal.Utils.isNullOrEmpty;
+
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.PendingIntent;
@@ -160,7 +162,7 @@ public class SnapyrNotificationHandler {
         // TODO (@paulwsmith): move off-thread? (maybe not necessary; not part of main thread
         // anyway)
         String imageUrl = (String) data.get(NOTIF_IMAGE_URL_KEY);
-        if (imageUrl != null) {
+        if (!isNullOrEmpty(imageUrl)) {
             InputStream inputStream = null;
             Bitmap image = null;
             try {
