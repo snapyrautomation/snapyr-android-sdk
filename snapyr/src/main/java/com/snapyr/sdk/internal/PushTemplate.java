@@ -79,10 +79,9 @@ public class PushTemplate {
         this.buttons = new ArrayList<>();
 
         ArrayList<Map<String, Object>> buttonsRaw = (ArrayList) src.get("actions");
-        buttonsRaw.forEach(
-                (v) -> {
-                    this.buttons.add(new ActionButton(v));
-                });
+        for (Map<String, Object> v : buttonsRaw) {
+            this.buttons.add(new ActionButton(v));
+        }
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -91,11 +90,10 @@ public class PushTemplate {
                 (ArrayList<Map<String, Object>>) metadata.get("pushTemplates");
         HashMap<String, PushTemplate> parsed = new HashMap<String, PushTemplate>();
 
-        templates.forEach(
-                (v) -> {
-                    PushTemplate t = new PushTemplate(v);
-                    parsed.put(t.id, t);
-                });
+        for (Map<String, Object> v : templates) {
+            PushTemplate t = new PushTemplate(v);
+            parsed.put(t.id, t);
+        }
 
         return parsed;
     }

@@ -49,6 +49,7 @@ import com.snapyr.sdk.internal.PushTemplate;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -149,12 +150,10 @@ public class SnapyrNotificationHandler {
         PushTemplate pushTemplate = (PushTemplate) data.get(ACTION_BUTTONS_KEY);
         if (pushTemplate != null) {
             String token = (String) data.get(NOTIF_TOKEN_KEY);
-            pushTemplate
-                    .getButtons()
-                    .forEach(
-                            (button) -> {
-                                createActionButton(builder, notificationId, button, token);
-                            });
+            List<ActionButton> actionButtons = pushTemplate.getButtons();
+            for (ActionButton button : actionButtons) {
+                createActionButton(builder, notificationId, button, token);
+            }
         }
 
         // Image handling - fetch from URL
