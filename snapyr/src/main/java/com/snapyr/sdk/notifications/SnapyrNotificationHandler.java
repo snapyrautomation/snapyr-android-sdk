@@ -215,7 +215,8 @@ public class SnapyrNotificationHandler {
         builder.addAction(
                 R.drawable.ic_snapyr_logo_only,
                 template.title,
-                ts.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT));
+                ts.getPendingIntent(
+                        0, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT));
     }
 
     public void showSampleNotification() {
