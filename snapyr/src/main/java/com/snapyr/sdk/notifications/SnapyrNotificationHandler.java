@@ -23,6 +23,8 @@
  */
 package com.snapyr.sdk.notifications;
 
+import static com.snapyr.sdk.internal.Utils.isNullOrEmpty;
+
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.PendingIntent;
@@ -49,6 +51,7 @@ import com.snapyr.sdk.internal.PushTemplate;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -149,19 +152,17 @@ public class SnapyrNotificationHandler {
         PushTemplate pushTemplate = (PushTemplate) data.get(ACTION_BUTTONS_KEY);
         if (pushTemplate != null) {
             String token = (String) data.get(NOTIF_TOKEN_KEY);
-            pushTemplate
-                    .getButtons()
-                    .forEach(
-                            (button) -> {
-                                createActionButton(builder, notificationId, button, token);
-                            });
+            List<ActionButton> actionButtons = pushTemplate.getButtons();
+            for (ActionButton button : actionButtons) {
+                createActionButton(builder, notificationId, button, token);
+            }
         }
 
         // Image handling - fetch from URL
         // TODO (@paulwsmith): move off-thread? (maybe not necessary; not part of main thread
         // anyway)
         String imageUrl = (String) data.get(NOTIF_IMAGE_URL_KEY);
-        if (imageUrl != null) {
+        if (!isNullOrEmpty(imageUrl)) {
             InputStream inputStream = null;
             Bitmap image = null;
             try {
@@ -214,7 +215,8 @@ public class SnapyrNotificationHandler {
         builder.addAction(
                 R.drawable.ic_snapyr_logo_only,
                 template.title,
-                ts.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT));
+                ts.getPendingIntent(
+                        0, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT));
     }
 
     public void showSampleNotification() {
