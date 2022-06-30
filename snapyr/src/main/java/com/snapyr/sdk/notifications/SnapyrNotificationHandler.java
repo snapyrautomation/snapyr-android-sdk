@@ -86,6 +86,7 @@ public class SnapyrNotificationHandler {
             "Displays all Snapyr-managed notifications by default";
     public int defaultChannelImportance = NotificationManagerCompat.IMPORTANCE_HIGH;
     private int nextMessageId = 0;
+    private int nextActionButtonCode = 0;
 
     public SnapyrNotificationHandler(Context ctx) {
         context = ctx;
@@ -216,7 +217,8 @@ public class SnapyrNotificationHandler {
                 R.drawable.ic_snapyr_logo_only,
                 template.title,
                 ts.getPendingIntent(
-                        0, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT));
+                        ++nextActionButtonCode,
+                        PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT));
     }
 
     public void showSampleNotification() {
@@ -232,13 +234,15 @@ public class SnapyrNotificationHandler {
         createActionButton(
                 builder,
                 notificationId,
-                new ActionButton("button_one", "button_one", "button_one", "snapyrsample://test"),
+                new ActionButton(
+                        "button_one", "button_one", "button_one", "snapyrsample://firsttest"),
                 "");
 
         createActionButton(
                 builder,
                 notificationId,
-                new ActionButton("button_two", "button_two", "button_two", ""),
+                new ActionButton(
+                        "button_two", "button_two", "button_two", "snapyrsample://secondtest"),
                 "");
 
         builder.setContentIntent(
