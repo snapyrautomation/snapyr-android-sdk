@@ -213,12 +213,18 @@ public class SnapyrNotificationHandler {
         ts.addNextIntent(getLaunchIntent());
         ts.addNextIntent(trackIntent);
 
+        int flags = 0;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            flags = PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT;
+        } else {
+            flags = PendingIntent.FLAG_UPDATE_CURRENT;
+        }
+
         builder.addAction(
                 R.drawable.ic_snapyr_logo_only,
                 template.title,
-                ts.getPendingIntent(
-                        ++nextActionButtonCode,
-                        PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT));
+                ts.getPendingIntent(++nextActionButtonCode, flags));
     }
 
     public void showSampleNotification() {
