@@ -125,9 +125,9 @@ public class SnapyrFirebaseMessagingService extends FirebaseMessagingService {
 
         Snapyr sdkInstance = Snapyr.with(this);
         PushTemplate template = sdkInstance.getPushTemplates().get(templateId);
-        if ((template != null) && (template.getModified().after(modified))) {
-            // if the modified date in the push payload is older than the cached templates we're
-            // good to go and can just used the cached template value
+        if ((template != null) && (!template.getModified().before(modified))) {
+            // if the modified date in the push payload is equal to or older than the cached
+            // templates we're good to go and can just used the cached template value
             return template;
         }
 
