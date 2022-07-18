@@ -41,8 +41,9 @@ public class ConnectionFactory {
     private static final int DEFAULT_CONNECT_TIMEOUT_MILLIS = 15 * 1000; // 15s
     private static final String PROD_CONFIG_ENDPOINT = "https://api.snapyr.com/sdk/";
     private static final String PROD_ENGINE_ENDPOINT = "https://engine.snapyr.com/v1/batch";
-    private static final String STAGE_CONFIG_ENDPOINT = "https://stage-api.snapyr.com/sdk/";
-    private static final String STAGE_ENGINE_ENDPOINT = "https://stage-engine.snapyr.com/v1/batch";
+    private static final String STAGE_CONFIG_ENDPOINT = "https://stage-api.snapyrdev.net/sdk/";
+    private static final String STAGE_ENGINE_ENDPOINT =
+            "https://stage-engine.snapyrdev.net/v1/batch";
     private static final String DEV_CONFIG_ENDPOINT = "https://dev-api.snapyrdev.net/sdk/";
     private static final String DEV_ENGINE_ENDPOINT = "https://dev-engine.snapyrdev.net/v1/batch";
     private final String configEndpoint;
