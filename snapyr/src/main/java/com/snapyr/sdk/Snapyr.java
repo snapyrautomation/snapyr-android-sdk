@@ -1299,6 +1299,12 @@ public class Snapyr {
             return this;
         }
 
+        /** Configure Snapyr to use the Snapyr Stage environment - internal use only */
+        public Builder enableStageEnvironment() {
+            this.snapyrEnvironment = ConnectionFactory.Environment.STAGE;
+            return this;
+        }
+
         /**
          * Enable Snapyr's automatic push handling. This relies on Firebase Messaging and will
          * attempt to automatically register the device's Firebase token.
