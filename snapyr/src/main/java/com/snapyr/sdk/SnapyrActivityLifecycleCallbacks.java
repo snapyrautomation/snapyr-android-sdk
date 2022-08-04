@@ -160,6 +160,8 @@ class SnapyrActivityLifecycleCallbacks
         if (trackDeepLinks) {
             TrackerUtil.trackDeepLink(activity, activity.getIntent());
         }
+
+        Snapyr.with(activity).SetActivity(activity);
     }
 
     @Override

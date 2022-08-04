@@ -25,17 +25,21 @@ package com.snapyr.sdk;
 
 import static java.util.Collections.unmodifiableMap;
 
+import android.content.Context;
+
 import com.snapyr.sdk.internal.Private;
 import java.util.Map;
 
 public class SnapyrAction extends ValueMap {
+    public Context context = null;
 
     @Private
-    SnapyrAction(Map<String, Object> map) {
+    SnapyrAction(Map<String, Object> map, Context context) {
         super(unmodifiableMap(map));
+        this.context = context;
     }
 
-    public static SnapyrAction create(Map<String, Object> map) {
-        return new SnapyrAction(map);
+    public static SnapyrAction create(Map<String, Object> map, Context context) {
+        return new SnapyrAction(map, context);
     }
 }

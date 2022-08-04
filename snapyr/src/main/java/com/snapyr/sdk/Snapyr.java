@@ -44,6 +44,8 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.ProcessLifecycleOwner;
+
+import com.snapyr.sdk.inapp.InAppActionHandler;
 import com.snapyr.sdk.integrations.AliasPayload;
 import com.snapyr.sdk.integrations.BasePayload;
 import com.snapyr.sdk.integrations.GroupPayload;
@@ -139,6 +141,15 @@ public class Snapyr {
     private String pushToken;
     private Map<String, PushTemplate> PushTemplates;
     private final SnapyrWriteQueue sendQueue;
+    private  Activity CurrentActivity;
+
+    public Activity GetActivity(){
+        return this.CurrentActivity;
+    }
+
+    public void SetActivity(Activity newActivity){
+        this.CurrentActivity = newActivity;
+    }
 
     Snapyr(
             Application application,
@@ -189,8 +200,9 @@ public class Snapyr {
         this.lifecycle = lifecycle;
         this.nanosecondTimestamps = nanosecondTimestamps;
         this.useNewLifecycleMethods = useNewLifecycleMethods;
-        this.actionHandler = actionHandler;
+        this.actionHandler = new InAppActionHandler();
         this.PushTemplates = null;
+        this.CurrentActivity = null;
         this.sendQueue =
                 new SnapyrWriteQueue(
                         application,
@@ -203,7 +215,7 @@ public class Snapyr {
                         getLogger(),
                         crypto,
                         null,
-                        actionHandler);
+                        this.actionHandler);
 
         namespaceSharedPreferences();
 
