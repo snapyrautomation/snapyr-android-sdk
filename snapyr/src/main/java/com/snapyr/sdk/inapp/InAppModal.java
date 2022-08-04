@@ -10,6 +10,13 @@ import android.webkit.WebView;
 
 public class InAppModal {
     static boolean showingModal = false; // super lazy modal logic
+    static AlertDialog activeDialog = null;
+
+    public static void CloseDialogs(){
+        if (activeDialog != null){
+            activeDialog.cancel();
+        }
+    }
 
     public static void ShowPopup(Activity activity, String rawHtml) {
         if (InAppModal.showingModal == true){
@@ -17,6 +24,8 @@ public class InAppModal {
         }
         InAppModal.showingModal = true;
         WebView v = new WebView(activity);
+        v.setWebViewClient(new InAppWebviewClient());
+
 
         // doing this seems to make the the webpage super jittery, so ignore unless we need later
         // DisplayMetrics displayMetrics = new DisplayMetrics();
@@ -31,10 +40,10 @@ public class InAppModal {
         String encodedHtml = Base64.encodeToString(rawHtml.getBytes(), Base64.NO_PADDING);
         v.loadData(encodedHtml, "text/html", "base64");
 
-        AlertDialog dialog = new AlertDialog.Builder(activity).setView(v).create();
-        dialog.setMessage("Brandon is cool");
-        dialog.show();
-        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+        activeDialog = new AlertDialog.Builder(activity).setView(v).create();
+        activeDialog.setMessage("Brandon is cool");
+        activeDialog.show();
+        activeDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
             public void onDismiss(final DialogInterface dialog) {
                 InAppModal.showingModal = false;
             }
