@@ -148,7 +148,8 @@ public class SnapyrNotificationHandler {
         ts.addNextIntent(getLaunchIntent());
         ts.addNextIntent(trackIntent);
 
-        builder.setContentIntent(ts.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT));
+        int flags = getDefaultIntentFlags();
+        builder.setContentIntent(ts.getPendingIntent(0, flags));
 
         PushTemplate pushTemplate = (PushTemplate) data.get(ACTION_BUTTONS_KEY);
         if (pushTemplate != null) {
@@ -213,18 +214,23 @@ public class SnapyrNotificationHandler {
         ts.addNextIntent(getLaunchIntent());
         ts.addNextIntent(trackIntent);
 
-        int flags = 0;
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            flags = PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT;
-        } else {
-            flags = PendingIntent.FLAG_UPDATE_CURRENT;
-        }
+        int flags = getDefaultIntentFlags();
 
         builder.addAction(
                 R.drawable.ic_snapyr_logo_only,
                 template.title,
                 ts.getPendingIntent(++nextActionButtonCode, flags));
+    }
+
+    private int getDefaultIntentFlags() {
+        // Newer versions of Android require one of FLAG_MUTABLE or FLAG_IMMUTABLE to
+        // be included. FLAG_IMMUTABLE is the default as we don't currently support
+        // notifications with mutable content, such as inline-reply notifications
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            return PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT;
+        } else {
+            return PendingIntent.FLAG_UPDATE_CURRENT;
+        }
     }
 
     public void showSampleNotification() {
