@@ -51,8 +51,6 @@ public class SnapyrNotificationListener extends Activity {
 
         // Dismiss source notification
         NotificationManagerCompat.from(this.getApplicationContext()).cancel(notificationId);
-        // Close notification drawer (so newly opened activity isn't behind anything)
-        this.getApplicationContext().sendBroadcast(new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
 
         if (!Utils.isNullOrEmpty(deepLink)) { // deeplink provided, respect it and advance
             Intent deepLinkIntent = new Intent();
