@@ -984,7 +984,19 @@ public class Snapyr {
         application.unregisterActivityLifecycleCallbacks(notificationLifecycleCallbacks);
         if (useNewLifecycleMethods) {
             // only unregister if feature is enabled
-            lifecycle.removeObserver(activityLifecycleCallback);
+            analyticsExecutor.submit(
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            HANDLER.post(
+                                    new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            lifecycle.removeObserver(activityLifecycleCallback);
+                                        }
+                                    });
+                        }
+                    });
         }
         // Only supplied by us for testing, so it's ok to shut it down. If we were to make this
         // public,
@@ -1183,8 +1195,7 @@ public class Snapyr {
          */
         public Builder flushQueueSize(int flushQueueSize) {
             if (flushQueueSize <= 0) {
-                throw new IllegalArgumentException(
-                        "flushQueueSize must be greater than or equal to zero.");
+                throw new IllegalArgumentException("flushQueueSize must be greater than zero.");
             }
             // 250 is a reasonably high number to trigger queue size flushes.
             // The queue may go over this size (as much as 1000), but you should flush much before
