@@ -147,14 +147,14 @@ class SnapyrBuilderTest {
             Builder(context, "foo").flushQueueSize(-1)
             fail("flushQueueSize < 0 should throw exception.")
         } catch (expected: IllegalArgumentException) {
-            assertThat(expected).hasMessage("flushQueueSize must be greater than or equal to zero.")
+            assertThat(expected).hasMessage("flushQueueSize must be greater than zero.")
         }
 
         try {
             Builder(context, "foo").flushQueueSize(0)
             fail("flushQueueSize = 0 should throw exception.")
         } catch (expected: IllegalArgumentException) {
-            assertThat(expected).hasMessage("flushQueueSize must be greater than or equal to zero.")
+            assertThat(expected).hasMessage("flushQueueSize must be greater than zero.")
         }
 
         try {
