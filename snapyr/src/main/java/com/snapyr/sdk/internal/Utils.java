@@ -389,13 +389,7 @@ public final class Utils {
         return sb.toString();
     }
 
-    public static InputStream getInputStream(HttpURLConnection connection) throws IOException {
-        try {
-            return connection.getInputStream();
-        } catch (IOException ignored) {
-            return connection.getErrorStream();
-        }
-    }
+
 
     /**
      * Transforms the given map by replacing the keys mapped by {@code mapper}. Any keys not in the

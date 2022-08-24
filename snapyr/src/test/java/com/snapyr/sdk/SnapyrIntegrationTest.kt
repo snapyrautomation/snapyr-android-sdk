@@ -39,9 +39,12 @@ import com.snapyr.sdk.TestUtils.SynchronousExecutor
 import com.snapyr.sdk.TestUtils.TRACK_PAYLOAD
 import com.snapyr.sdk.TestUtils.TRACK_PAYLOAD_JSON
 import com.snapyr.sdk.TestUtils.mockApplication
+import com.snapyr.sdk.http.Client
+import com.snapyr.sdk.http.WriteConnection
 import com.snapyr.sdk.integrations.Logger
 import com.snapyr.sdk.integrations.Logger.with
 import com.snapyr.sdk.integrations.TrackPayload.Builder
+import com.snapyr.sdk.internal.Cartographer
 import com.snapyr.sdk.internal.Utils.DEFAULT_FLUSH_INTERVAL
 import com.snapyr.sdk.internal.Utils.DEFAULT_FLUSH_QUEUE_SIZE
 import java.io.File
@@ -60,11 +63,7 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.mockito.Matchers.any
-import org.mockito.Mockito.doThrow
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.never
-import org.mockito.Mockito.spy
-import org.mockito.Mockito.times
+import org.mockito.Mockito.*
 import org.mockito.MockitoAnnotations.initMocks
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
@@ -79,19 +78,19 @@ class snapyrQueueTest {
     val folder = TemporaryFolder()
     private lateinit var queueFile: QueueFile
 
-    private fun mockConnection(): Client.Connection {
+    private fun mockConnection(): WriteConnection {
         return mockConnection(mock(HttpURLConnection::class.java))
     }
 
-    private fun mockConnection(connection: HttpURLConnection): Client.Connection {
-        return object : Client.Connection(
-            connection,
-            mock(InputStream::class.java),
-            mock(OutputStream::class.java)
-        ) {
+    private fun mockConnection(connection: HttpURLConnection): WriteConnection {
+        return object : WriteConnection(connection) {
             @Throws(IOException::class)
-            override fun close() {
-                super.close()
+            override fun getInputStream(): InputStream {
+                return mock(InputStream::class.java)
+            }
+
+            override fun getOutputStream(): OutputStream {
+                return mock(OutputStream::class.java)
             }
         }
     }
@@ -175,7 +174,10 @@ class snapyrQueueTest {
     fun flushRemovesItemsFromQueue() {
         val payloadQueue = PersistentQueue(queueFile)
         val client = mock(Client::class.java)
-        whenever(client.upload()).thenReturn(mockConnection())
+        val os = mock(OutputStream::class.java)
+        val conn = mock(WriteConnection::class.java)
+        `when`(conn.outputStream).thenReturn(os)
+        whenever(client.upload()).thenReturn(conn)
         val snapyrQueue =
             SnapyrBuilder()
                 .client(client)
@@ -281,7 +283,7 @@ class snapyrQueueTest {
 
         snapyrQueue.submitFlush()
 
-        verify(urlConnection, times(2)).disconnect()
+        verify(urlConnection, times(1)).disconnect()
     }
 
     @Test
@@ -290,18 +292,13 @@ class snapyrQueueTest {
         // todo: rewrite using mockwebserver.
         val client = mock(Client::class.java)
         val payloadQueue = PersistentQueue(queueFile)
-        whenever(client.upload())
-            .thenReturn(
-                object : Client.Connection(
-                    mock(HttpURLConnection::class.java),
-                    mock(InputStream::class.java),
-                    mock(OutputStream::class.java)
-                ) {
-                    @Throws(IOException::class)
-                    override fun close() {
-                        throw Client.HTTPException(400, "Bad Request", "bad request")
-                    }
-                })
+        val os = mock(OutputStream::class.java)
+        val conn = mock(WriteConnection::class.java)
+        `when`(conn.outputStream).thenReturn(os)
+        `when`(conn.close()).thenThrow(Client.HTTPException(400, "Bad Request", "bad request"))
+
+        whenever(client.upload()).thenReturn(conn)
+
         val snapyrQueue =
             SnapyrBuilder()
                 .client(client)
@@ -322,21 +319,13 @@ class snapyrQueueTest {
     fun ignoresServerError() {
         // todo: rewrite using mockwebserver.
         val payloadQueue: PayloadQueue = PersistentQueue(queueFile)
+        val os = mock(OutputStream::class.java)
+        val conn = mock(WriteConnection::class.java)
+        `when`(conn.outputStream).thenReturn(os)
+        `when`(conn.close()).thenThrow(Client.HTTPException(500, "Internal Server Error", "internal server error"))
         val client = mock(Client::class.java)
-        whenever(client.upload())
-            .thenReturn(
-                object : Client.Connection(
-                    mock(HttpURLConnection::class.java),
-                    mock(InputStream::class.java),
-                    mock(OutputStream::class.java)
-                ) {
-                    @Throws(IOException::class)
-                    override fun close() {
-                        throw Client.HTTPException(
-                            500, "Internal Server Error", "internal server error"
-                        )
-                    }
-                })
+
+        whenever(client.upload()).thenReturn(conn)
         val snapyrQueue = SnapyrBuilder()
             .client(client)
             .payloadQueue(payloadQueue)
@@ -354,21 +343,12 @@ class snapyrQueueTest {
     fun ignoresHTTP429Error() {
         // todo: rewrite using mockwebserver.
         val payloadQueue: PayloadQueue = PersistentQueue(queueFile)
+        val conn = mock(WriteConnection::class.java)
+        val os = mock(OutputStream::class.java)
+        `when`(conn.outputStream).thenReturn(os)
+        `when`(conn.close()).thenThrow(Client.HTTPException(429, "Too Many Requests", "too many requests"))
         val client = mock(Client::class.java)
-        whenever(client.upload())
-            .thenReturn(
-                object : Client.Connection(
-                    mock(
-                        HttpURLConnection::class.java
-                    ),
-                    mock(InputStream::class.java),
-                    mock(OutputStream::class.java)
-                ) {
-                    @Throws(IOException::class)
-                    override fun close() {
-                        throw Client.HTTPException(429, "Too Many Requests", "too many requests")
-                    }
-                })
+        whenever(client.upload()).thenReturn(conn)
         val snapyrQueue = SnapyrBuilder()
             .client(client)
             .payloadQueue(payloadQueue)

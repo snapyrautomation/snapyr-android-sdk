@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.snapyr.sdk;
+package com.snapyr.sdk.http;
 
 import android.util.Base64;
 import com.snapyr.sdk.core.BuildConfig;
@@ -96,7 +96,7 @@ public class ConnectionFactory {
      * Configures defaults for connections opened with {@link #upload(String)}, and {@link
      * #projectSettings(String)}.
      */
-    protected HttpURLConnection openConnection(String url) throws IOException {
+    public HttpURLConnection openConnection(String url) throws IOException {
         URL requestedURL;
 
         try {

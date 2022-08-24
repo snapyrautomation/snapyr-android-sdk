@@ -50,12 +50,15 @@ import com.snapyr.sdk.ProjectSettings.create
 import com.snapyr.sdk.TestUtils.NoDescriptionMatcher
 import com.snapyr.sdk.TestUtils.grantPermission
 import com.snapyr.sdk.TestUtils.mockApplication
+import com.snapyr.sdk.http.Client
+import com.snapyr.sdk.http.ConnectionFactory
 import com.snapyr.sdk.integrations.AliasPayload
 import com.snapyr.sdk.integrations.GroupPayload
 import com.snapyr.sdk.integrations.IdentifyPayload
 import com.snapyr.sdk.integrations.Logger
 import com.snapyr.sdk.integrations.ScreenPayload
 import com.snapyr.sdk.integrations.TrackPayload
+import com.snapyr.sdk.internal.Cartographer
 import com.snapyr.sdk.internal.Utils.AnalyticsNetworkExecutorService
 import com.snapyr.sdk.internal.Utils.DEFAULT_FLUSH_INTERVAL
 import com.snapyr.sdk.internal.Utils.DEFAULT_FLUSH_QUEUE_SIZE

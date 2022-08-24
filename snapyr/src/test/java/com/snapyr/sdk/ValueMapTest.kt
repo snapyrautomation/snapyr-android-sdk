@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableMap
 import com.nhaarman.mockitokotlin2.spy
 import com.nhaarman.mockitokotlin2.verify
 import com.snapyr.sdk.TestUtils.PROJECT_SETTINGS_JSON_SAMPLE
+import com.snapyr.sdk.internal.Cartographer
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.assertj.core.data.MapEntry

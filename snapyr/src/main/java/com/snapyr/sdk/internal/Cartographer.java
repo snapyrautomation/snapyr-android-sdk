@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.snapyr.sdk;
+package com.snapyr.sdk.internal;
 
 import android.util.JsonReader;
 import android.util.JsonToken;
@@ -42,7 +42,7 @@ import java.util.Map;
  * objects into JSON streams. Use {@link Builder} to construct instances.
  */
 public class Cartographer {
-    static final Cartographer INSTANCE = new Builder().lenient(true).prettyPrint(false).build();
+    public static final Cartographer INSTANCE = new Builder().lenient(true).prettyPrint(false).build();
 
     private final boolean isLenient;
     private final boolean prettyPrint;
