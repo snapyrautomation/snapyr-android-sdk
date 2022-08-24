@@ -25,6 +25,8 @@ package com.snapyr.sdk
 
 import android.net.Uri
 import com.nhaarman.mockitokotlin2.whenever
+import com.snapyr.sdk.http.Client
+import com.snapyr.sdk.http.ConnectionFactory
 import com.snapyr.sdk.internal.Private
 import com.squareup.okhttp.mockwebserver.MockResponse
 import com.squareup.okhttp.mockwebserver.MockWebServer
@@ -169,46 +171,10 @@ class ClientTest {
     @Test
     @Throws(Exception::class)
     fun fetchSettings() {
-        server.enqueue(MockResponse())
+        server.enqueue(MockResponse().setBody("{\"test\" : \"brandon\"}"))
 
-        val connection = client.fetchSettings()
-        assertThat(connection.os).isNull()
-        assertThat(connection.`is`).isNotNull
-        assertThat(connection.connection.responseCode).isEqualTo(200)
-        RecordedRequestAssert.assertThat(server.takeRequest())
-            .hasRequestLine("GET /sdk/foo HTTP/1.1")
-            .containsHeader("User-Agent", ConnectionFactory.USER_AGENT)
-            .containsHeader("Content-Type", "application/json")
-    }
-
-    @Test
-    @Throws(Exception::class)
-    fun fetchSettingsFailureClosesStreamsAndThrowsException() {
-        whenever(mockConnection.responseCode).thenReturn(204)
-        whenever(mockConnection.responseMessage)
-            .thenReturn("no cookies for you http://bit.ly/1EMHBNb")
-
-        try {
-            mockClient.fetchSettings()
-            fail("Non 200 return code should throw an exception")
-        } catch (e: IOException) {
-            assertThat(e).hasMessage("HTTP " + 204 + ": no cookies for you http://bit.ly/1EMHBNb")
-        }
-        verify(mockConnection).disconnect()
-    }
-
-    @Test
-    @Throws(Exception::class)
-    fun closingFetchSettingsClosesStreams() {
-        val input = mock(InputStream::class.java)
-        whenever(mockConnection.inputStream).thenReturn(input)
-        whenever(mockConnection.responseCode).thenReturn(200)
-
-        val connection = mockClient.fetchSettings()
-
-        connection.close()
-        verify(mockConnection).disconnect()
-        verify(input).close()
+        val settings = client.fetchSettings()
+        assertThat(settings["test"] == "brandon")
     }
 
     internal class RecordedRequestAssert constructor(actual: RecordedRequest) :

@@ -24,6 +24,7 @@
 package com.snapyr.sdk
 
 import com.google.common.collect.ImmutableMap
+import com.snapyr.sdk.internal.Cartographer
 import java.io.IOException
 import java.io.Reader
 import java.io.StringWriter

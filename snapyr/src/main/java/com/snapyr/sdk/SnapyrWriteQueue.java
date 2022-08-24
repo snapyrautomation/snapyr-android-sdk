@@ -33,8 +33,11 @@ import android.os.Message;
 import android.util.JsonWriter;
 import android.util.Log;
 import androidx.annotation.Nullable;
+import com.snapyr.sdk.http.Client;
+import com.snapyr.sdk.http.WriteConnection;
 import com.snapyr.sdk.integrations.BasePayload;
 import com.snapyr.sdk.integrations.Logger;
+import com.snapyr.sdk.internal.Cartographer;
 import com.snapyr.sdk.internal.Private;
 import com.snapyr.sdk.internal.Utils;
 import java.io.BufferedWriter;
@@ -277,15 +280,15 @@ class SnapyrWriteQueue {
 
         logger.verbose("Uploading payloads in queue to Snapyr.");
         int payloadsUploaded = 0;
-        Client.Connection connection = null;
+        WriteConnection connection = null;
         try {
             // Open a connection.
             connection = client.upload();
 
             // Write the payloads into the OutputStream.
             BatchPayloadWriter writer =
-                    new BatchPayloadWriter(connection.os) //
-                            .beginObject() //
+                    new BatchPayloadWriter(connection.getOutputStream())
+                            .beginObject()
                             .beginBatchArray();
             PayloadWriter payloadWriter = new PayloadWriter(writer, crypto);
             payloadQueue.forEach(payloadWriter);
@@ -294,8 +297,8 @@ class SnapyrWriteQueue {
             payloadsUploaded = payloadWriter.payloadCount;
 
             // Upload the payloads.
-            int responseCode = connection.connection.getResponseCode();
-            InputStream inputStream = Utils.getInputStream(connection.connection);
+            int responseCode = connection.getResponseCode();
+            InputStream inputStream = connection.getInputStream();
             String responseBody = null;
             // Log.e("Snapyr", "flush code: " + responseCode);
             if (responseCode >= 300) {
@@ -311,7 +314,7 @@ class SnapyrWriteQueue {
                     }
                 }
                 throw new Client.HTTPException(
-                        responseCode, connection.connection.getResponseMessage(), responseBody);
+                        responseCode, connection.getResponseMessage(), responseBody);
             } else if (inputStream != null) {
                 responseBody = Utils.readFully(inputStream);
                 logger.info("flush response: " + responseBody);
@@ -338,6 +341,9 @@ class SnapyrWriteQueue {
         } catch (IOException e) {
             logger.error(e, "Error while uploading payloads");
             return;
+        } catch (Exception e) {
+            logger.error(e, "Error while uploading payloads");
+
         } finally {
             Utils.closeQuietly(connection);
         }

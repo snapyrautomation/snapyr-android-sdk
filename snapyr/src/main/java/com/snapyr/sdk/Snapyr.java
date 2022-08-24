@@ -44,6 +44,8 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.ProcessLifecycleOwner;
+import com.snapyr.sdk.http.Client;
+import com.snapyr.sdk.http.ConnectionFactory;
 import com.snapyr.sdk.integrations.AliasPayload;
 import com.snapyr.sdk.integrations.BasePayload;
 import com.snapyr.sdk.integrations.GroupPayload;
@@ -51,6 +53,7 @@ import com.snapyr.sdk.integrations.IdentifyPayload;
 import com.snapyr.sdk.integrations.Logger;
 import com.snapyr.sdk.integrations.ScreenPayload;
 import com.snapyr.sdk.integrations.TrackPayload;
+import com.snapyr.sdk.internal.Cartographer;
 import com.snapyr.sdk.internal.NanoDate;
 import com.snapyr.sdk.internal.Private;
 import com.snapyr.sdk.internal.PushTemplate;
@@ -1024,34 +1027,25 @@ public class Snapyr {
                                     new Callable<ProjectSettings>() {
                                         @Override
                                         public ProjectSettings call() throws Exception {
-                                            Client.Connection connection = null;
-                                            try {
-                                                connection = client.fetchSettings();
-                                                Map<String, Object> map =
-                                                        cartographer.fromJson(
-                                                                Utils.buffer(connection.is));
-                                                if (!map.containsKey("integrations")) {
-                                                    map.put(
-                                                            "integrations",
-                                                            new ValueMap()
-                                                                    .putValue(
-                                                                            "Snapyr",
-                                                                            new ValueMap()
-                                                                                    .putValue(
-                                                                                            "apiKey",
-                                                                                            writeKey)));
-                                                }
-                                                if (!map.containsKey("metadata")) {
-                                                    map.put(
-                                                            "metadata",
-                                                            new ValueMap()
-                                                                    .putValue(
-                                                                            "platform", "Android"));
-                                                }
-                                                return ProjectSettings.create(map);
-                                            } finally {
-                                                Utils.closeQuietly(connection);
+                                            Map<String, Object> settings = client.fetchSettings();
+                                            if (!settings.containsKey("integrations")) {
+                                                settings.put(
+                                                        "integrations",
+                                                        new ValueMap()
+                                                                .putValue(
+                                                                        "Snapyr",
+                                                                        new ValueMap()
+                                                                                .putValue(
+                                                                                        "apiKey",
+                                                                                        writeKey)));
                                             }
+                                            if (!settings.containsKey("metadata")) {
+                                                settings.put(
+                                                        "metadata",
+                                                        new ValueMap()
+                                                                .putValue("platform", "Android"));
+                                            }
+                                            return ProjectSettings.create(settings);
                                         }
                                     })
                             .get();

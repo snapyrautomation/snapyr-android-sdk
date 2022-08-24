@@ -26,6 +26,7 @@ package com.snapyr.sdk;
 import static java.util.Collections.unmodifiableMap;
 
 import android.content.Context;
+import com.snapyr.sdk.internal.Cartographer;
 import com.snapyr.sdk.internal.Private;
 import com.snapyr.sdk.internal.Utils;
 import java.text.ParseException;
