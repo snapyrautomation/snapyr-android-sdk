@@ -31,11 +31,8 @@ import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.verifyZeroInteractions
 import com.nhaarman.mockitokotlin2.whenever
 import com.snapyr.sdk.PayloadQueue.PersistentQueue
-import com.snapyr.sdk.SnapyrWriteQueue.MAX_PAYLOAD_SIZE
-import com.snapyr.sdk.SnapyrWriteQueue.MAX_QUEUE_SIZE
-import com.snapyr.sdk.TestUtils.TRACK_PAYLOAD
-import com.snapyr.sdk.TestUtils.TRACK_PAYLOAD_JSON
-import com.snapyr.sdk.TestUtils.mockApplication
+import com.snapyr.sdk.SnapyrWriteQueue.*
+import com.snapyr.sdk.TestUtils.*
 import com.snapyr.sdk.http.Client
 import com.snapyr.sdk.http.WriteConnection
 import com.snapyr.sdk.integrations.Logger
@@ -44,13 +41,6 @@ import com.snapyr.sdk.integrations.TrackPayload.Builder
 import com.snapyr.sdk.internal.Cartographer
 import com.snapyr.sdk.internal.Utils.DEFAULT_FLUSH_INTERVAL
 import com.snapyr.sdk.internal.Utils.DEFAULT_FLUSH_QUEUE_SIZE
-import java.io.File
-import java.io.IOError
-import java.io.IOException
-import java.io.InputStream
-import java.io.OutputStream
-import java.net.HttpURLConnection
-import java.util.concurrent.ExecutorService
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.junit.After
@@ -70,6 +60,9 @@ import org.mockito.MockitoAnnotations.initMocks
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowLog
+import java.io.*
+import java.net.HttpURLConnection
+import java.util.concurrent.ExecutorService
 
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE)
