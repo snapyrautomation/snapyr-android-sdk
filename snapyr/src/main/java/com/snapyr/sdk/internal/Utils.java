@@ -53,7 +53,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Array;
-import java.net.HttpURLConnection;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -388,8 +387,6 @@ public final class Utils {
         }
         return sb.toString();
     }
-
-
 
     /**
      * Transforms the given map by replacing the keys mapped by {@code mapper}. Any keys not in the

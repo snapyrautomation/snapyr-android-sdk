@@ -33,7 +33,6 @@ import android.os.Message;
 import android.util.JsonWriter;
 import android.util.Log;
 import androidx.annotation.Nullable;
-
 import com.snapyr.sdk.http.Client;
 import com.snapyr.sdk.http.WriteConnection;
 import com.snapyr.sdk.integrations.BasePayload;
@@ -342,8 +341,8 @@ class SnapyrWriteQueue {
         } catch (IOException e) {
             logger.error(e, "Error while uploading payloads");
             return;
-        }catch (Exception e){
-                logger.error(e, "Error while uploading payloads");
+        } catch (Exception e) {
+            logger.error(e, "Error while uploading payloads");
 
         } finally {
             Utils.closeQuietly(connection);

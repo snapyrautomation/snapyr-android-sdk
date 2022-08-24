@@ -44,7 +44,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.ProcessLifecycleOwner;
-
 import com.snapyr.sdk.http.Client;
 import com.snapyr.sdk.http.ConnectionFactory;
 import com.snapyr.sdk.integrations.AliasPayload;
@@ -1044,8 +1043,7 @@ public class Snapyr {
                                                 settings.put(
                                                         "metadata",
                                                         new ValueMap()
-                                                                .putValue(
-                                                                        "platform", "Android"));
+                                                                .putValue("platform", "Android"));
                                             }
                                             return ProjectSettings.create(settings);
                                         }

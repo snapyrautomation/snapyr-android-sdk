@@ -25,16 +25,11 @@ package com.snapyr.sdk.http;
 
 import static java.net.HttpURLConnection.HTTP_OK;
 
-import android.text.TextUtils;
-
 import com.snapyr.sdk.internal.Cartographer;
 import com.snapyr.sdk.internal.Utils;
-
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.util.Map;
-import java.util.zip.GZIPOutputStream;
 
 /** HTTP client which can upload payloads and fetch project settings from the Snapyr public API. */
 public class Client {
@@ -47,7 +42,8 @@ public class Client {
         this.connectionFactory = connectionFactory;
     }
 
-    private static ReadConnection createGetConnection(HttpURLConnection connection) throws IOException {
+    private static ReadConnection createGetConnection(HttpURLConnection connection)
+            throws IOException {
         return new ReadConnection(connection);
     }
 
@@ -63,11 +59,11 @@ public class Client {
             int responseCode = connection.getResponseCode();
             if (responseCode != HTTP_OK) {
                 connection.disconnect();
-                throw new IOException("HTTP " + responseCode + ": " + connection.getResponseMessage());
+                throw new IOException(
+                        "HTTP " + responseCode + ": " + connection.getResponseMessage());
             }
-            results = Cartographer.INSTANCE.fromJson(
-                    Utils.buffer(connection.getInputStream()));
-        } catch(IOException e){
+            results = Cartographer.INSTANCE.fromJson(Utils.buffer(connection.getInputStream()));
+        } catch (IOException e) {
             throw e; // rethrow, just catching to close the connection
         } finally {
             connection.disconnect();
@@ -92,6 +88,4 @@ public class Client {
             return responseCode >= 400 && responseCode < 500;
         }
     }
-
-
 }
