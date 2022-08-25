@@ -504,6 +504,7 @@ class snapyrQueueTest {
         var flushSize = DEFAULT_FLUSH_QUEUE_SIZE
         var logger = with(Snapyr.LogLevel.NONE)
         var networkExecutor: ExecutorService? = null
+        var actionHandler: SnapyrActionHandler? = null
 
         fun SnapyrBuilder() {
             initMocks(this)
@@ -600,7 +601,8 @@ class snapyrQueueTest {
                 flushSize,
                 logger,
                 Crypto.none(),
-                payloadQueue
+                payloadQueue,
+                actionHandler
             )
         }
     }
