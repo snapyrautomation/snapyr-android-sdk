@@ -37,7 +37,6 @@ import java.io.OutputStream
 import java.net.HttpURLConnection
 import org.assertj.core.api.AbstractAssert
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.fail
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
