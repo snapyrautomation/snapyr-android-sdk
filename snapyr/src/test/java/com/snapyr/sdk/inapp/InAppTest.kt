@@ -21,11 +21,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.snapyr.sdk.inapp;
+package com.snapyr.sdk.inapp
 
-import android.content.Context;
-import com.snapyr.sdk.SnapyrAction;
+import com.snapyr.sdk.SnapyrAction
+import com.snapyr.sdk.internal.Cartographer
+import java.io.IOException
+import org.junit.Test
 
-public interface InAppIFace {
-    public void ProcessTrackResponse(Context context, SnapyrAction action);
+class InAppTest {
+    val MESSAGE_PAYLOAD_JSON =
+        """
+        {
+            "message": {
+                "content": "{}",
+                "type": 'custom-json',
+                "config": "{}",
+                "actionToken": "actionToken-0817645f-0953-4c49-9743-d3ae887f530c.paul0817.1660936988",
+                "timestamp": 1660936988
+            }
+        }
+        """.trimIndent()
+
+    @Test
+    @Throws(IOException::class)
+    fun testMessageFromJson() {
+        val raw = Cartographer.INSTANCE.parseJson(MESSAGE_PAYLOAD_JSON)
+        val action = SnapyrAction.create(raw as Map<String, Object>)
+        val inAppMessage = InAppMessage(action)
+        check(inAppMessage.ActionToken == "actionToken-0817645f-0953-4c49-9743-d3ae887f530c.paul0817.1660936988")
+    }
 }

@@ -23,38 +23,54 @@
  */
 package com.snapyr.sdk.inapp;
 
+import android.content.Context;
 import android.os.Handler;
 import androidx.annotation.NonNull;
+import com.snapyr.sdk.SnapyrAction;
 import com.snapyr.sdk.integrations.Logger;
+import java.util.LinkedList;
+import java.util.List;
 
 public class InAppManager implements InAppIFace {
     private final int mInterval = 5000; // 5 seconds by default, can be changed later
     private Runnable backgroundThread = null;
     private Handler handler = null;
     private Logger logger = null;
+    private List<InAppMessage> pendingActions;
 
     public InAppManager(@NonNull InAppConfig config) {
         this.logger = config.Logger;
         this.startBackgroundThread(config.PollingDelayMs);
+        this.pendingActions = new LinkedList<>();
+    }
+
+    @Override
+    public void ProcessTrackResponse(Context context, SnapyrAction action) {
+        try {
+            this.pendingActions.add(new InAppMessage(action));
+        } catch (InAppMessage.MalformedMessageException e) {
+            logger.error(e, "failed to convert action to in-app message", action);
+        }
     }
 
     private void startBackgroundThread(int pollingDelayMs) {
         this.handler = new Handler();
         backgroundThread =
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            doPolling();
-                        } finally {
-                            handler.postDelayed(backgroundThread, pollingDelayMs);
-                        }
+                () -> {
+                    try {
+                        process();
+                    } finally {
+                        handler.postDelayed(backgroundThread, pollingDelayMs);
                     }
                 };
         backgroundThread.run();
     }
 
-    private void doPolling() {
+    private void process() {
         logger.info("polling for in-app content");
+        for (InAppMessage action : this.pendingActions) {
+            // nothing yet!
+            this.pendingActions.remove(action);
+        }
     }
 }

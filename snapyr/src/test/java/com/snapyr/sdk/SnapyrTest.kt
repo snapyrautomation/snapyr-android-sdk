@@ -164,6 +164,7 @@ open class SnapyrTest {
             lifecycle,
             false,
             true,
+            false,
             false
         )
     }
@@ -680,6 +681,7 @@ open class SnapyrTest {
             lifecycle,
             false,
             true,
+            false,
             false
         )
 
@@ -812,6 +814,7 @@ open class SnapyrTest {
             lifecycle,
             false,
             true,
+            false,
             false
         )
 
@@ -887,6 +890,7 @@ open class SnapyrTest {
             lifecycle,
             false,
             true,
+            false,
             false
         )
         Snapyr.setSingletonInstance(analytics)
@@ -1291,6 +1295,7 @@ open class SnapyrTest {
             lifecycle,
             false,
             true,
+            false,
             false
         )
 
@@ -1362,6 +1367,7 @@ open class SnapyrTest {
             lifecycle,
             false,
             true,
+            false,
             false
         )
 
@@ -1433,6 +1439,7 @@ open class SnapyrTest {
             lifecycle,
             false,
             true,
+            false,
             false
         )
 
@@ -1477,6 +1484,7 @@ open class SnapyrTest {
             lifecycle,
             false,
             true,
+            false,
             false
         )
 
@@ -1532,6 +1540,7 @@ open class SnapyrTest {
             lifecycle,
             false,
             true,
+            false,
             false
         )
 
@@ -1590,6 +1599,7 @@ open class SnapyrTest {
             lifecycle,
             true,
             true,
+            false,
             false
         )
 

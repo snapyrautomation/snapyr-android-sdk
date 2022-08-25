@@ -386,6 +386,7 @@ class SnapyrWriteQueue {
 
             for (Map<String, Object> actionMap : actionMapList) {
                 final SnapyrAction action = SnapyrAction.create(actionMap);
+
                 if (actionHandler != null) {
                     Snapyr.HANDLER.post(
                             new Runnable() {
@@ -405,6 +406,8 @@ class SnapyrWriteQueue {
             }
         }
     }
+
+    void dispatchAction(SnapyrAction action) {}
 
     void shutdown() {
         flushScheduler.shutdownNow();

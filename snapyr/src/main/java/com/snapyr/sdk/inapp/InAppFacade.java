@@ -23,6 +23,9 @@
  */
 package com.snapyr.sdk.inapp;
 
+import android.content.Context;
+import com.snapyr.sdk.SnapyrAction;
+
 public class InAppFacade {
     enum InAppState {
         IN_APP_STATE_SUPPRESSED,
@@ -32,7 +35,7 @@ public class InAppFacade {
     private static InAppState inappState = InAppState.IN_APP_STATE_ALLOWED;
     private static InAppIFace impl = new NoopInApp();
 
-    public static InAppIFace CreateInapp(InAppConfig config) {
+    public static InAppIFace CreateInApp(InAppConfig config) {
         if ((InAppManager) InAppFacade.impl != null) {
             config.Logger.info("inapp already initialized");
             return impl;
@@ -52,5 +55,11 @@ public class InAppFacade {
         InAppFacade.inappState = InAppState.IN_APP_STATE_ALLOWED;
     }
 
-    public static void ProcessTrackResponse() {}
+    public static void ProcessTrackResponse(Context context, SnapyrAction action) {
+        if (InAppFacade.inappState != InAppState.IN_APP_STATE_ALLOWED) {
+            return;
+        }
+
+        impl.ProcessTrackResponse(context, action);
+    }
 }

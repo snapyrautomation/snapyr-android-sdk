@@ -23,6 +23,12 @@
  */
 package com.snapyr.sdk.inapp;
 
+import android.content.Context;
+import com.snapyr.sdk.SnapyrAction;
+
 public class NoopInApp implements InAppIFace {
     public NoopInApp() {}
+
+    @Override
+    public void ProcessTrackResponse(Context context, SnapyrAction action) {}
 }
