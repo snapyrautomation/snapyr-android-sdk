@@ -31,11 +31,8 @@ import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.verifyZeroInteractions
 import com.nhaarman.mockitokotlin2.whenever
 import com.snapyr.sdk.PayloadQueue.PersistentQueue
-import com.snapyr.sdk.SnapyrWriteQueue.BatchPayloadWriter
 import com.snapyr.sdk.SnapyrWriteQueue.MAX_PAYLOAD_SIZE
 import com.snapyr.sdk.SnapyrWriteQueue.MAX_QUEUE_SIZE
-import com.snapyr.sdk.SnapyrWriteQueue.PayloadWriter
-import com.snapyr.sdk.TestUtils.SynchronousExecutor
 import com.snapyr.sdk.TestUtils.TRACK_PAYLOAD
 import com.snapyr.sdk.TestUtils.TRACK_PAYLOAD_JSON
 import com.snapyr.sdk.TestUtils.mockApplication
@@ -63,7 +60,12 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.mockito.Matchers.any
-import org.mockito.Mockito.*
+import org.mockito.Mockito.`when`
+import org.mockito.Mockito.doThrow
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.never
+import org.mockito.Mockito.spy
+import org.mockito.Mockito.times
 import org.mockito.MockitoAnnotations.initMocks
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
@@ -322,7 +324,13 @@ class snapyrQueueTest {
         val os = mock(OutputStream::class.java)
         val conn = mock(WriteConnection::class.java)
         `when`(conn.outputStream).thenReturn(os)
-        `when`(conn.close()).thenThrow(Client.HTTPException(500, "Internal Server Error", "internal server error"))
+        `when`(conn.close()).thenThrow(
+            Client.HTTPException(
+                500,
+                "Internal Server Error",
+                "internal server error"
+            )
+        )
         val client = mock(Client::class.java)
 
         whenever(client.upload()).thenReturn(conn)
@@ -346,7 +354,13 @@ class snapyrQueueTest {
         val conn = mock(WriteConnection::class.java)
         val os = mock(OutputStream::class.java)
         `when`(conn.outputStream).thenReturn(os)
-        `when`(conn.close()).thenThrow(Client.HTTPException(429, "Too Many Requests", "too many requests"))
+        `when`(conn.close()).thenThrow(
+            Client.HTTPException(
+                429,
+                "Too Many Requests",
+                "too many requests"
+            )
+        )
         val client = mock(Client::class.java)
         whenever(client.upload()).thenReturn(conn)
         val snapyrQueue = SnapyrBuilder()
@@ -408,8 +422,8 @@ class snapyrQueueTest {
     @Test
     @Throws(IOException::class)
     fun payloadVisitorReadsOnly475KB() {
-        val payloadWriter = PayloadWriter(
-            mock(BatchPayloadWriter::class.java), Crypto.none()
+        val payloadWriter = SnapyrWriteQueue.PayloadWriter(
+            mock(SnapyrWriteQueue.BatchPayloadWriter::class.java), Crypto.none()
         )
         val bytes =
             """{
@@ -577,7 +591,7 @@ class snapyrQueueTest {
                 integrations = emptyMap()
             }
             if (networkExecutor == null) {
-                networkExecutor = SynchronousExecutor()
+                networkExecutor = TestUtils.SynchronousExecutor()
             }
             return SnapyrWriteQueue(
                 context,
