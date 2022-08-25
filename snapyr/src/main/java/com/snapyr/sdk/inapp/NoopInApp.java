@@ -30,8 +30,5 @@ public class NoopInApp implements InAppIFace {
     public NoopInApp() {}
 
     @Override
-    public void processTrackResponse(SnapyrAction action) {}
-
-    @Override
-    public void dispatchPending(Context context) {}
+    public void ProcessTrackResponse(Context context, SnapyrAction action) {}
 }

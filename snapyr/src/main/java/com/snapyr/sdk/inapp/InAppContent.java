@@ -24,39 +24,29 @@
 package com.snapyr.sdk.inapp;
 
 import com.snapyr.sdk.ValueMap;
-import com.snapyr.sdk.internal.Cartographer;
-import java.io.IOException;
 
 public class InAppContent {
     private ValueMap jsonContent;
-    private InAppContentType contentType;
-    // private final String htmlContent; // TODO: is there a better type for this? The HTML type
-    // looks useless
+    private String
+            htmlContent; // TODO: is there a better type for this? The HTML type looks useless
 
-    public InAppContent(ValueMap raw) throws InAppMessage.MalformedMessageException {
+    public InAppContent(InAppContentType type, Object raw)
+            throws InAppMessage.MalformedMessageException {
         if (raw == null) {
-            throw new InAppMessage.MalformedMessageException("content object is nul");
-        }
-        String contentType = raw.getString("payloadType");
-        if (contentType == null) {
-            throw new InAppMessage.MalformedMessageException("no payloadType key");
-        }
-
-        Object content = raw.get("payload");
-        if (content == null) {
             throw new InAppMessage.MalformedMessageException("no content");
         }
 
-        switch (contentType) {
-            case "json":
-                this.contentType = InAppContentType.CONTENT_TYPE_JSON;
-                try {
-                    this.jsonContent =
-                            new ValueMap(Cartographer.INSTANCE.fromJson((String) content));
-                } catch (IOException e) {
+        switch (type) {
+            case CONTENT_TYPE_CUSTOM_HTML:
+            case CONTENT_TYPE_OVERLAY_HTTP:
+                this.htmlContent = (String) raw;
+                if (this.jsonContent == null) {
                     throw new InAppMessage.MalformedMessageException(
-                            "failed to parse json content: " + e.getMessage());
+                            "unknown format for overlay-html");
                 }
+                break;
+            case CONTENT_TYPE_CUSTOM_JSON:
+                this.jsonContent = (ValueMap) raw;
                 if (this.jsonContent == null) {
                     throw new InAppMessage.MalformedMessageException(
                             "unknown format for custom-json");
@@ -67,30 +57,6 @@ public class InAppContent {
                     throw new InAppMessage.MalformedMessageException("unknown format for content");
                 }
                 break;
-        }
-    }
-
-    public InAppContentType getType() {
-        return this.contentType;
-    }
-
-    public ValueMap getJsonContent() throws IncorrectContentAccessException {
-        if (this.contentType != InAppContentType.CONTENT_TYPE_JSON) {
-            throw new IncorrectContentAccessException("content is not json");
-        }
-        return this.jsonContent;
-    }
-
-    public ValueMap getHtmlContent() throws IncorrectContentAccessException {
-        if (this.contentType != InAppContentType.CONTENT_TYPE_HTML) {
-            throw new IncorrectContentAccessException("content is not html");
-        }
-        return this.jsonContent;
-    }
-
-    public static class IncorrectContentAccessException extends Exception {
-        public IncorrectContentAccessException(String error) {
-            super(error);
         }
     }
 }

@@ -29,14 +29,14 @@ import androidx.annotation.NonNull;
 import com.snapyr.sdk.SnapyrAction;
 import com.snapyr.sdk.integrations.Logger;
 import java.util.LinkedList;
-import java.util.Queue;
+import java.util.List;
 
 public class InAppManager implements InAppIFace {
-    private final int processInterval;
-    private final Logger logger;
-    private final InAppCallback UserCallback;
-    private Queue<InAppMessage> pendingActions;
-    private Context context;
+    private final int mInterval = 5000; // 5 seconds by default, can be changed later
+    private Runnable backgroundThread = null;
+    private Handler handler = null;
+    private Logger logger = null;
+    private List<InAppMessage> pendingActions;
 
     public InAppManager(@NonNull InAppConfig config, Context context) {
         this.logger = config.Logger;
@@ -45,10 +45,11 @@ public class InAppManager implements InAppIFace {
         this.pendingActions = new LinkedList<>();
         this.context = context;
         this.startBackgroundThread(config.PollingDelayMs);
+        this.pendingActions = new LinkedList<>();
     }
 
     @Override
-    public void processTrackResponse(SnapyrAction action) {
+    public void ProcessTrackResponse(Context context, SnapyrAction action) {
         try {
             this.pendingActions.add(new InAppMessage(action));
         } catch (InAppMessage.MalformedMessageException e) {
@@ -56,34 +57,24 @@ public class InAppManager implements InAppIFace {
         }
     }
 
-    @Override
-    public void dispatchPending(Context context) {
-        logger.info("polling for in-app content");
-        while (this.pendingActions.peek() != null) {
-            InAppMessage action = this.pendingActions.remove();
-            if (action.ActionType == InAppActionType.ACTION_TYPE_CUSTOM) {
-                logger.info("dispatching user in-app action");
-                this.UserCallback.onAction(action);
-            } else {
-                // TODO: handle internally
-            }
-        }
+    private void startBackgroundThread(int pollingDelayMs) {
+        this.handler = new Handler();
+        backgroundThread =
+                () -> {
+                    try {
+                        process();
+                    } finally {
+                        handler.postDelayed(backgroundThread, pollingDelayMs);
+                    }
+                };
+        backgroundThread.run();
     }
 
-    Handler handler = new Handler();
-    private Runnable backgroundThread =
-            new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        dispatchPending(context);
-                    } finally {
-                        handler.postDelayed(backgroundThread, 500);
-                    }
-                }
-            };
-
-    private void startBackgroundThread(int pollingDelayMs) {
-        this.handler.post(this.backgroundThread);
+    private void process() {
+        logger.info("polling for in-app content");
+        for (InAppMessage action : this.pendingActions) {
+            // nothing yet!
+            this.pendingActions.remove(action);
+        }
     }
 }

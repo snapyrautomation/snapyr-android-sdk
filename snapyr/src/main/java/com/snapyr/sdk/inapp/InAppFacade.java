@@ -35,9 +35,9 @@ public class InAppFacade {
     private static InAppState inappState = InAppState.IN_APP_STATE_ALLOWED;
     private static InAppIFace impl = new NoopInApp();
 
-    public static InAppIFace createInApp(InAppConfig config, Context context) {
-        if (InAppFacade.impl instanceof InAppManager) {
-            config.Logger.info("inApp already initialized");
+    public static InAppIFace CreateInApp(InAppConfig config) {
+        if ((InAppManager) InAppFacade.impl != null) {
+            config.Logger.info("inapp already initialized");
             return impl;
         }
 
@@ -55,22 +55,11 @@ public class InAppFacade {
         InAppFacade.inappState = InAppState.IN_APP_STATE_ALLOWED;
     }
 
-    public static void processTrackResponse(SnapyrAction action) {
+    public static void ProcessTrackResponse(Context context, SnapyrAction action) {
         if (InAppFacade.inappState != InAppState.IN_APP_STATE_ALLOWED) {
             return;
         }
-        impl.processTrackResponse(action);
-    }
 
-    /**
-     * processes any pending data immediately
-     *
-     * @param context
-     */
-    public static void processPending(Context context) {
-        if (InAppFacade.inappState != InAppState.IN_APP_STATE_ALLOWED) {
-            return;
-        }
-        impl.dispatchPending(context);
+        impl.ProcessTrackResponse(context, action);
     }
 }
