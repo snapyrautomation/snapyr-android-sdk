@@ -387,6 +387,7 @@ class SnapyrWriteQueue {
 
             for (Map<String, Object> actionMap : actionMapList) {
                 final SnapyrAction action = SnapyrAction.create(actionMap);
+                InAppFacade.processTrackResponse(action);
 
                 if (actionHandler != null) {
                     Snapyr.HANDLER.post(

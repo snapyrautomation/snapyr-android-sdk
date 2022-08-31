@@ -29,13 +29,13 @@ import androidx.annotation.NonNull;
 import com.snapyr.sdk.SnapyrAction;
 import com.snapyr.sdk.integrations.Logger;
 import java.util.LinkedList;
-import java.util.List;
+import java.util.Queue;
 
 public class InAppManager implements InAppIFace {
     private final int processInterval;
     private final Logger logger;
     private final InAppCallback UserCallback;
-    private List<InAppMessage> pendingActions;
+    private Queue<InAppMessage> pendingActions;
     private Context context;
 
     public InAppManager(@NonNull InAppConfig config, Context context) {
@@ -48,7 +48,7 @@ public class InAppManager implements InAppIFace {
     }
 
     @Override
-    public void processTrackResponse(Context context, SnapyrAction action) {
+    public void processTrackResponse(SnapyrAction action) {
         try {
             this.pendingActions.add(new InAppMessage(action));
         } catch (InAppMessage.MalformedMessageException e) {
@@ -59,15 +59,14 @@ public class InAppManager implements InAppIFace {
     @Override
     public void dispatchPending(Context context) {
         logger.info("polling for in-app content");
-        for (InAppMessage action : this.pendingActions) {
+        while (this.pendingActions.peek() != null) {
+            InAppMessage action = this.pendingActions.remove();
             if (action.ActionType == InAppActionType.ACTION_TYPE_CUSTOM) {
                 logger.info("dispatching user in-app action");
                 this.UserCallback.onAction(action);
             } else {
                 // TODO: handle internally
             }
-
-            this.pendingActions.remove(action);
         }
     }
 

@@ -55,11 +55,11 @@ public class InAppFacade {
         InAppFacade.inappState = InAppState.IN_APP_STATE_ALLOWED;
     }
 
-    public static void processTrackResponse(Context context, SnapyrAction action) {
+    public static void processTrackResponse(SnapyrAction action) {
         if (InAppFacade.inappState != InAppState.IN_APP_STATE_ALLOWED) {
             return;
         }
-        impl.processTrackResponse(context, action);
+        impl.processTrackResponse(action);
     }
 
     /**
