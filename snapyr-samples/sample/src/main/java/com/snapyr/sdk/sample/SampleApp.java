@@ -28,6 +28,7 @@ import android.util.Log;
 import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.ValueMap;
 import com.snapyr.sdk.inapp.InAppConfig;
+import com.snapyr.sdk.inapp.InAppMessage;
 import io.github.inflationx.calligraphy3.CalligraphyConfig;
 import io.github.inflationx.calligraphy3.CalligraphyInterceptor;
 import io.github.inflationx.viewpump.ViewPump;
@@ -36,7 +37,7 @@ public class SampleApp extends Application {
 
     // https://segment.com/segment-engineering/sources/android-test/settings/keys
     //    private static final String ANALYTICS_WRITE_KEY = "HO63Z36e0Ufa8AAgbjDomDuKxFuUICqI";
-    private static final String ANALYTICS_WRITE_KEY = "JLIfT7Q8gAkXDqkMbENkF1tKoaHRF552";
+    private static final String ANALYTICS_WRITE_KEY = "DcGYdR6yefb9iNXdRHGH55Rs3di8R7i6";
 
     @Override
     public void onCreate() {
@@ -80,10 +81,7 @@ public class SampleApp extends Application {
                                         .setPollingRate(1000)
                                         .setActionCallback(
                                                 (inAppMessage) -> {
-                                                    Log.println(
-                                                            Log.INFO,
-                                                            "SnapyrInApp",
-                                                            "inapp cb triggered");
+                                                    userInAppCallback(inAppMessage);
                                                 }))
                         .recordScreenViews();
 
@@ -92,5 +90,22 @@ public class SampleApp extends Application {
 
         // Now anytime you call Snapyr.with, the custom instance will be returned.
         Snapyr snapyr = Snapyr.with(this);
+    }
+
+    private void userInAppCallback(InAppMessage message) {
+        Log.println(
+                Log.INFO,
+                "SnapyrInApp",
+                "inapp cb triggered: \n\t"
+                        + message.Timestamp
+                        + "\n\t"
+                        + message.ActionType
+                        + "\n\t"
+                        + message.UserId
+                        + "\n\t"
+                        + message.ActionToken
+                        + "\n\t"
+                        + message.Content
+                        + "\n\t");
     }
 }
