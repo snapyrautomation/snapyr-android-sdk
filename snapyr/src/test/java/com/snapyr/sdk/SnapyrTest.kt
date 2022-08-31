@@ -165,7 +165,7 @@ open class SnapyrTest {
             false,
             true,
             false,
-            false
+            null
         )
     }
 
@@ -682,7 +682,7 @@ open class SnapyrTest {
             false,
             true,
             false,
-            false
+            null
         )
 
         callback.get().onCreate(mockLifecycleOwner)
@@ -815,7 +815,7 @@ open class SnapyrTest {
             false,
             true,
             false,
-            false
+            null
         )
 
         val activity = Mockito.mock(Activity::class.java)
@@ -891,7 +891,7 @@ open class SnapyrTest {
             false,
             true,
             false,
-            false
+            null
         )
         Snapyr.setSingletonInstance(analytics)
 
@@ -1296,7 +1296,7 @@ open class SnapyrTest {
             false,
             true,
             false,
-            false
+            null
         )
 
         assertThat(analytics.shutdown).isFalse
@@ -1368,7 +1368,7 @@ open class SnapyrTest {
             false,
             true,
             false,
-            false
+            null
         )
 
         assertThat(analytics.shutdown).isFalse
@@ -1440,7 +1440,7 @@ open class SnapyrTest {
             false,
             true,
             false,
-            false
+            null
         )
 
         assertThat(analytics.projectSettings).hasSize(3)
@@ -1485,7 +1485,7 @@ open class SnapyrTest {
             false,
             true,
             false,
-            false
+            null
         )
 
         assertThat(analytics.projectSettings).hasSize(3)
@@ -1541,7 +1541,7 @@ open class SnapyrTest {
             false,
             true,
             false,
-            false
+            null
         )
 
         assertThat(analytics.projectSettings).hasSize(3)
@@ -1600,7 +1600,7 @@ open class SnapyrTest {
             true,
             true,
             false,
-            false
+            null
         )
 
         analytics.track("event")

@@ -42,8 +42,7 @@ import java.util.Map;
  * objects into JSON streams. Use {@link Builder} to construct instances.
  */
 public class Cartographer {
-    public static final Cartographer INSTANCE =
-            new Builder().lenient(true).prettyPrint(false).build();
+    public static Cartographer INSTANCE = new Builder().lenient(true).prettyPrint(false).build();
 
     private final boolean isLenient;
     private final boolean prettyPrint;

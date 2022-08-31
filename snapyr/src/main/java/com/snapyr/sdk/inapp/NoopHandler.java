@@ -23,15 +23,9 @@
  */
 package com.snapyr.sdk.inapp;
 
-import android.content.Context;
-import com.snapyr.sdk.SnapyrAction;
-
-public class NoopInApp implements InAppIFace {
-    public NoopInApp() {}
-
+public class NoopHandler implements InAppCallback {
     @Override
-    public void processTrackResponse(Context context, SnapyrAction action) {}
-
-    @Override
-    public void dispatchPending(Context context) {}
+    public void onAction(InAppMessage message) {
+        // noop
+    }
 }

@@ -24,64 +24,62 @@
 package com.snapyr.sdk.inapp;
 
 import com.snapyr.sdk.SnapyrAction;
-import com.snapyr.sdk.ValueMap;
 import com.snapyr.sdk.internal.Utils;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
-/*
-"message": {
-    "content": "{}",
-    "type": 'custom-json',
-    "config": "{}",
-    "actionToken": "actionToken-0817645f-0953-4c49-9743-d3ae887f530c.paul0817.1660936988",
-    "timestamp": 1660936988
+enum InAppActionType {
+    ACTION_TYPE_CUSTOM,
+    ACTION_TYPE_OVERLAY,
 }
- */
 
 enum InAppContentType {
-    CONTENT_TYPE_OVERLAY_HTTP,
-    CONTENT_TYPE_CUSTOM_JSON,
-    CONTENT_TYPE_CUSTOM_HTML,
+    CONTENT_TYPE_JSON,
+    CONTENT_TYPE_HTML,
 }
 
 public class InAppMessage {
+    public static final SimpleDateFormat Formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
     public final Date Timestamp;
-    public final InAppContentType ContentType;
-    public final ValueMap Config;
+    public final InAppActionType ActionType;
     public final String ActionToken;
     public final InAppContent Content;
+    public final String UserId;
 
     public InAppMessage(SnapyrAction action) throws MalformedMessageException {
-        this.Timestamp = (Date) (action.get("timestamp"));
-        if (this.Timestamp == null) {
+        String rawTs = action.getString("timestamp");
+        if (rawTs == null) {
             throw new MalformedMessageException("no timestamp in action");
         }
-
-        String contentType = action.getString("type");
-        if (Utils.isNullOrEmpty(contentType)) {
-            throw new MalformedMessageException("missing content type in action");
+        try {
+            this.Timestamp = Formatter.parse(rawTs);
+        } catch (ParseException e) {
+            throw new MalformedMessageException("malformed timestamp");
         }
 
+        String contentType = action.getString("actionType");
+        if (Utils.isNullOrEmpty(contentType)) {
+            throw new MalformedMessageException("missing actionType in action");
+        }
+        this.UserId = action.getString("userId");
+
         switch (contentType) {
-            case "overlay-html":
-                this.ContentType = InAppContentType.CONTENT_TYPE_OVERLAY_HTTP;
+            case "custom":
+                this.ActionType = InAppActionType.ACTION_TYPE_CUSTOM;
                 break;
-            case "custom-json":
-                this.ContentType = InAppContentType.CONTENT_TYPE_CUSTOM_JSON;
-                break;
-            case "custom-html":
-                this.ContentType = InAppContentType.CONTENT_TYPE_CUSTOM_HTML;
+            case "overlay":
+                this.ActionType = InAppActionType.ACTION_TYPE_OVERLAY;
                 break;
             default:
                 throw new MalformedMessageException("unknown content type: " + contentType);
         }
 
-        this.Config = action.getValueMap("config");
         this.ActionToken = action.getString("actionToken");
         if (Utils.isNullOrEmpty(this.ActionToken)) {
             throw new MalformedMessageException("missing actionToken in action");
         }
-        this.Content = new InAppContent(this.ContentType, action.get("content"));
+        this.Content = new InAppContent(action.getValueMap("content"));
     }
 
     public static class MalformedMessageException extends Exception {

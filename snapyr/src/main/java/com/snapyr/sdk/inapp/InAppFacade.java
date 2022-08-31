@@ -35,31 +35,42 @@ public class InAppFacade {
     private static InAppState inappState = InAppState.IN_APP_STATE_ALLOWED;
     private static InAppIFace impl = new NoopInApp();
 
-    public static InAppIFace CreateInApp(InAppConfig config) {
-        if ((InAppManager) InAppFacade.impl != null) {
-            config.Logger.info("inapp already initialized");
+    public static InAppIFace createInApp(InAppConfig config, Context context) {
+        if (InAppFacade.impl instanceof InAppManager) {
+            config.Logger.info("inApp already initialized");
             return impl;
         }
 
-        InAppFacade.impl = new InAppManager(config);
+        InAppFacade.impl = new InAppManager(config, context);
         return InAppFacade.impl;
     }
 
     /** Suppresses all snapyr-rendered in-app creatives from rendering */
-    public static void SuppressInApp() {
+    public static void suppressInApp() {
         InAppFacade.inappState = InAppState.IN_APP_STATE_SUPPRESSED;
     }
 
     /** Allows snapyr-rendered in-app creatives to render */
-    public static void AllowInApp() {
+    public static void allowInApp() {
         InAppFacade.inappState = InAppState.IN_APP_STATE_ALLOWED;
     }
 
-    public static void ProcessTrackResponse(Context context, SnapyrAction action) {
+    public static void processTrackResponse(Context context, SnapyrAction action) {
         if (InAppFacade.inappState != InAppState.IN_APP_STATE_ALLOWED) {
             return;
         }
+        impl.processTrackResponse(context, action);
+    }
 
-        impl.ProcessTrackResponse(context, action);
+    /**
+     * processes any pending data immediately
+     *
+     * @param context
+     */
+    public static void processPending(Context context) {
+        if (InAppFacade.inappState != InAppState.IN_APP_STATE_ALLOWED) {
+            return;
+        }
+        impl.dispatchPending(context);
     }
 }

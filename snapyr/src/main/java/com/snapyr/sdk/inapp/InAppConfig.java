@@ -28,14 +28,20 @@ import com.snapyr.sdk.integrations.Logger;
 public class InAppConfig {
     public Logger Logger = null;
     public int PollingDelayMs = 5000; // 5 seconds by default
+    public InAppCallback Handler = new NoopHandler();
 
-    public InAppConfig SetLogger(Logger logger) {
+    public InAppConfig setLogger(Logger logger) {
         this.Logger = logger;
         return this;
     }
 
-    public InAppConfig SetPollingRate(int pollingDelayMs) {
+    public InAppConfig setPollingRate(int pollingDelayMs) {
         this.PollingDelayMs = pollingDelayMs;
+        return this;
+    }
+
+    public InAppConfig setActionCallback(InAppCallback handler) {
+        this.Handler = handler;
         return this;
     }
 }

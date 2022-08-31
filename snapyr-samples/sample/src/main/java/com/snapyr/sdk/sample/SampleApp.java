@@ -24,8 +24,10 @@
 package com.snapyr.sdk.sample;
 
 import android.app.Application;
+import android.util.Log;
 import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.ValueMap;
+import com.snapyr.sdk.inapp.InAppConfig;
 import io.github.inflationx.calligraphy3.CalligraphyConfig;
 import io.github.inflationx.calligraphy3.CalligraphyInterceptor;
 import io.github.inflationx.viewpump.ViewPump;
@@ -73,6 +75,16 @@ public class SampleApp extends Application {
                                                                                 true))))
                         .flushQueueSize(1)
                         .enableSnapyrPushHandling()
+                        .configureInAppHandling(
+                                new InAppConfig()
+                                        .setPollingRate(1000)
+                                        .setActionCallback(
+                                                (inAppMessage) -> {
+                                                    Log.println(
+                                                            Log.INFO,
+                                                            "SnapyrInApp",
+                                                            "inapp cb triggered");
+                                                }))
                         .recordScreenViews();
 
         // Set the initialized instance as a globally accessible instance.
