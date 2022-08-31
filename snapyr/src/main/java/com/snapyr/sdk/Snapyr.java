@@ -173,7 +173,7 @@ public class Snapyr {
             boolean nanosecondTimestamps,
             boolean useNewLifecycleMethods,
             boolean enableSnapyrPushHandling,
-            boolean enableSnapyrInapp) {
+            InAppConfig inAppConfig) {
         this.application = application;
         this.networkExecutor = networkExecutor;
         this.stats = stats;
@@ -292,9 +292,9 @@ public class Snapyr {
                 new SnapyrNotificationLifecycleCallbacks(this, this.logger, trackDeepLinks);
         application.registerActivityLifecycleCallbacks(notificationLifecycleCallbacks);
 
-        if (enableSnapyrInapp) {
-            InAppFacade.AllowInApp();
-            InAppFacade.CreateInApp(new InAppConfig().SetPollingRate(5000).SetLogger(logger));
+        if (inAppConfig != null) {
+            InAppFacade.allowInApp();
+            InAppFacade.createInApp(inAppConfig.setLogger(logger), application);
         }
 
         if (enableSnapyrPushHandling) {
@@ -1163,7 +1163,8 @@ public class Snapyr {
         private boolean recordScreenViews = false;
         private boolean trackDeepLinks = false;
         private boolean snapyrPushEnabled = false;
-        private boolean snapyrInappEnabled = false;
+        private boolean snapyrInAppEnabled = false;
+        private InAppConfig snapyrInAppConfig = null;
         private boolean nanosecondTimestamps = false;
         private Crypto crypto;
         private ValueMap defaultProjectSettings = new ValueMap();
@@ -1325,6 +1326,12 @@ public class Snapyr {
          */
         public Builder enableSnapyrPushHandling() {
             this.snapyrPushEnabled = true;
+            return this;
+        }
+
+        /** Enable Snapyr's in-app handling with the passed configuration */
+        public Builder configureInAppHandling(InAppConfig config) {
+            this.snapyrInAppConfig = config;
             return this;
         }
 
@@ -1490,7 +1497,7 @@ public class Snapyr {
                     nanosecondTimestamps,
                     useNewLifecycleMethods,
                     snapyrPushEnabled,
-                    snapyrInappEnabled);
+                    snapyrInAppConfig);
         }
     }
 }

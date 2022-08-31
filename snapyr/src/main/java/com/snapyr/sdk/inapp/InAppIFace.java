@@ -27,5 +27,7 @@ import android.content.Context;
 import com.snapyr.sdk.SnapyrAction;
 
 public interface InAppIFace {
-    public void ProcessTrackResponse(Context context, SnapyrAction action);
+    void processTrackResponse(Context context, SnapyrAction action);
+
+    void dispatchPending(Context context);
 }

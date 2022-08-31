@@ -28,7 +28,6 @@ import android.util.Log;
 import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.ValueMap;
 import com.snapyr.sdk.inapp.InAppConfig;
-import com.snapyr.sdk.inapp.InAppMessage;
 import io.github.inflationx.calligraphy3.CalligraphyConfig;
 import io.github.inflationx.calligraphy3.CalligraphyInterceptor;
 import io.github.inflationx.viewpump.ViewPump;
@@ -81,7 +80,10 @@ public class SampleApp extends Application {
                                         .setPollingRate(1000)
                                         .setActionCallback(
                                                 (inAppMessage) -> {
-                                                    userInAppCallback(inAppMessage);
+                                                    Log.println(
+                                                            Log.INFO,
+                                                            "SnapyrInApp",
+                                                            "inapp cb triggered");
                                                 }))
                         .recordScreenViews();
 

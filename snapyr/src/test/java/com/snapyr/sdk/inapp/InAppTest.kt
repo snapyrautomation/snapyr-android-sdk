@@ -23,32 +23,59 @@
  */
 package com.snapyr.sdk.inapp
 
+import com.snapyr.sdk.Snapyr
 import com.snapyr.sdk.SnapyrAction
+import com.snapyr.sdk.TestUtils
+import com.snapyr.sdk.integrations.Logger
 import com.snapyr.sdk.internal.Cartographer
 import java.io.IOException
 import org.junit.Test
-
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
+@RunWith(RobolectricTestRunner::class)
+@Config(manifest = Config.NONE)
 class InAppTest {
-    val MESSAGE_PAYLOAD_JSON =
-        """
-        {
-            "message": {
-                "content": "{}",
-                "type": 'custom-json',
-                "config": "{}",
-                "actionToken": "actionToken-0817645f-0953-4c49-9743-d3ae887f530c.paul0817.1660936988",
-                "timestamp": 1660936988
-            }
-        }
-        """.trimIndent()
+    private val RAW_ACTION = Cartographer.INSTANCE.fromJson(
+        """{
+         "actionToken": "",
+         "userId": "Brian",
+         "timestamp": "2022-08-31T17:15:30.135145417Z",
+         "actionType": "custom",
+         "actionToken": "actionToken-0817645f-0953-4c49-9743-d3ae887f530c.paul0817.1660936988",
+         "content": {
+            "payloadType": "json",
+            "payload": "{\n\"text\": \"foo bar\",\n\"param\" : \"colleen\"\n}"
+         }
+      }""".trimMargin()
+    )
 
     @Test
     @Throws(IOException::class)
     fun testMessageFromJson() {
-        return  // fix later brandon
-        val raw = Cartographer.INSTANCE.parseJson(MESSAGE_PAYLOAD_JSON)
-        val action = SnapyrAction.create(raw as Map<String, Object>)
-        val inAppMessage = InAppMessage(action)
-        check(inAppMessage.ActionToken == "actionToken-0817645f-0953-4c49-9743-d3ae887f530c.paul0817.1660936988")
+        val context = TestUtils.mockApplication()
+        val action = SnapyrAction.create(RAW_ACTION)
+        InAppFacade.allowInApp()
+        var callbackCalled = false
+        InAppFacade.createInApp(
+            InAppConfig()
+                .setPollingRate(50)
+                .setLogger(Logger.with(Snapyr.LogLevel.NONE))
+                .setActionCallback {
+                    callbackCalled = true
+                    check(it.ActionToken == "actionToken-0817645f-0953-4c49-9743-d3ae887f530c.paul0817.1660936988")
+                    check(it.Timestamp == InAppMessage.Formatter.parse("2022-08-31T17:15:30.135145417Z"))
+                    check(it.UserId == "Brian")
+                    check(it.ActionType == InAppActionType.ACTION_TYPE_CUSTOM)
+                    check(it.Content.type == InAppContentType.CONTENT_TYPE_JSON)
+                    check(it.Content.jsonContent != null)
+                },
+            context
+        )
+
+        InAppFacade.processTrackResponse(context, SnapyrAction.create(RAW_ACTION))
+        InAppFacade.processPending(context)
+
+        check(callbackCalled)
     }
 }
