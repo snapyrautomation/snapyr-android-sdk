@@ -47,7 +47,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -376,11 +375,12 @@ class SnapyrWriteQueue {
 
     void handleEventActions(Map<String, Object> eventResponse) {
         if (eventResponse.containsKey("details") && eventResponse.get("details") != null) {
-            Map<String, Object> details =  (Map<String, Object>)eventResponse.get("details");
-            for (Map.Entry<String,Object> entry : details.entrySet()){
-                Map<String, Object> typed =(Map<String, Object>)entry.getValue();
+            Map<String, Object> details = (Map<String, Object>) eventResponse.get("details");
+            for (Map.Entry<String, Object> entry : details.entrySet()) {
+                Map<String, Object> typed = (Map<String, Object>) entry.getValue();
                 if (typed.containsKey("actions") && typed.get("actions") != null) {
-                    for (Map<String, Object> actionMap : (List<Map<String, Object>>) eventResponse.get("actions")) {
+                    for (Map<String, Object> actionMap :
+                            (List<Map<String, Object>>) eventResponse.get("actions")) {
                         final SnapyrAction action = SnapyrAction.create(actionMap, context);
                         if (actionHandler != null) {
                             Snapyr.HANDLER.post(

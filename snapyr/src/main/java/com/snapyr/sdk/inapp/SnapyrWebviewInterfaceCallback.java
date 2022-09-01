@@ -21,24 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.snapyr.sdk;
+package com.snapyr.sdk.inapp;
 
-import static java.util.Collections.unmodifiableMap;
+import com.snapyr.sdk.ValueMap;
 
-import android.content.Context;
-import com.snapyr.sdk.internal.Private;
-import java.util.Map;
+public interface SnapyrWebviewInterfaceCallback {
+    void onClose();
 
-public class SnapyrAction extends ValueMap {
-    public Context context = null;
+    void onClick(String id, ValueMap parameters);
 
-    @Private
-    SnapyrAction(Map<String, Object> map, Context context) {
-        super(unmodifiableMap(map));
-        this.context = context;
-    }
-
-    public static SnapyrAction create(Map<String, Object> map, Context context) {
-        return new SnapyrAction(map, context);
-    }
+    void onLoad();
 }

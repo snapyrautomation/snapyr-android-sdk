@@ -1,0 +1,92 @@
+<html lang="en">
+<head>
+    <!-- Following meta tag is important for displaying content with appropriate scale on device.
+         i.e. without this, content will probably be tiny unless you tweak all the styling just
+         right -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <!-- title doesn't seem to be used but :shrug: -->
+    <title>Testing in app</title>
+    <style>
+        body {
+            /* background-color: blue; */
+            padding: 8px;
+            font-family: "Roboto",-apple-system,BlinkMacSystemFont,"Segoe UI Adjusted","Segoe UI","Liberation Sans",sans-serif;
+        }
+        h1 {
+            text-align: center;
+        }
+        p {
+            background-color: #b7e1e4;
+            padding: 16px;
+            text-align: center;
+        }
+        button {
+            display: block;
+            padding: 8px;
+            font-weight: bold;
+            font-size: 16px;
+            margin: 24px auto;
+        }
+    </style>
+    <script>
+        console.log("FIRST LINE OF SNAPYR JS!");
+
+        const ogLog = console.log;
+        console.log = function(...messages) {
+            ogLog(...messages);
+            sendMessageToNative({type: "log", level: "log", message: JSON.stringify(messages)});
+        }
+
+        const ogError = console.error;
+        console.error = function(...messages) {
+            ogError(...messages);
+            sendMessageToNative({type: "log", level: "error", message: JSON.stringify(messages)});
+        }
+
+        console.log("INAPPBROWSER: LOG FROM JS??!?");
+
+        function sendMessageToNative(message) {
+            const iosHandler = window.webkit?.messageHandlers?.snapyrMessageHandler;
+            if (iosHandler) {
+                iosHandler.postMessage(message);
+                return;
+            }
+
+            const androidHandler = window.snapyrMessageHandler;
+            if (androidHandler) {
+                androidHandler.handleMessage(JSON.stringify(message));
+                return;
+            }
+
+            // Neither OS seems to have worked if we got here...
+            ogLog("sendMessageToNative: no receiver found. Message:", message);
+        }
+
+        window.addEventListener("load", (_event) => {
+          console.log("INAPPBROWSER: page is fully loaded");
+          sendMessageToNative({type: "loaded"});
+
+          // Intentionally adding both "click" and "close" listeners/callbacks to the Close button...
+          // could have SDK handle this instead?
+          document.querySelectorAll("button").forEach(b => {
+              b.addEventListener("click", (event) => {
+                  console.log("Button '" + b.id + "' clicked!");
+                  sendMessageToNative({type: "click", id: b.id, parameters: JSON.stringify(b.dataset)});
+              });
+          });
+
+          document.querySelector("button#close").addEventListener("click", (event) => {
+              sendMessageToNative({type: "close"});
+          });
+
+        });
+    </script>
+</head>
+<body>
+<h1>In-App Message mofo!!!</h1>
+<p>Hey you there, look at this flipping amazing offer. I bet you want to click on at LEAST one of these buttons now!</p>
+<button id="action1" data-action="acceptOffer" data-value="1000">Get 1,000 Bonus Coins!</button>
+<button id="action2" data-action="acceptOffer" data-value="xtraLife">Get unlimited extra lives for 15 minutes!</button>
+<button id="close">Close this bad boy</button>
+</body>
+</html>
