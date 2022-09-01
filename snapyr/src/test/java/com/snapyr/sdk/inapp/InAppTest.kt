@@ -73,7 +73,7 @@ class InAppTest {
             context
         )
 
-        InAppFacade.processTrackResponse(context, SnapyrAction.create(RAW_ACTION))
+        InAppFacade.processTrackResponse(SnapyrAction.create(RAW_ACTION))
         InAppFacade.processPending(context)
 
         check(callbackCalled)
