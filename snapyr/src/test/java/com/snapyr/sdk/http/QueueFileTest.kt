@@ -23,15 +23,8 @@
  */
 package com.snapyr.sdk.http
 
-import android.content.Context
-import android.net.ConnectivityManager
-import android.net.NetworkInfo
-import com.nhaarman.mockitokotlin2.verify
-import com.nhaarman.mockitokotlin2.whenever
-import com.snapyr.sdk.TestUtils
 import com.snapyr.sdk.http.QueueFile.Element
 import com.snapyr.sdk.http.QueueFile.HEADER_LENGTH
-import com.snapyr.sdk.snapyrQueueTest
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
@@ -48,7 +41,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.mockito.Mockito
 
 class QueueFileTest {
     private val logger = Logger.getLogger(QueueFileTest::class.java.name)
@@ -117,8 +109,6 @@ class QueueFileTest {
         queue.raf.readFully(data, 0, expected.size)
         assertThat(data).isEqualTo(ByteArray(expected.size))
     }
-
-
 
     @Test
     @Throws(IOException::class)

@@ -30,9 +30,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
-
 import androidx.annotation.Nullable;
-
 import com.snapyr.sdk.Crypto;
 import com.snapyr.sdk.SnapyrAction;
 import com.snapyr.sdk.ValueMap;
@@ -42,7 +40,6 @@ import com.snapyr.sdk.integrations.Logger;
 import com.snapyr.sdk.internal.Cartographer;
 import com.snapyr.sdk.internal.Private;
 import com.snapyr.sdk.internal.Utils;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -274,7 +271,9 @@ public class BatchUploadQueue {
             connection = ConnectionFactory.getInstance().postBatch();
 
             // Write the payloads into the OutputStream.
-            payloadsUploaded = BatchUploadRequest.execute(this.batchQueue, connection.getOutputStream(), crypto);
+            payloadsUploaded =
+                    BatchUploadRequest.execute(
+                            this.batchQueue, connection.getOutputStream(), crypto);
 
             // Process the response.
             int responseCode = connection.getResponseCode();
@@ -369,13 +368,11 @@ public class BatchUploadQueue {
         }
     }
 
-
     public void shutdown() {
         flushScheduler.shutdownNow();
         snapyrThread.quit();
         Utils.closeQuietly(batchQueue);
     }
-
 
     static class SnapyrDispatcherHandler extends Handler {
         static final int REQUEST_FLUSH = 1;

@@ -88,6 +88,6 @@ public class InAppManager implements InAppIFace {
     }
 
     private void ackAction(String token) {
-        //this.httpClient.upload().
+        // this.httpClient.upload().
     }
 }

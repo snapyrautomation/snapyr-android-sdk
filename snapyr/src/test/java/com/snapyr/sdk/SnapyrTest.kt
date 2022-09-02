@@ -52,11 +52,7 @@ import com.snapyr.sdk.TestUtils.grantPermission
 import com.snapyr.sdk.TestUtils.mockApplication
 import com.snapyr.sdk.http.ConnectionFactory
 import com.snapyr.sdk.http.SettingsRequest
-import com.snapyr.sdk.integrations.AliasPayload
-import com.snapyr.sdk.integrations.GroupPayload
-import com.snapyr.sdk.integrations.IdentifyPayload
 import com.snapyr.sdk.integrations.Logger
-import com.snapyr.sdk.integrations.ScreenPayload
 import com.snapyr.sdk.integrations.TrackPayload
 import com.snapyr.sdk.internal.Cartographer
 import com.snapyr.sdk.internal.Utils.AnalyticsNetworkExecutorService
@@ -65,7 +61,7 @@ import com.snapyr.sdk.internal.Utils.DEFAULT_FLUSH_QUEUE_SIZE
 import com.snapyr.sdk.internal.Utils.isNullOrEmpty
 import com.snapyr.sdk.notifications.SnapyrNotificationLifecycleCallbacks
 import java.io.IOException
-import java.lang.Boolean.TRUE
+import java.io.OutputStream
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.atomic.AtomicReference
@@ -83,7 +79,6 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.eq
 import org.mockito.Mock
 import org.mockito.Mockito
-import org.mockito.Mockito.`when`
 import org.mockito.Mockito.mock
 import org.mockito.MockitoAnnotations.initMocks
 import org.mockito.Spy
@@ -91,7 +86,6 @@ import org.mockito.hamcrest.MockitoHamcrest.argThat
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
-import java.io.OutputStream
 
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE)
@@ -220,7 +214,6 @@ open class SnapyrTest {
         }
     }
 
-
     @Test
     fun identifyUpdatesCache() {
         makeAnalytics().identify("foo", Traits().putValue("bar", "qaz"), null)
@@ -318,7 +311,6 @@ open class SnapyrTest {
     @Test
     fun optionsCustomContext() {
         makeAnalytics().track("foo", null, Options().putContext("from_tests", true))
-
 
         verify(crpyto).encrypt(any(OutputStream::class.java))
     }

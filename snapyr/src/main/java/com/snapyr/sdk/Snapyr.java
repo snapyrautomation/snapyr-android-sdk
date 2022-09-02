@@ -44,9 +44,8 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.ProcessLifecycleOwner;
-
-import com.snapyr.sdk.http.ConnectionFactory;
 import com.snapyr.sdk.http.BatchUploadQueue;
+import com.snapyr.sdk.http.ConnectionFactory;
 import com.snapyr.sdk.http.SettingsRequest;
 import com.snapyr.sdk.inapp.InAppConfig;
 import com.snapyr.sdk.inapp.InAppFacade;
@@ -845,7 +844,6 @@ public class Snapyr {
         this.sendQueue.performEnqueue(payload);
     }
 
-
     /**
      * Asynchronously flushes all messages in the queue to the server, and tells bundled
      * integrations to do the same.
@@ -991,7 +989,8 @@ public class Snapyr {
                                     new Callable<ProjectSettings>() {
                                         @Override
                                         public ProjectSettings call() throws Exception {
-                                            Map<String, Object> settings =  SettingsRequest.execute();
+                                            Map<String, Object> settings =
+                                                    SettingsRequest.execute();
                                             if (!settings.containsKey("integrations")) {
                                                 settings.put(
                                                         "integrations",

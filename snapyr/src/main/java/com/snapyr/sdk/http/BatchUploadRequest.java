@@ -1,12 +1,33 @@
+/**
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2014 Segment.io, Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 package com.snapyr.sdk.http;
 
 import android.util.JsonWriter;
 import android.util.Log;
-
 import com.snapyr.sdk.Crypto;
 import com.snapyr.sdk.internal.Private;
 import com.snapyr.sdk.internal.Utils;
-
 import java.io.BufferedWriter;
 import java.io.Closeable;
 import java.io.IOException;
@@ -15,7 +36,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.util.Date;
-import java.util.List;
 
 /** A wrapper that emits a JSON formatted batch payload to the underlying writer. */
 public class BatchUploadRequest implements Closeable, BatchQueue.ElementVisitor {
@@ -24,8 +44,7 @@ public class BatchUploadRequest implements Closeable, BatchQueue.ElementVisitor 
      * is not present in payloads themselves, but is added later, such as {@code sentAt}, {@code
      * integrations} and other json tokens.
      */
-    @Private
-    static final int MAX_BATCH_SIZE = 475000; // 475KB.
+    @Private static final int MAX_BATCH_SIZE = 475000; // 475KB.
 
     @Private static final Charset UTF_8 = Charset.forName("UTF-8");
     static final String SNAPYR_KEY = "Snapyr";
@@ -39,7 +58,8 @@ public class BatchUploadRequest implements Closeable, BatchQueue.ElementVisitor 
     int size;
     int payloadCount;
 
-    public static int execute(BatchQueue queue, OutputStream stream, Crypto crypto) throws IOException {
+    public static int execute(BatchQueue queue, OutputStream stream, Crypto crypto)
+            throws IOException {
         BatchUploadRequest uploader = new BatchUploadRequest(stream, crypto);
         try {
             uploader.beginObject();
@@ -59,7 +79,6 @@ public class BatchUploadRequest implements Closeable, BatchQueue.ElementVisitor 
         this.jsonWriter = new JsonWriter(bufferedWriter);
         this.crypto = crypto;
     }
-
 
     @Override
     public boolean read(InputStream in, int length) throws IOException {
@@ -135,11 +154,11 @@ public class BatchUploadRequest implements Closeable, BatchQueue.ElementVisitor 
 
     BatchUploadRequest endObject() throws IOException {
         /**
-         * The sent timestamp is an ISO-8601-formatted string that, if present on a message, can
-         * be used to correct the original timestamp in situations where the local clock cannot
-         * be trusted, for example in our mobile libraries. The sentAt and receivedAt timestamps
-         * will be assumed to have occurred at the same time, and therefore the difference is
-         * the local clock skew.
+         * The sent timestamp is an ISO-8601-formatted string that, if present on a message, can be
+         * used to correct the original timestamp in situations where the local clock cannot be
+         * trusted, for example in our mobile libraries. The sentAt and receivedAt timestamps will
+         * be assumed to have occurred at the same time, and therefore the difference is the local
+         * clock skew.
          */
         jsonWriter.name("sentAt").value(Utils.toISO8601Date(new Date())).endObject();
         if (DEBUG_MODE) {

@@ -30,7 +30,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-
 /**
  * Abstraction to customize how connections are created. This is can be used to point our SDK at
  * your proxy server for instance.
@@ -52,7 +51,8 @@ public class ConnectionFactory {
 
     private static ConnectionFactory instance;
 
-    public static ConnectionFactory create(String writeKey, ConnectionFactory.Environment environment){
+    public static ConnectionFactory create(
+            String writeKey, ConnectionFactory.Environment environment) {
         ConnectionFactory.instance = new ConnectionFactory(writeKey, environment);
         return instance;
     }
@@ -63,14 +63,14 @@ public class ConnectionFactory {
 
     /**
      * Overrides the instance for testing
+     *
      * @param instance
      */
     public static void setInstance(ConnectionFactory instance) {
         ConnectionFactory.instance = instance;
     }
 
-
-    private ConnectionFactory(String writeKey, ConnectionFactory.Environment environment){
+    private ConnectionFactory(String writeKey, ConnectionFactory.Environment environment) {
         this.writeKey = writeKey;
         switch (environment) {
             case DEV:
@@ -93,7 +93,7 @@ public class ConnectionFactory {
     }
 
     /** Return a {@link HttpURLConnection} that reads JSON formatted project settings. */
-    public  HttpURLConnection getSettings() throws IOException {
+    public HttpURLConnection getSettings() throws IOException {
         return openConnection(configURL + writeKey, "GET");
     }
 
@@ -101,7 +101,7 @@ public class ConnectionFactory {
      * Return a {@link HttpURLConnection} that writes batched payloads to {@code
      * https://engine.snapyr.com/v1/import}.
      */
-    public  WriteConnection postBatch() throws IOException {
+    public WriteConnection postBatch() throws IOException {
         HttpURLConnection connection = openConnection(engineURL + "v1/batch", "POST");
         connection.setRequestProperty("Authorization", authorizationHeader(writeKey));
         // connection.setRequestProperty("Content-Encoding", "gzip");
@@ -110,7 +110,7 @@ public class ConnectionFactory {
         return new WriteConnection(connection);
     }
 
-    public  HttpURLConnection openConnection(String url, String method) throws IOException {
+    public HttpURLConnection openConnection(String url, String method) throws IOException {
         URL requestedURL;
 
         try {
