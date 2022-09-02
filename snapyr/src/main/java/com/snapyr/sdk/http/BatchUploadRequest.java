@@ -1,0 +1,159 @@
+package com.snapyr.sdk.http;
+
+import android.util.JsonWriter;
+import android.util.Log;
+
+import com.snapyr.sdk.Crypto;
+import com.snapyr.sdk.internal.Private;
+import com.snapyr.sdk.internal.Utils;
+
+import java.io.BufferedWriter;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
+import java.util.Date;
+import java.util.List;
+
+/** A wrapper that emits a JSON formatted batch payload to the underlying writer. */
+public class BatchUploadRequest implements Closeable, BatchQueue.ElementVisitor {
+    /**
+     * Our servers only accept batches < 500KB. This limit is 475KB to account for extra data that
+     * is not present in payloads themselves, but is added later, such as {@code sentAt}, {@code
+     * integrations} and other json tokens.
+     */
+    @Private
+    static final int MAX_BATCH_SIZE = 475000; // 475KB.
+
+    @Private static final Charset UTF_8 = Charset.forName("UTF-8");
+    static final String SNAPYR_KEY = "Snapyr";
+
+    public static final boolean DEBUG_MODE = false;
+    StringBuilder debugString = new StringBuilder();
+    private boolean needsComma = false;
+    private JsonWriter jsonWriter;
+    private BufferedWriter bufferedWriter;
+    private Crypto crypto;
+    int size;
+    int payloadCount;
+
+    public static int execute(BatchQueue queue, OutputStream stream, Crypto crypto) throws IOException {
+        BatchUploadRequest uploader = new BatchUploadRequest(stream, crypto);
+        try {
+            uploader.beginObject();
+            uploader.beginBatchArray();
+            queue.forEach(uploader);
+            uploader.endBatchArray();
+            uploader.endObject();
+            uploader.close();
+        } finally {
+            uploader.close();
+        }
+        return uploader.payloadCount;
+    }
+
+    private BatchUploadRequest(OutputStream stream, Crypto crypto) {
+        this.bufferedWriter = new BufferedWriter(new OutputStreamWriter(stream));
+        this.jsonWriter = new JsonWriter(bufferedWriter);
+        this.crypto = crypto;
+    }
+
+
+    @Override
+    public boolean read(InputStream in, int length) throws IOException {
+        InputStream is = this.crypto.decrypt(in);
+        final int newSize = size + length;
+        if (newSize > MAX_BATCH_SIZE) {
+            return false;
+        }
+        size = newSize;
+        byte[] data = new byte[length];
+        //noinspection ResultOfMethodCallIgnored
+        is.read(data, 0, length);
+        // Remove trailing whitespace.
+        emitPayloadObject(new String(data, UTF_8).trim());
+        payloadCount++;
+        return true;
+    }
+
+    public static void largeLog(String tag, String content) {
+        if (content.length() > 4000) {
+            Log.e(tag, content.substring(0, 4000));
+            largeLog(tag, content.substring(4000));
+        } else {
+            Log.e(tag, content);
+        }
+    }
+
+    BatchUploadRequest beginObject() throws IOException {
+        jsonWriter.beginObject();
+        if (DEBUG_MODE) {
+            debugString.append("{");
+        }
+        return this;
+    }
+
+    BatchUploadRequest beginBatchArray() throws IOException {
+        jsonWriter.name("batch").beginArray();
+        needsComma = false;
+        if (DEBUG_MODE) {
+            debugString.append("\"batch\":[");
+        }
+        return this;
+    }
+
+    BatchUploadRequest emitPayloadObject(String payload) throws IOException {
+        // Payloads already serialized into json when storing on disk. No need to waste cycles
+        // deserializing them.
+        if (needsComma) {
+            bufferedWriter.write(',');
+            if (DEBUG_MODE) {
+                debugString.append(",");
+            }
+        } else {
+            needsComma = true;
+        }
+        bufferedWriter.write(payload);
+        if (DEBUG_MODE) {
+            debugString.append(payload);
+        }
+        return this;
+    }
+
+    BatchUploadRequest endBatchArray() throws IOException {
+        if (!needsComma) {
+            throw new IOException("At least one payload must be provided.");
+        }
+        jsonWriter.endArray();
+        if (DEBUG_MODE) {
+            debugString.append("]");
+        }
+        return this;
+    }
+
+    BatchUploadRequest endObject() throws IOException {
+        /**
+         * The sent timestamp is an ISO-8601-formatted string that, if present on a message, can
+         * be used to correct the original timestamp in situations where the local clock cannot
+         * be trusted, for example in our mobile libraries. The sentAt and receivedAt timestamps
+         * will be assumed to have occurred at the same time, and therefore the difference is
+         * the local clock skew.
+         */
+        jsonWriter.name("sentAt").value(Utils.toISO8601Date(new Date())).endObject();
+        if (DEBUG_MODE) {
+            debugString.append(",\"sentAt\":\"" + Utils.toISO8601Date(new Date()) + "\"}");
+        }
+        return this;
+    }
+
+    @Override
+    public void close() throws IOException {
+        if (DEBUG_MODE) {
+            Log.e("Snapyr", "Payload sent to Snapyr engine:");
+            largeLog("Snapyr", debugString.toString());
+        }
+        jsonWriter.close();
+    }
+}

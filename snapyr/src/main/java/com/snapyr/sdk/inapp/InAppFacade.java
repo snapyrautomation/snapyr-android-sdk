@@ -24,6 +24,9 @@
 package com.snapyr.sdk.inapp;
 
 import android.content.Context;
+
+import androidx.annotation.NonNull;
+
 import com.snapyr.sdk.SnapyrAction;
 
 public class InAppFacade {
@@ -35,7 +38,8 @@ public class InAppFacade {
     private static InAppState inappState = InAppState.IN_APP_STATE_ALLOWED;
     private static InAppIFace impl = new NoopInApp();
 
-    public static InAppIFace createInApp(InAppConfig config, Context context) {
+    public static InAppIFace createInApp(@NonNull InAppConfig config,
+                                         @NonNull Context context) {
         if (InAppFacade.impl instanceof InAppManager) {
             config.Logger.info("inApp already initialized");
             return impl;

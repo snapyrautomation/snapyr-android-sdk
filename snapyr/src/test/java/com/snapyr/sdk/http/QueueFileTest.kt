@@ -21,10 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.snapyr.sdk
+package com.snapyr.sdk.http
 
-import com.snapyr.sdk.QueueFile.Element
-import com.snapyr.sdk.QueueFile.HEADER_LENGTH
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkInfo
+import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.whenever
+import com.snapyr.sdk.TestUtils
+import com.snapyr.sdk.http.QueueFile.Element
+import com.snapyr.sdk.http.QueueFile.HEADER_LENGTH
+import com.snapyr.sdk.snapyrQueueTest
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
@@ -41,6 +48,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import org.mockito.Mockito
 
 class QueueFileTest {
     private val logger = Logger.getLogger(QueueFileTest::class.java.name)
@@ -109,6 +117,8 @@ class QueueFileTest {
         queue.raf.readFully(data, 0, expected.size)
         assertThat(data).isEqualTo(ByteArray(expected.size))
     }
+
+
 
     @Test
     @Throws(IOException::class)
@@ -564,7 +574,7 @@ class QueueFileTest {
         queueFile.add(b)
 
         val iteration = intArrayOf(0)
-        val elementVisitor = PayloadQueue.ElementVisitor { input, length ->
+        val elementVisitor = BatchQueue.ElementVisitor { input, length ->
             if (iteration[0] == 0) {
                 assertThat(length).isEqualTo(2)
                 val actual = ByteArray(length)
@@ -599,7 +609,7 @@ class QueueFileTest {
         val actual = ByteArray(5)
         val offset = intArrayOf(0)
 
-        val elementVisitor = PayloadQueue.ElementVisitor { input, length ->
+        val elementVisitor = BatchQueue.ElementVisitor { input, length ->
             input.read(actual, offset[0], length)
             offset[0] += length
             true
@@ -621,7 +631,7 @@ class QueueFileTest {
         val buffer = ByteArray(8)
 
         val elementVisitor =
-            PayloadQueue.ElementVisitor { input, length -> // A common idiom for copying data between two streams, but it depends on the
+            BatchQueue.ElementVisitor { input, length -> // A common idiom for copying data between two streams, but it depends on the
                 // InputStream correctly returning -1 when no more data is available
                 var count: Int
                 while (input.read(buffer).also { count = it } != -1) {
@@ -657,7 +667,7 @@ class QueueFileTest {
         val b = byteArrayOf(3, 4, 5)
         queueFile.add(b)
         val iteration = AtomicInteger()
-        val elementVisitor = PayloadQueue.ElementVisitor { input, length ->
+        val elementVisitor = BatchQueue.ElementVisitor { input, length ->
             if (iteration.get() == 0) {
                 assertThat(length).isEqualTo(2)
                 val actual = ByteArray(length)

@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.snapyr.sdk;
+package com.snapyr.sdk.http;
 
 import static java.lang.Math.min;
 
@@ -35,7 +35,6 @@ import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.util.NoSuchElementException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -434,12 +433,12 @@ public class QueueFile implements Closeable {
 
     /**
      * Invokes the given reader once for each element in the queue, from eldest to most recently
-     * added. Continues until all elements are read or {@link PayloadQueue.ElementVisitor#read
+     * added. Continues until all elements are read or {@link BatchQueue.ElementVisitor#read
      * reader.read()} returns {@code false}.
      *
      * @return number of elements visited
      */
-    public synchronized int forEach(PayloadQueue.ElementVisitor reader) throws IOException {
+    public synchronized int forEach(BatchQueue.ElementVisitor reader) throws IOException {
         int position = first.position;
         for (int i = 0; i < elementCount; i++) {
             Element current = readElement(position);
@@ -538,38 +537,6 @@ public class QueueFile implements Closeable {
     @Override
     public synchronized void close() throws IOException {
         raf.close();
-    }
-
-    @Override
-    public String toString() {
-        final StringBuilder builder = new StringBuilder();
-        builder.append(getClass().getSimpleName()).append('[');
-        builder.append("fileLength=").append(fileLength);
-        builder.append(", size=").append(elementCount);
-        builder.append(", first=").append(first);
-        builder.append(", last=").append(last);
-        builder.append(", element lengths=[");
-        try {
-            forEach(
-                    new PayloadQueue.ElementVisitor() {
-                        boolean first = true;
-
-                        @Override
-                        public boolean read(InputStream in, int length) throws IOException {
-                            if (first) {
-                                first = false;
-                            } else {
-                                builder.append(", ");
-                            }
-                            builder.append(length);
-                            return true;
-                        }
-                    });
-        } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "read error", e);
-        }
-        builder.append("]]");
-        return builder.toString();
     }
 
     /** A pointer to an element. */

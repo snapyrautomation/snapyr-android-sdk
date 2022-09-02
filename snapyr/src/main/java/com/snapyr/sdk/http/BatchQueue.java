@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.snapyr.sdk;
+package com.snapyr.sdk.http;
 
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
@@ -29,16 +29,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedList;
 
-abstract class PayloadQueue implements Closeable {
-    abstract int size();
+public abstract class BatchQueue implements Closeable {
+    public abstract int size();
 
-    abstract void remove(int n) throws IOException;
+    public abstract void remove(int n) throws IOException;
 
-    abstract void add(byte[] data) throws IOException;
+    public abstract void add(byte[] data) throws IOException;
 
-    abstract void forEach(ElementVisitor visitor) throws IOException;
+    public abstract void forEach(ElementVisitor visitor) throws IOException;
 
-    interface ElementVisitor {
+    public interface ElementVisitor {
         /**
          * Called once per element.
          *
@@ -52,20 +52,20 @@ abstract class PayloadQueue implements Closeable {
         boolean read(InputStream in, int length) throws IOException;
     }
 
-    static class PersistentQueue extends PayloadQueue {
+    public static class PersistentQueue extends BatchQueue {
         final QueueFile queueFile;
 
-        PersistentQueue(QueueFile queueFile) {
+        public PersistentQueue(QueueFile queueFile) {
             this.queueFile = queueFile;
         }
 
         @Override
-        int size() {
+        public int size() {
             return queueFile.size();
         }
 
         @Override
-        void remove(int n) throws IOException {
+        public void remove(int n) throws IOException {
             try {
                 queueFile.remove(n);
             } catch (ArrayIndexOutOfBoundsException e) {
@@ -77,12 +77,12 @@ abstract class PayloadQueue implements Closeable {
         }
 
         @Override
-        void add(byte[] data) throws IOException {
+        public void add(byte[] data) throws IOException {
             queueFile.add(data);
         }
 
         @Override
-        void forEach(ElementVisitor visitor) throws IOException {
+        public void forEach(ElementVisitor visitor) throws IOException {
             queueFile.forEach(visitor);
         }
 
@@ -92,32 +92,32 @@ abstract class PayloadQueue implements Closeable {
         }
     }
 
-    static class MemoryQueue extends PayloadQueue {
+    public static class MemoryQueue extends BatchQueue {
         final LinkedList<byte[]> queue;
 
-        MemoryQueue() {
+        public MemoryQueue() {
             this.queue = new LinkedList<>();
         }
 
         @Override
-        int size() {
+        public int size() {
             return queue.size();
         }
 
         @Override
-        void remove(int n) throws IOException {
+        public void remove(int n) throws IOException {
             for (int i = 0; i < n; i++) {
                 queue.remove();
             }
         }
 
         @Override
-        void add(byte[] data) throws IOException {
+        public void add(byte[] data) throws IOException {
             queue.add(data);
         }
 
         @Override
-        void forEach(ElementVisitor visitor) throws IOException {
+        public void forEach(ElementVisitor visitor) throws IOException {
             for (int i = 0; i < queue.size(); i++) {
                 byte[] data = queue.get(i);
                 boolean shouldContinue = visitor.read(new ByteArrayInputStream(data), data.length);

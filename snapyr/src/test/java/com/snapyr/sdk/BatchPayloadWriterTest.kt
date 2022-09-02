@@ -23,7 +23,8 @@
  */
 package com.snapyr.sdk
 
-import com.snapyr.sdk.SnapyrWriteQueue.BatchPayloadWriter
+import com.snapyr.sdk.http.BatchQueue
+import com.snapyr.sdk.http.BatchUploadRequest
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import org.assertj.core.api.Assertions.assertThat
@@ -40,50 +41,40 @@ class BatchPayloadWriterTest {
     @Throws(IOException::class)
     fun batchPayloadWriter() {
         val byteArrayOutputStream = ByteArrayOutputStream()
-        val batchPayloadWriter = BatchPayloadWriter(byteArrayOutputStream)
-        batchPayloadWriter
-            .beginObject()
-            .beginBatchArray()
-            .emitPayloadObject("foobarbazqux")
-            .emitPayloadObject("{}")
-            .emitPayloadObject("2")
-            .endBatchArray()
-            .endObject()
-            .close()
+        val queue = BatchQueue.MemoryQueue()
+        queue.add("{ \"item_1\" : 10 }".toByteArray())
+        queue.add("{ \"item_2\" : 11 }".toByteArray())
+        val written = BatchUploadRequest.execute(queue, byteArrayOutputStream, Crypto.none())
 
-        // todo: inject a fake clock. for now we'll compare a lower precision.
+        assertThat(written == 2)
         assertThat(byteArrayOutputStream.toString())
-            .contains("{\"batch\":[foobarbazqux,{},2],\"sentAt\":\"")
+            .contains("\"item_1\" : 10")
+        assertThat(byteArrayOutputStream.toString())
+            .contains("\"item_2\" : 11")
     }
 
     @Test
     @Throws(IOException::class)
     fun batchPayloadWriterSingleItem() {
         val byteArrayOutputStream = ByteArrayOutputStream()
-        val batchPayloadWriter = BatchPayloadWriter(byteArrayOutputStream)
-        batchPayloadWriter
-            .beginObject()
-            .beginBatchArray()
-            .emitPayloadObject("qaz")
-            .endBatchArray()
-            .endObject()
-            .close()
+        val queue = BatchQueue.MemoryQueue()
+        queue.add("{ \"foobarbazqux\" : 10 }".toByteArray())
+        val written = BatchUploadRequest.execute(queue, byteArrayOutputStream, Crypto.none())
+        assertThat(written == 1)
 
-        // todo: inject a fake clock. for now we'll compare a lower precision.
         assertThat(byteArrayOutputStream.toString())
-            .contains("{\"batch\":[qaz],\"sentAt\":\"")
+            .contains("\"batch\":[{ \"foobarbazqux\" : 10 }]")
     }
 
     @Test
     @Throws(IOException::class)
     fun batchPayloadWriterFailsForNoItem() {
         val byteArrayOutputStream = ByteArrayOutputStream()
-        val batchPayloadWriter = BatchPayloadWriter(byteArrayOutputStream)
-
+        val queue = BatchQueue.MemoryQueue()
         try {
-            batchPayloadWriter.beginObject().beginBatchArray().endBatchArray().endObject().close()
+            BatchUploadRequest.execute(queue, byteArrayOutputStream, Crypto.none())
         } catch (exception: IOException) {
-            assertThat(exception).hasMessage("At least one payload must be provided.")
+            assertThat(exception).hasMessage("Incomplete document")
         }
     }
 }
