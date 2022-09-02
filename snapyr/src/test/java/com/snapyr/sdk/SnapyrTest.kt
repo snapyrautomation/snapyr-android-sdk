@@ -164,7 +164,8 @@ open class SnapyrTest {
             lifecycle,
             false,
             true,
-            false
+            false,
+            null
         )
     }
 
@@ -680,7 +681,8 @@ open class SnapyrTest {
             lifecycle,
             false,
             true,
-            false
+            false,
+            null
         )
 
         callback.get().onCreate(mockLifecycleOwner)
@@ -812,7 +814,8 @@ open class SnapyrTest {
             lifecycle,
             false,
             true,
-            false
+            false,
+            null
         )
 
         val activity = Mockito.mock(Activity::class.java)
@@ -887,7 +890,8 @@ open class SnapyrTest {
             lifecycle,
             false,
             true,
-            false
+            false,
+            null
         )
         Snapyr.setSingletonInstance(analytics)
 
@@ -1291,7 +1295,8 @@ open class SnapyrTest {
             lifecycle,
             false,
             true,
-            false
+            false,
+            null
         )
 
         assertThat(analytics.shutdown).isFalse
@@ -1362,7 +1367,8 @@ open class SnapyrTest {
             lifecycle,
             false,
             true,
-            false
+            false,
+            null
         )
 
         assertThat(analytics.shutdown).isFalse
@@ -1433,7 +1439,8 @@ open class SnapyrTest {
             lifecycle,
             false,
             true,
-            false
+            false,
+            null
         )
 
         assertThat(analytics.projectSettings).hasSize(3)
@@ -1477,7 +1484,8 @@ open class SnapyrTest {
             lifecycle,
             false,
             true,
-            false
+            false,
+            null
         )
 
         assertThat(analytics.projectSettings).hasSize(3)
@@ -1532,7 +1540,8 @@ open class SnapyrTest {
             lifecycle,
             false,
             true,
-            false
+            false,
+            null
         )
 
         assertThat(analytics.projectSettings).hasSize(3)
@@ -1590,7 +1599,8 @@ open class SnapyrTest {
             lifecycle,
             true,
             true,
-            false
+            false,
+            null
         )
 
         analytics.track("event")

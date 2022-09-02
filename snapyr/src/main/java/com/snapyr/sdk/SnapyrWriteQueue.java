@@ -35,6 +35,7 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 import com.snapyr.sdk.http.Client;
 import com.snapyr.sdk.http.WriteConnection;
+import com.snapyr.sdk.inapp.InAppFacade;
 import com.snapyr.sdk.integrations.BasePayload;
 import com.snapyr.sdk.integrations.Logger;
 import com.snapyr.sdk.internal.Cartographer;
@@ -386,6 +387,8 @@ class SnapyrWriteQueue {
 
             for (Map<String, Object> actionMap : actionMapList) {
                 final SnapyrAction action = SnapyrAction.create(actionMap);
+                InAppFacade.processTrackResponse(action);
+
                 if (actionHandler != null) {
                     Snapyr.HANDLER.post(
                             new Runnable() {
@@ -405,6 +408,8 @@ class SnapyrWriteQueue {
             }
         }
     }
+
+    void dispatchAction(SnapyrAction action) {}
 
     void shutdown() {
         flushScheduler.shutdownNow();

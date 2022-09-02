@@ -46,6 +46,8 @@ import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.ProcessLifecycleOwner;
 import com.snapyr.sdk.http.Client;
 import com.snapyr.sdk.http.ConnectionFactory;
+import com.snapyr.sdk.inapp.InAppConfig;
+import com.snapyr.sdk.inapp.InAppFacade;
 import com.snapyr.sdk.integrations.AliasPayload;
 import com.snapyr.sdk.integrations.BasePayload;
 import com.snapyr.sdk.integrations.GroupPayload;
@@ -170,7 +172,8 @@ public class Snapyr {
             @NonNull Lifecycle lifecycle,
             boolean nanosecondTimestamps,
             boolean useNewLifecycleMethods,
-            boolean enableSnapyrPushHandling) {
+            boolean enableSnapyrPushHandling,
+            InAppConfig inAppConfig) {
         this.application = application;
         this.networkExecutor = networkExecutor;
         this.stats = stats;
@@ -288,6 +291,11 @@ public class Snapyr {
         notificationLifecycleCallbacks =
                 new SnapyrNotificationLifecycleCallbacks(this, this.logger, trackDeepLinks);
         application.registerActivityLifecycleCallbacks(notificationLifecycleCallbacks);
+
+        if (inAppConfig != null) {
+            InAppFacade.allowInApp();
+            InAppFacade.createInApp(inAppConfig.setLogger(logger), application);
+        }
 
         if (enableSnapyrPushHandling) {
             this.notificationHandler = new SnapyrNotificationHandler(application);
@@ -1154,7 +1162,9 @@ public class Snapyr {
         private boolean trackApplicationLifecycleEvents = false;
         private boolean recordScreenViews = false;
         private boolean trackDeepLinks = false;
-        private boolean snapyrPush = false;
+        private boolean snapyrPushEnabled = false;
+        private boolean snapyrInAppEnabled = false;
+        private InAppConfig snapyrInAppConfig = null;
         private boolean nanosecondTimestamps = false;
         private Crypto crypto;
         private ValueMap defaultProjectSettings = new ValueMap();
@@ -1315,7 +1325,13 @@ public class Snapyr {
          * attempt to automatically register the device's Firebase token.
          */
         public Builder enableSnapyrPushHandling() {
-            this.snapyrPush = true;
+            this.snapyrPushEnabled = true;
+            return this;
+        }
+
+        /** Enable Snapyr's in-app handling with the passed configuration */
+        public Builder configureInAppHandling(InAppConfig config) {
+            this.snapyrInAppConfig = config;
             return this;
         }
 
@@ -1480,7 +1496,8 @@ public class Snapyr {
                     lifecycle,
                     nanosecondTimestamps,
                     useNewLifecycleMethods,
-                    snapyrPush);
+                    snapyrPushEnabled,
+                    snapyrInAppConfig);
         }
     }
 }

@@ -564,11 +564,6 @@ class snapyrQueueTest {
             return this
         }
 
-        fun actionHandler(actionHandler: SnapyrActionHandler): SnapyrBuilder {
-            this.actionHandler = actionHandler
-            return this
-        }
-
         fun build(): SnapyrWriteQueue {
             if (context == null) {
                 context = mockApplication()
@@ -577,6 +572,9 @@ class snapyrQueueTest {
             }
             if (client == null) {
                 client = mock(Client::class.java)
+            }
+            if (actionHandler == null) {
+                actionHandler = mock(SnapyrActionHandler::class.java)
             }
             if (cartographer == null) {
                 cartographer = Cartographer.INSTANCE
