@@ -96,6 +96,6 @@ class InAppTest {
         Assertions.assertThat(method.value).isEqualTo("POST")
 
         // should have called the user callback
-        check(callbackCalled)
+        Assertions.assertThat(callbackCalled).isEqualTo(true)
     }
 }

@@ -28,11 +28,11 @@ import com.snapyr.sdk.services.ServiceFacade;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 
-public class AckActionRequest {
-    public static final String AckInappActionUrl = "v1/actions/";
+public class AckUserActionRequest {
+    public static final String AckInAppActionUrl = "v1/actions/";
 
     static String getUrl(String user, String token) {
-        return AckInappActionUrl + user + "?actionToken=" + token + "&status=delivered";
+        return AckInAppActionUrl + user + "?actionToken=" + token + "&status=delivered";
     }
 
     static void execute(String user, String token) throws IOException {

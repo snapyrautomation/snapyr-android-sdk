@@ -36,7 +36,7 @@ import java.net.HttpURLConnection;
 public class ReadConnection implements Closeable {
     final HttpURLConnection connection;
 
-    ReadConnection(HttpURLConnection connection) {
+    public ReadConnection(HttpURLConnection connection) {
         if (connection == null) {
             throw new IllegalArgumentException("connection == null");
         }
