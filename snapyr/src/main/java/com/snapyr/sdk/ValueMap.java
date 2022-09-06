@@ -25,8 +25,8 @@ package com.snapyr.sdk;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import com.snapyr.sdk.services.Cartographer;
 import com.snapyr.sdk.internal.Utils;
+import com.snapyr.sdk.services.Cartographer;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;

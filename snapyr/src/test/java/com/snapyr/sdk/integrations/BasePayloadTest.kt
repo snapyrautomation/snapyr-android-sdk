@@ -25,8 +25,13 @@ package com.snapyr.sdk.integrations
 
 import androidx.annotation.Nullable
 import com.nhaarman.mockitokotlin2.any
-import com.snapyr.sdk.internal.*
+import com.snapyr.sdk.internal.AliasPayload
+import com.snapyr.sdk.internal.BasePayload
 import com.snapyr.sdk.internal.BasePayload.Type
+import com.snapyr.sdk.internal.GroupPayload
+import com.snapyr.sdk.internal.IdentifyPayload
+import com.snapyr.sdk.internal.ScreenPayload
+import com.snapyr.sdk.internal.TrackPayload
 import java.util.Date
 import org.assertj.core.api.Assertions
 import org.assertj.core.data.MapEntry.entry

@@ -29,8 +29,8 @@ import android.net.Uri;
 import androidx.core.app.NotificationManagerCompat;
 import com.snapyr.sdk.Properties;
 import com.snapyr.sdk.Snapyr;
-import com.snapyr.sdk.services.ServiceFacade;
 import com.snapyr.sdk.notifications.SnapyrNotificationHandler;
+import com.snapyr.sdk.services.ServiceFacade;
 
 public class TrackerUtil {
     public static void trackDeepLink(Context context, Intent intent) {
