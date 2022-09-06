@@ -23,15 +23,31 @@
  */
 package com.snapyr.sdk.inapp;
 
-import com.snapyr.sdk.http.ConnectionFactory;
+import com.snapyr.sdk.http.HTTPException;
+import com.snapyr.sdk.services.ServiceFacade;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 
 public class AckActionRequest {
-    public static final String AckInappActionUrl = "/v1/actions";
+    public static final String AckInappActionUrl = "v1/actions/";
 
-    static void execute(String token) throws IOException {
-        String builtUrl = AckInappActionUrl + "?actionToken=" + token;
-        HttpURLConnection conn = ConnectionFactory.getInstance().engineRequest(builtUrl, "POST");
+    static String getUrl(String user, String token) {
+        return AckInappActionUrl + user + "?actionToken=" + token + "&status=delivered";
+    }
+
+    static void execute(String user, String token) throws IOException {
+        String builtUrl = getUrl(user, token);
+        HttpURLConnection conn = null;
+        try {
+            conn = ServiceFacade.getConnectionFactory().engineRequest(builtUrl, "POST");
+            int responseCode = conn.getResponseCode();
+            if (responseCode != 200) {
+                throw new HTTPException(responseCode, "failed to ack inapp message", "");
+            }
+        } finally {
+            if (conn != null) {
+                conn.disconnect();
+            }
+        }
     }
 }

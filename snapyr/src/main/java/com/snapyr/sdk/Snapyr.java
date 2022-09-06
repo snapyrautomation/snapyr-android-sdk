@@ -152,6 +152,7 @@ public class Snapyr {
             Cartographer cartographer,
             ProjectSettings.Cache projectSettingsCache,
             String writeKey,
+            ConnectionFactory.Environment environment,
             int flushQueueSize,
             long flushIntervalInMillis,
             final ExecutorService analyticsExecutor,
@@ -174,6 +175,7 @@ public class Snapyr {
                 .setApplication(application)
                 .setLogger(logger)
                 .setCartographer(cartographer)
+                .setConnectionFactory(new ConnectionFactory(writeKey, environment))
                 .setCrypto(crypto);
 
         this.traitsCache = traitsCache;
@@ -1089,12 +1091,10 @@ public class Snapyr {
         private LogLevel logLevel;
         private ExecutorService networkExecutor;
         private ExecutorService executor;
-        private ConnectionFactory connectionFactory;
         private boolean trackApplicationLifecycleEvents = false;
         private boolean recordScreenViews = false;
         private boolean trackDeepLinks = false;
         private boolean snapyrPushEnabled = false;
-        private boolean snapyrInAppEnabled = false;
         private InAppConfig snapyrInAppConfig = null;
         private boolean nanosecondTimestamps = false;
         private Crypto crypto;
@@ -1225,20 +1225,6 @@ public class Snapyr {
             return this;
         }
 
-        /**
-         * Specify the connection factory for customizing how connections are created.
-         *
-         * <p>This is a beta API, and might be changed in the future. Use it with care!
-         * http://bit.ly/1JVlA2e
-         */
-        public Builder connectionFactory(ConnectionFactory connectionFactory) {
-            if (connectionFactory == null) {
-                throw new IllegalArgumentException("ConnectionFactory must not be null.");
-            }
-            this.connectionFactory = connectionFactory;
-            return this;
-        }
-
         /** Configure Snapyr to use the Snapyr dev environment - internal use only */
         public Builder enableDevEnvironment() {
             this.snapyrEnvironment = ConnectionFactory.Environment.DEV;
@@ -1347,7 +1333,6 @@ public class Snapyr {
             if (Utils.isNullOrEmpty(tag)) {
                 tag = writeKey;
             }
-
             if (defaultOptions == null) {
                 defaultOptions = new Options();
             }
@@ -1357,9 +1342,6 @@ public class Snapyr {
             if (networkExecutor == null) {
                 networkExecutor = new Utils.AnalyticsNetworkExecutorService();
             }
-
-            ConnectionFactory.create(this.writeKey, this.snapyrEnvironment);
-
             if (crypto == null) {
                 crypto = Crypto.none();
             }
@@ -1404,6 +1386,7 @@ public class Snapyr {
                     cartographer,
                     projectSettingsCache,
                     writeKey,
+                    snapyrEnvironment,
                     flushQueueSize,
                     flushIntervalInMillis,
                     executor,

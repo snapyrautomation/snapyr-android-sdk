@@ -61,6 +61,7 @@ import com.snapyr.sdk.notifications.SnapyrNotificationLifecycleCallbacks
 import com.snapyr.sdk.services.Cartographer
 import com.snapyr.sdk.services.Crypto
 import com.snapyr.sdk.services.Logger
+import com.snapyr.sdk.services.ServiceFacade
 import java.io.IOException
 import java.io.OutputStream
 import java.util.concurrent.CountDownLatch
@@ -132,9 +133,7 @@ open class SnapyrTest {
     private lateinit var snapyrContext: SnapyrContext
 
     fun makeAnalytics(): Snapyr {
-        connectionFactory = `mock`(ConnectionFactory::class.java)
-        ConnectionFactory.setInstance(connectionFactory)
-        return Snapyr(
+        val created = Snapyr(
             application,
             networkExecutor,
             traitsCache,
@@ -145,6 +144,7 @@ open class SnapyrTest {
             Cartographer.INSTANCE,
             projectSettingsCache,
             "foo",
+            ConnectionFactory.Environment.DEV,
             DEFAULT_FLUSH_QUEUE_SIZE,
             DEFAULT_FLUSH_INTERVAL.toLong(),
             analyticsExecutor,
@@ -161,6 +161,9 @@ open class SnapyrTest {
             false,
             null
         )
+        connectionFactory = `mock`(ConnectionFactory::class.java)
+        ServiceFacade.getInstance().setConnectionFactory(connectionFactory)
+        return created
     }
 
     @Before
@@ -515,6 +518,7 @@ open class SnapyrTest {
             Cartographer.INSTANCE,
             projectSettingsCache,
             "foo",
+            ConnectionFactory.Environment.DEV,
             DEFAULT_FLUSH_QUEUE_SIZE,
             DEFAULT_FLUSH_INTERVAL.toLong(),
             analyticsExecutor,
@@ -609,6 +613,7 @@ open class SnapyrTest {
             Cartographer.INSTANCE,
             projectSettingsCache,
             "foo",
+            ConnectionFactory.Environment.DEV,
             DEFAULT_FLUSH_QUEUE_SIZE,
             DEFAULT_FLUSH_INTERVAL.toLong(),
             analyticsExecutor,
@@ -674,6 +679,7 @@ open class SnapyrTest {
             Cartographer.INSTANCE,
             projectSettingsCache,
             "foo",
+            ConnectionFactory.Environment.DEV,
             DEFAULT_FLUSH_QUEUE_SIZE,
             DEFAULT_FLUSH_INTERVAL.toLong(),
             analyticsExecutor,
@@ -978,6 +984,7 @@ open class SnapyrTest {
                 Cartographer.INSTANCE,
                 projectSettingsCache,
                 "foo",
+                ConnectionFactory.Environment.DEV,
                 DEFAULT_FLUSH_QUEUE_SIZE,
                 DEFAULT_FLUSH_INTERVAL.toLong(),
                 analyticsExecutor,
@@ -1051,6 +1058,7 @@ open class SnapyrTest {
                 Cartographer.INSTANCE,
                 projectSettingsCache,
                 "foo",
+                ConnectionFactory.Environment.DEV,
                 DEFAULT_FLUSH_QUEUE_SIZE,
                 DEFAULT_FLUSH_INTERVAL.toLong(),
                 analyticsExecutor,
@@ -1120,6 +1128,7 @@ open class SnapyrTest {
                 Cartographer.INSTANCE,
                 projectSettingsCache,
                 "foo",
+                ConnectionFactory.Environment.DEV,
                 DEFAULT_FLUSH_QUEUE_SIZE,
                 DEFAULT_FLUSH_INTERVAL.toLong(),
                 analyticsExecutor,
@@ -1162,6 +1171,7 @@ open class SnapyrTest {
                 Cartographer.INSTANCE,
                 projectSettingsCache,
                 "foo",
+                ConnectionFactory.Environment.DEV,
                 DEFAULT_FLUSH_QUEUE_SIZE,
                 DEFAULT_FLUSH_INTERVAL.toLong(),
                 analyticsExecutor,
@@ -1215,6 +1225,7 @@ open class SnapyrTest {
                 Cartographer.INSTANCE,
                 projectSettingsCache,
                 "foo",
+                ConnectionFactory.Environment.DEV,
                 DEFAULT_FLUSH_QUEUE_SIZE,
                 DEFAULT_FLUSH_INTERVAL.toLong(),
                 analyticsExecutor,
@@ -1270,6 +1281,7 @@ open class SnapyrTest {
                 Cartographer.INSTANCE,
                 projectSettingsCache,
                 "foo",
+                ConnectionFactory.Environment.DEV,
                 DEFAULT_FLUSH_QUEUE_SIZE,
                 DEFAULT_FLUSH_INTERVAL.toLong(),
                 analyticsExecutor,

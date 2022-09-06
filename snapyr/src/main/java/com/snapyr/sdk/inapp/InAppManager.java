@@ -28,6 +28,7 @@ import android.os.Handler;
 import androidx.annotation.NonNull;
 import com.snapyr.sdk.internal.SnapyrAction;
 import com.snapyr.sdk.services.Logger;
+import com.snapyr.sdk.services.ServiceFacade;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -50,7 +51,13 @@ public class InAppManager implements InAppIFace {
     @Override
     public void processTrackResponse(SnapyrAction action) {
         try {
-            this.pendingActions.add(new InAppMessage(action));
+            InAppMessage message = new InAppMessage(action);
+            this.pendingActions.add(message);
+            try {
+                AckActionRequest.execute(message.UserId, message.ActionToken);
+            } catch (Exception e) {
+                ServiceFacade.getLogger().error(e, "failed to ack in-app action");
+            }
         } catch (InAppMessage.MalformedMessageException e) {
             logger.error(e, "failed to convert action to in-app message", action);
         }
@@ -85,9 +92,5 @@ public class InAppManager implements InAppIFace {
 
     private void startBackgroundThread(int pollingDelayMs) {
         this.handler.post(this.backgroundThread);
-    }
-
-    private void ackAction(String token) {
-        // this.httpClient.upload().
     }
 }

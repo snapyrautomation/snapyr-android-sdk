@@ -262,7 +262,7 @@ public class BatchUploadQueue {
         WriteConnection connection = null;
         try {
             // Open a connection.
-            connection = ConnectionFactory.getInstance().postBatch();
+            connection = ServiceFacade.getConnectionFactory().postBatch();
 
             // Write the payloads into the OutputStream.
             payloadsUploaded =

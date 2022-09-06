@@ -49,28 +49,7 @@ public class ConnectionFactory {
     private final String configURL;
     private final String writeKey;
 
-    private static ConnectionFactory instance;
-
-    public static ConnectionFactory create(
-            String writeKey, ConnectionFactory.Environment environment) {
-        ConnectionFactory.instance = new ConnectionFactory(writeKey, environment);
-        return instance;
-    }
-
-    public static ConnectionFactory getInstance() {
-        return instance;
-    }
-
-    /**
-     * Overrides the instance for testing
-     *
-     * @param instance
-     */
-    public static void setInstance(ConnectionFactory instance) {
-        ConnectionFactory.instance = instance;
-    }
-
-    private ConnectionFactory(String writeKey, ConnectionFactory.Environment environment) {
+    public ConnectionFactory(String writeKey, ConnectionFactory.Environment environment) {
         this.writeKey = writeKey;
         switch (environment) {
             case DEV:

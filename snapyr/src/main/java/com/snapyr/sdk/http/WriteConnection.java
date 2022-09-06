@@ -52,12 +52,4 @@ public class WriteConnection extends ReadConnection {
             return connection.getOutputStream();
         }
     }
-
-    @Override
-    public void close() throws IOException {
-        super.close();
-        if (connection.getOutputStream() != null) {
-            connection.getOutputStream().close();
-        }
-    }
 }
