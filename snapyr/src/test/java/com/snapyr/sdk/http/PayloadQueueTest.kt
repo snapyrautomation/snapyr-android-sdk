@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.snapyr.sdk
+package com.snapyr.sdk.http
 
 import com.squareup.burst.BurstJUnit4
 import com.squareup.burst.annotation.Burst
@@ -37,22 +37,22 @@ import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 
 @RunWith(BurstJUnit4::class)
-class PayloadQueueTest {
+class BatchQueueTest {
     private enum class QueueFactory {
         FILE {
             @Throws(IOException::class)
-            override fun create(queueFile: QueueFile?): PayloadQueue {
-                return PayloadQueue.PersistentQueue(queueFile)
+            override fun create(queueFile: QueueFile?): BatchQueue {
+                return BatchQueue.PersistentQueue(queueFile)
             }
         },
         MEMORY {
-            override fun create(queueFile: QueueFile?): PayloadQueue {
-                return PayloadQueue.MemoryQueue()
+            override fun create(queueFile: QueueFile?): BatchQueue {
+                return BatchQueue.MemoryQueue()
             }
         };
 
         @Throws(IOException::class)
-        abstract fun create(queueFile: QueueFile?): PayloadQueue?
+        abstract fun create(queueFile: QueueFile?): BatchQueue?
     }
 
     @Rule
@@ -61,7 +61,7 @@ class PayloadQueueTest {
 
     @Burst
     private lateinit var factory: QueueFactory
-    private lateinit var queue: PayloadQueue
+    private lateinit var queue: BatchQueue
 
     @Before
     @Throws(IOException::class)
@@ -115,7 +115,7 @@ class PayloadQueueTest {
     private fun readQueue(maxCount: Int): List<ByteArray> {
         val seen: MutableList<ByteArray> = ArrayList()
         queue.forEach(
-            object : PayloadQueue.ElementVisitor {
+            object : BatchQueue.ElementVisitor {
                 var count = 1
 
                 @Throws(IOException::class)

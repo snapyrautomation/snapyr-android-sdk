@@ -44,8 +44,9 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.ProcessLifecycleOwner;
-import com.snapyr.sdk.http.Client;
+import com.snapyr.sdk.http.BatchUploadQueue;
 import com.snapyr.sdk.http.ConnectionFactory;
+import com.snapyr.sdk.http.SettingsRequest;
 import com.snapyr.sdk.inapp.InAppConfig;
 import com.snapyr.sdk.inapp.InAppFacade;
 import com.snapyr.sdk.integrations.AliasPayload;
@@ -91,7 +92,6 @@ import java.util.concurrent.TimeUnit;
  * @see <a href="https://snapyr.com/">Snapyr</a>
  */
 public class Snapyr {
-
     static final Handler HANDLER =
             new Handler(Looper.getMainLooper()) {
                 @Override
@@ -99,6 +99,7 @@ public class Snapyr {
                     throw new AssertionError("Unknown handler message received: " + msg.what);
                 }
             };
+
     @Private static final String OPT_OUT_PREFERENCE_KEY = "opt-out";
     static final String WRITE_KEY_RESOURCE_IDENTIFIER = "analytics_write_key";
     @Private static final Properties EMPTY_PROPERTIES = new Properties();
@@ -113,18 +114,15 @@ public class Snapyr {
     static volatile Snapyr singleton = null;
 
     final ExecutorService networkExecutor;
-    final Stats stats;
     @Private final Options defaultOptions;
     @Private final Traits.Cache traitsCache;
     @Private final SnapyrContext snapyrContext;
     final String tag;
-    final Client client;
     final Cartographer cartographer;
     final Crypto crypto;
     @Private final SnapyrActivityLifecycleCallbacks activityLifecycleCallback;
     @Private final SnapyrNotificationLifecycleCallbacks notificationLifecycleCallbacks;
     @Private final Lifecycle lifecycle;
-    @Private final SnapyrActionHandler actionHandler;
     @Private final String writeKey;
     final int flushQueueSize;
     final long flushIntervalInMillis;
@@ -143,18 +141,16 @@ public class Snapyr {
     private SnapyrNotificationHandler notificationHandler;
     private String pushToken;
     private Map<String, PushTemplate> PushTemplates;
-    private final SnapyrWriteQueue sendQueue;
+    final BatchUploadQueue sendQueue;
 
     Snapyr(
             Application application,
             ExecutorService networkExecutor,
-            Stats stats,
             Traits.Cache traitsCache,
             SnapyrContext snapyrContext,
             Options defaultOptions,
             @NonNull Logger logger,
             String tag,
-            Client client,
             Cartographer cartographer,
             ProjectSettings.Cache projectSettingsCache,
             String writeKey,
@@ -162,7 +158,6 @@ public class Snapyr {
             long flushIntervalInMillis,
             final ExecutorService analyticsExecutor,
             final boolean shouldTrackApplicationLifecycleEvents,
-            final SnapyrActionHandler actionHandler,
             CountDownLatch advertisingIdLatch,
             final boolean shouldRecordScreenViews,
             final boolean trackDeepLinks,
@@ -176,13 +171,11 @@ public class Snapyr {
             InAppConfig inAppConfig) {
         this.application = application;
         this.networkExecutor = networkExecutor;
-        this.stats = stats;
         this.traitsCache = traitsCache;
         this.snapyrContext = snapyrContext;
         this.defaultOptions = defaultOptions;
         this.logger = logger;
         this.tag = tag;
-        this.client = client;
         this.cartographer = cartographer;
         this.projectSettingsCache = projectSettingsCache;
         this.writeKey = writeKey;
@@ -195,21 +188,17 @@ public class Snapyr {
         this.lifecycle = lifecycle;
         this.nanosecondTimestamps = nanosecondTimestamps;
         this.useNewLifecycleMethods = useNewLifecycleMethods;
-        this.actionHandler = actionHandler;
         this.PushTemplates = null;
         this.sendQueue =
-                new SnapyrWriteQueue(
+                new BatchUploadQueue(
                         application,
-                        client,
                         cartographer,
                         networkExecutor,
-                        stats,
                         flushIntervalInMillis,
                         flushQueueSize,
                         getLogger(),
                         crypto,
-                        null,
-                        actionHandler);
+                        null);
 
         namespaceSharedPreferences();
 
@@ -851,36 +840,8 @@ public class Snapyr {
             return;
         }
 
-        dispatchToHandler(payload);
-
         logger.verbose("Created payload %s.", payload);
         this.sendQueue.performEnqueue(payload);
-    }
-
-    private void dispatchToHandler(BasePayload payload) {
-        if (actionHandler == null) {
-            return;
-        }
-
-        switch (payload.type()) {
-            case alias:
-                actionHandler.onAlias((AliasPayload) payload);
-                break;
-            case track:
-                actionHandler.onTrack((TrackPayload) payload);
-                break;
-            case identify:
-                actionHandler.onIdentify((IdentifyPayload) payload);
-                break;
-            case screen:
-                actionHandler.onScreen((ScreenPayload) payload);
-                break;
-            case group:
-                actionHandler.onGroup((GroupPayload) payload);
-                break;
-            default:
-                break;
-        }
     }
 
     /**
@@ -901,11 +862,6 @@ public class Snapyr {
         // API
         //  for modifying the global context
         return snapyrContext;
-    }
-
-    /** Creates a {@link StatsSnapshot} of the current stats for this instance. */
-    public StatsSnapshot getSnapshot() {
-        return stats.createSnapshot();
     }
 
     /** Return the {@link Application} used to create this instance. */
@@ -1016,8 +972,6 @@ public class Snapyr {
         if (networkExecutor instanceof Utils.AnalyticsNetworkExecutorService) {
             networkExecutor.shutdown();
         }
-
-        stats.shutdown();
         shutdown = true;
     }
 
@@ -1035,7 +989,8 @@ public class Snapyr {
                                     new Callable<ProjectSettings>() {
                                         @Override
                                         public ProjectSettings call() throws Exception {
-                                            Map<String, Object> settings = client.fetchSettings();
+                                            Map<String, Object> settings =
+                                                    SettingsRequest.execute();
                                             if (!settings.containsKey("integrations")) {
                                                 settings.put(
                                                         "integrations",
@@ -1158,7 +1113,6 @@ public class Snapyr {
         private ExecutorService networkExecutor;
         private ExecutorService executor;
         private ConnectionFactory connectionFactory;
-        private SnapyrActionHandler actionHandler;
         private boolean trackApplicationLifecycleEvents = false;
         private boolean recordScreenViews = false;
         private boolean trackDeepLinks = false;
@@ -1402,11 +1356,6 @@ public class Snapyr {
             return this;
         }
 
-        public Builder actionHandler(SnapyrActionHandler actionHandler) {
-            this.actionHandler = actionHandler;
-            return this;
-        }
-
         /**
          * The executor on which payloads are dispatched asynchronously. This is not exposed
          * publicly.
@@ -1431,16 +1380,14 @@ public class Snapyr {
             if (networkExecutor == null) {
                 networkExecutor = new Utils.AnalyticsNetworkExecutorService();
             }
-            if (connectionFactory == null) {
-                connectionFactory = new ConnectionFactory(snapyrEnvironment);
-            }
+
+            ConnectionFactory.create(this.writeKey, this.snapyrEnvironment);
+
             if (crypto == null) {
                 crypto = Crypto.none();
             }
 
-            final Stats stats = new Stats();
             final Cartographer cartographer = Cartographer.INSTANCE;
-            final Client client = new Client(writeKey, connectionFactory);
 
             ProjectSettings.Cache projectSettingsCache =
                     new ProjectSettings.Cache(application, cartographer, tag);
@@ -1472,13 +1419,11 @@ public class Snapyr {
             return new Snapyr(
                     application,
                     networkExecutor,
-                    stats,
                     traitsCache,
                     snapyrContext,
                     defaultOptions,
                     logger,
                     tag,
-                    client,
                     cartographer,
                     projectSettingsCache,
                     writeKey,
@@ -1486,7 +1431,6 @@ public class Snapyr {
                     flushIntervalInMillis,
                     executor,
                     trackApplicationLifecycleEvents,
-                    actionHandler,
                     advertisingIdLatch,
                     recordScreenViews,
                     trackDeepLinks,

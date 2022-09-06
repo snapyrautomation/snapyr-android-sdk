@@ -21,10 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.snapyr.sdk
+package com.snapyr.sdk.http
 
-import com.snapyr.sdk.QueueFile.Element
-import com.snapyr.sdk.QueueFile.HEADER_LENGTH
+import com.snapyr.sdk.http.QueueFile.Element
+import com.snapyr.sdk.http.QueueFile.HEADER_LENGTH
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
@@ -564,7 +564,7 @@ class QueueFileTest {
         queueFile.add(b)
 
         val iteration = intArrayOf(0)
-        val elementVisitor = PayloadQueue.ElementVisitor { input, length ->
+        val elementVisitor = BatchQueue.ElementVisitor { input, length ->
             if (iteration[0] == 0) {
                 assertThat(length).isEqualTo(2)
                 val actual = ByteArray(length)
@@ -599,7 +599,7 @@ class QueueFileTest {
         val actual = ByteArray(5)
         val offset = intArrayOf(0)
 
-        val elementVisitor = PayloadQueue.ElementVisitor { input, length ->
+        val elementVisitor = BatchQueue.ElementVisitor { input, length ->
             input.read(actual, offset[0], length)
             offset[0] += length
             true
@@ -621,7 +621,7 @@ class QueueFileTest {
         val buffer = ByteArray(8)
 
         val elementVisitor =
-            PayloadQueue.ElementVisitor { input, length -> // A common idiom for copying data between two streams, but it depends on the
+            BatchQueue.ElementVisitor { input, length -> // A common idiom for copying data between two streams, but it depends on the
                 // InputStream correctly returning -1 when no more data is available
                 var count: Int
                 while (input.read(buffer).also { count = it } != -1) {
@@ -657,7 +657,7 @@ class QueueFileTest {
         val b = byteArrayOf(3, 4, 5)
         queueFile.add(b)
         val iteration = AtomicInteger()
-        val elementVisitor = PayloadQueue.ElementVisitor { input, length ->
+        val elementVisitor = BatchQueue.ElementVisitor { input, length ->
             if (iteration.get() == 0) {
                 assertThat(length).isEqualTo(2)
                 val actual = ByteArray(length)

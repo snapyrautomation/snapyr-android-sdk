@@ -31,31 +31,12 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.Map;
 
-/** HTTP client which can upload payloads and fetch project settings from the Snapyr public API. */
-public class Client {
-
-    final ConnectionFactory connectionFactory;
-    final String writeKey;
-
-    public Client(String writeKey, ConnectionFactory connectionFactory) {
-        this.writeKey = writeKey;
-        this.connectionFactory = connectionFactory;
-    }
-
-    private static ReadConnection createGetConnection(HttpURLConnection connection)
-            throws IOException {
-        return new ReadConnection(connection);
-    }
-
-    public WriteConnection upload() throws IOException {
-        return new WriteConnection(connectionFactory.upload(writeKey));
-    }
-
-    public Map<String, Object> fetchSettings() throws IOException {
-        Map<String, Object> results = null;
+public class SettingsRequest {
+    public static Map<String, Object> execute() throws IOException {
+        Map<String, Object> results;
         HttpURLConnection connection = null;
         try {
-            connection = connectionFactory.projectSettings(writeKey);
+            connection = ConnectionFactory.getInstance().getSettings();
             int responseCode = connection.getResponseCode();
             if (responseCode != HTTP_OK) {
                 connection.disconnect();
@@ -69,23 +50,5 @@ public class Client {
             connection.disconnect();
         }
         return results;
-    }
-
-    /** Represents an HTTP exception thrown for unexpected/non 2xx response codes. */
-    public static class HTTPException extends IOException {
-        public final int responseCode;
-        public final String responseMessage;
-        public final String responseBody;
-
-        public HTTPException(int responseCode, String responseMessage, String responseBody) {
-            super("HTTP " + responseCode + ": " + responseMessage + ". Response: " + responseBody);
-            this.responseCode = responseCode;
-            this.responseMessage = responseMessage;
-            this.responseBody = responseBody;
-        }
-
-        public boolean is4xx() {
-            return responseCode >= 400 && responseCode < 500;
-        }
     }
 }

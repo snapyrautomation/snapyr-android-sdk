@@ -21,24 +21,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.snapyr.sdk;
+package com.snapyr.sdk.http;
 
-import com.snapyr.sdk.integrations.AliasPayload;
-import com.snapyr.sdk.integrations.GroupPayload;
-import com.snapyr.sdk.integrations.IdentifyPayload;
-import com.snapyr.sdk.integrations.ScreenPayload;
-import com.snapyr.sdk.integrations.TrackPayload;
+import java.io.IOException;
 
-public interface SnapyrActionHandler {
-    void handleAction(SnapyrAction action);
+/** Represents an HTTP exception thrown for unexpected/non 2xx response codes. */
+public class HTTPException extends IOException {
+    public final int responseCode;
+    public final String responseMessage;
+    public final String responseBody;
 
-    void onIdentify(IdentifyPayload payload);
+    public HTTPException(int responseCode, String responseMessage, String responseBody) {
+        super("HTTP " + responseCode + ": " + responseMessage + ". Response: " + responseBody);
+        this.responseCode = responseCode;
+        this.responseMessage = responseMessage;
+        this.responseBody = responseBody;
+    }
 
-    void onTrack(TrackPayload payload);
-
-    void onAlias(AliasPayload payload);
-
-    void onGroup(GroupPayload payload);
-
-    void onScreen(ScreenPayload payload);
+    public boolean is4xx() {
+        return responseCode >= 400 && responseCode < 500;
+    }
 }

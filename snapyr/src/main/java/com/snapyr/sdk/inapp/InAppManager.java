@@ -38,7 +38,7 @@ public class InAppManager implements InAppIFace {
     private Queue<InAppMessage> pendingActions;
     private Context context;
 
-    public InAppManager(@NonNull InAppConfig config, Context context) {
+    public InAppManager(@NonNull InAppConfig config, @NonNull Context context) {
         this.logger = config.Logger;
         this.processInterval = config.PollingDelayMs;
         this.UserCallback = config.Handler;
@@ -85,5 +85,9 @@ public class InAppManager implements InAppIFace {
 
     private void startBackgroundThread(int pollingDelayMs) {
         this.handler.post(this.backgroundThread);
+    }
+
+    private void ackAction(String token) {
+        // this.httpClient.upload().
     }
 }
