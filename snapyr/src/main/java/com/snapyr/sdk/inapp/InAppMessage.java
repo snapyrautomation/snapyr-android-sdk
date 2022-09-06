@@ -23,7 +23,7 @@
  */
 package com.snapyr.sdk.inapp;
 
-import com.snapyr.sdk.SnapyrAction;
+import com.snapyr.sdk.internal.SnapyrAction;
 import com.snapyr.sdk.internal.Utils;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

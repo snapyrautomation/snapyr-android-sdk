@@ -25,7 +25,7 @@ package com.snapyr.sdk.http;
 
 import android.util.JsonWriter;
 import android.util.Log;
-import com.snapyr.sdk.Crypto;
+import com.snapyr.sdk.services.Crypto;
 import com.snapyr.sdk.internal.Private;
 import com.snapyr.sdk.internal.Utils;
 import java.io.BufferedWriter;

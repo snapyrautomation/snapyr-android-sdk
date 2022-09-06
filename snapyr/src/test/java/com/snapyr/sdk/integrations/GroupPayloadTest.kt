@@ -25,6 +25,7 @@ package com.snapyr.sdk.integrations
 
 import androidx.annotation.Nullable
 import com.nhaarman.mockitokotlin2.any
+import com.snapyr.sdk.internal.GroupPayload
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Assert.fail
 import org.junit.Before

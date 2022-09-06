@@ -31,13 +31,12 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
 import androidx.annotation.Nullable;
-import com.snapyr.sdk.Crypto;
-import com.snapyr.sdk.SnapyrAction;
+
+import com.snapyr.sdk.internal.SnapyrAction;
 import com.snapyr.sdk.ValueMap;
+import com.snapyr.sdk.services.ServiceFacade;
 import com.snapyr.sdk.inapp.InAppFacade;
-import com.snapyr.sdk.integrations.BasePayload;
-import com.snapyr.sdk.integrations.Logger;
-import com.snapyr.sdk.internal.Cartographer;
+import com.snapyr.sdk.internal.BasePayload;
 import com.snapyr.sdk.internal.Private;
 import com.snapyr.sdk.internal.Utils;
 import java.io.ByteArrayOutputStream;
@@ -94,30 +93,18 @@ public class BatchUploadQueue {
     private final int flushQueueSize;
     private final Handler handler;
     private final HandlerThread snapyrThread;
-    private final Logger logger;
-    private final Cartographer cartographer;
-    private final ExecutorService networkExecutor;
     private final ScheduledExecutorService flushScheduler;
-    private final Crypto crypto;
     private int flushesPerformed;
 
     public BatchUploadQueue(
             Context context,
-            Cartographer cartographer,
-            ExecutorService networkExecutor,
             long flushIntervalInMillis,
             int flushQueueSize,
-            Logger logger,
-            Crypto crypto,
             @Nullable BatchQueue queueOverride) {
         this.context = context;
-        this.networkExecutor = networkExecutor;
-        this.logger = logger;
-        this.cartographer = cartographer;
         this.flushQueueSize = flushQueueSize;
         this.flushScheduler =
                 Executors.newScheduledThreadPool(1, new Utils.AnalyticsThreadFactory());
-        this.crypto = crypto;
 
         BatchQueue BatchQueue = queueOverride;
         if (BatchQueue == null) {
@@ -126,7 +113,7 @@ public class BatchUploadQueue {
                 QueueFile queueFile = createQueueFile(folder, "payload_queue");
                 BatchQueue = new BatchQueue.PersistentQueue(queueFile);
             } catch (IOException e) {
-                logger.error(e, "Could not create disk queue. Falling back to memory queue.");
+                ServiceFacade.getLogger().error(e, "Could not create disk queue. Falling back to memory queue.");
                 BatchQueue = new BatchQueue.MemoryQueue();
             }
         }
@@ -188,13 +175,13 @@ public class BatchUploadQueue {
                 // queue
                 // to bring it below our capacity while we were waiting.
                 if (batchQueue.size() >= MAX_QUEUE_SIZE) {
-                    logger.info(
+                    ServiceFacade.getLogger().info(
                             "Queue is at max capacity (%s), removing oldest payload.",
                             batchQueue.size());
                     try {
                         batchQueue.remove(1);
                     } catch (IOException e) {
-                        logger.error(e, "Unable to remove oldest payload from queue.");
+                        ServiceFacade.getLogger().error(e, "Unable to remove oldest payload from queue.");
                         return;
                     }
                 }
@@ -203,19 +190,19 @@ public class BatchUploadQueue {
 
         try {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            OutputStream cos = crypto.encrypt(bos);
-            cartographer.toJson(payload, new OutputStreamWriter(cos));
+            OutputStream cos = ServiceFacade.getCrypto().encrypt(bos);
+            ServiceFacade.getCartographer().toJson(payload, new OutputStreamWriter(cos));
             byte[] bytes = bos.toByteArray();
             if (bytes == null || bytes.length == 0 || bytes.length > MAX_PAYLOAD_SIZE) {
                 throw new IOException("Could not serialize payload " + payload);
             }
             batchQueue.add(bytes);
         } catch (IOException e) {
-            logger.error(e, "Could not add payload %s to queue: %s.", payload, batchQueue);
+            ServiceFacade.getLogger().error(e, "Could not add payload %s to queue: %s.", payload, batchQueue);
             return;
         }
 
-        logger.verbose(
+        ServiceFacade.getLogger().verbose(
                 "Enqueued %s payload. %s elements in the queue.", original, batchQueue.size());
         if (batchQueue.size() >= flushQueueSize) {
             submitFlush();
@@ -233,8 +220,9 @@ public class BatchUploadQueue {
             return;
         }
 
+        ExecutorService networkExecutor = ServiceFacade.getNetworkExecutor();
         if (networkExecutor.isShutdown()) {
-            logger.info(
+            ServiceFacade.getLogger().info(
                     "A call to flush() was made after shutdown() has been called.  In-flight events may not be uploaded right away.");
             return;
         }
@@ -263,7 +251,7 @@ public class BatchUploadQueue {
 
         this.flushesPerformed++;
 
-        logger.verbose("Uploading payloads in queue to Snapyr.");
+        ServiceFacade.getLogger().verbose("Uploading payloads in queue to Snapyr.");
         int payloadsUploaded = 0;
         WriteConnection connection = null;
         try {
@@ -273,7 +261,7 @@ public class BatchUploadQueue {
             // Write the payloads into the OutputStream.
             payloadsUploaded =
                     BatchUploadRequest.execute(
-                            this.batchQueue, connection.getOutputStream(), crypto);
+                            this.batchQueue, connection.getOutputStream(), ServiceFacade.getCrypto());
 
             // Process the response.
             int responseCode = connection.getResponseCode();
@@ -295,7 +283,7 @@ public class BatchUploadQueue {
                         responseCode, connection.getResponseMessage(), responseBody);
             } else if (inputStream != null) {
                 responseBody = Utils.readFully(inputStream);
-                logger.info("flush response: " + responseBody);
+                ServiceFacade.getLogger().info("flush response: " + responseBody);
                 handleActionsIfAny(responseBody);
             }
 
@@ -304,23 +292,23 @@ public class BatchUploadQueue {
         } catch (HTTPException e) {
             if (e.is4xx() && e.responseCode != 429) {
                 // Simply log and proceed to remove the rejected payloads from the queue.
-                logger.error(e, "Payloads were rejected by server. Marked for removal.");
+                ServiceFacade.getLogger().error(e, "Payloads were rejected by server. Marked for removal.");
                 try {
                     batchQueue.remove(payloadsUploaded);
                 } catch (IOException e1) {
-                    logger.error(
+                    ServiceFacade.getLogger().error(
                             e, "Unable to remove " + payloadsUploaded + " payload(s) from queue.");
                 }
                 return;
             } else {
-                logger.error(e, "Error while uploading payloads");
+                ServiceFacade.getLogger().error(e, "Error while uploading payloads");
                 return;
             }
         } catch (IOException e) {
-            logger.error(e, "Error while uploading payloads");
+            ServiceFacade.getLogger().error(e, "Error while uploading payloads");
             return;
         } catch (Exception e) {
-            logger.error(e, "Error while uploading payloads");
+            ServiceFacade.getLogger().error(e, "Error while uploading payloads");
 
         } finally {
             Utils.closeQuietly(connection);
@@ -329,11 +317,11 @@ public class BatchUploadQueue {
         try {
             batchQueue.remove(payloadsUploaded);
         } catch (IOException e) {
-            logger.error(e, "Unable to remove " + payloadsUploaded + " payload(s) from queue.");
+            ServiceFacade.getLogger().error(e, "Unable to remove " + payloadsUploaded + " payload(s) from queue.");
             return;
         }
 
-        logger.verbose(
+        ServiceFacade.getLogger().verbose(
                 "Uploaded %s payloads. %s remain in the queue.",
                 payloadsUploaded, batchQueue.size());
         if (batchQueue.size() > 0) {
@@ -343,7 +331,7 @@ public class BatchUploadQueue {
 
     void handleActionsIfAny(String uploadResponse) {
         try {
-            Object response = cartographer.parseJson(uploadResponse);
+            Object response = ServiceFacade.getCartographer().parseJson(uploadResponse);
             if (response instanceof List) {
                 for (Object eventResponse : (List) response) {
                     handleEventActions((Map<String, Object>) eventResponse);
@@ -352,7 +340,7 @@ public class BatchUploadQueue {
                 handleEventActions((Map<String, Object>) response);
             }
         } catch (IOException e) {
-            logger.error(e, "Error parsing upload response");
+            ServiceFacade.getLogger().error(e, "Error parsing upload response");
         }
     }
 

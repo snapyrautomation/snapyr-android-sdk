@@ -102,12 +102,15 @@ public class ConnectionFactory {
      * https://engine.snapyr.com/v1/import}.
      */
     public WriteConnection postBatch() throws IOException {
-        HttpURLConnection connection = openConnection(engineURL + "v1/batch", "POST");
+        return new WriteConnection(engineRequest("v1/batch", "POST"));
+    }
+
+    public HttpURLConnection engineRequest(String path, String method) throws IOException {
+        HttpURLConnection connection = openConnection(engineURL + path, method);
         connection.setRequestProperty("Authorization", authorizationHeader(writeKey));
-        // connection.setRequestProperty("Content-Encoding", "gzip");
         connection.setDoOutput(true);
         connection.setChunkedStreamingMode(0);
-        return new WriteConnection(connection);
+        return connection;
     }
 
     public HttpURLConnection openConnection(String url, String method) throws IOException {

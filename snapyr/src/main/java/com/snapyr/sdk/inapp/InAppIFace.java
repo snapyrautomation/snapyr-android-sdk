@@ -24,7 +24,7 @@
 package com.snapyr.sdk.inapp;
 
 import android.content.Context;
-import com.snapyr.sdk.SnapyrAction;
+import com.snapyr.sdk.internal.SnapyrAction;
 
 public interface InAppIFace {
     void processTrackResponse(SnapyrAction action);

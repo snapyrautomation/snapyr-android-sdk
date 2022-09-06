@@ -21,35 +21,39 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.snapyr.sdk.integrations;
+package com.snapyr.sdk.internal;
 
 import static com.snapyr.sdk.internal.Utils.assertNotNull;
+import static com.snapyr.sdk.internal.Utils.assertNotNullOrEmpty;
 import static com.snapyr.sdk.internal.Utils.isNullOrEmpty;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.snapyr.sdk.Traits;
-import com.snapyr.sdk.internal.Private;
+
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class IdentifyPayload extends BasePayload {
+public class GroupPayload extends BasePayload {
 
-    static final String TRAITS_KEY = "traits";
+    public static final String GROUP_ID_KEY = "groupId";
+    public static final String TRAITS_KEY = "traits";
 
-    IdentifyPayload(
+    @Private
+    public GroupPayload(
             @NonNull String messageId,
             @NonNull Date timestamp,
             @NonNull Map<String, Object> context,
             @NonNull Map<String, Object> integrations,
             @Nullable String userId,
             @NonNull String anonymousId,
+            @NonNull String groupId,
             @NonNull Map<String, Object> traits,
             boolean nanosecondTimestamps) {
         super(
-                Type.identify,
+                Type.group,
                 messageId,
                 timestamp,
                 context,
@@ -57,15 +61,21 @@ public class IdentifyPayload extends BasePayload {
                 userId,
                 anonymousId,
                 nanosecondTimestamps);
+        put(GROUP_ID_KEY, groupId);
         put(TRAITS_KEY, traits);
     }
 
     /**
-     * A dictionary of traits you know about a user, for example email or name. We have a collection
-     * of special traits that we recognize with semantic meaning, which you should always use when
-     * recording that information. You can also add any custom traits that are specific to your
-     * project to the dictionary, like friendCount or subscriptionType.
+     * A unique identifier that refers to the group in your database. For example, if your product
+     * groups people by "organization" you would use the organization's ID in your database as the
+     * group ID.
      */
+    @NonNull
+    public String groupId() {
+        return getString(GROUP_ID_KEY);
+    }
+
+    /** The group method also takes a traits dictionary, just like identify. */
     @NonNull
     public Traits traits() {
         return getValueMap(TRAITS_KEY, Traits.class);
@@ -73,18 +83,19 @@ public class IdentifyPayload extends BasePayload {
 
     @Override
     public String toString() {
-        return "IdentifyPayload{\"userId=\"" + userId() + "\"}";
+        return "GroupPayload{groupId=\"" + groupId() + "\"}";
     }
 
     @NonNull
     @Override
-    public IdentifyPayload.Builder toBuilder() {
+    public GroupPayload.Builder toBuilder() {
         return new Builder(this);
     }
 
-    /** Fluent API for creating {@link IdentifyPayload} instances. */
-    public static class Builder extends BasePayload.Builder<IdentifyPayload, Builder> {
+    /** Fluent API for creating {@link GroupPayload} instances. */
+    public static class Builder extends BasePayload.Builder<GroupPayload, Builder> {
 
+        private String groupId;
         private Map<String, Object> traits;
 
         public Builder() {
@@ -92,9 +103,16 @@ public class IdentifyPayload extends BasePayload {
         }
 
         @Private
-        Builder(IdentifyPayload identify) {
-            super(identify);
-            traits = identify.traits();
+        Builder(GroupPayload group) {
+            super(group);
+            groupId = group.groupId();
+            traits = group.traits();
+        }
+
+        @NonNull
+        public Builder groupId(@NonNull String groupId) {
+            this.groupId = assertNotNullOrEmpty(groupId, "groupId");
+            return this;
         }
 
         @NonNull
@@ -105,25 +123,29 @@ public class IdentifyPayload extends BasePayload {
         }
 
         @Override
-        IdentifyPayload realBuild(
+        protected GroupPayload realBuild(
                 @NonNull String messageId,
                 @NonNull Date timestamp,
                 @NonNull Map<String, Object> context,
                 @NonNull Map<String, Object> integrations,
-                String userId,
+                @Nullable String userId,
                 @NonNull String anonymousId,
                 boolean nanosecondTimestamps) {
-            if (isNullOrEmpty(userId) && isNullOrEmpty(traits)) {
-                throw new NullPointerException("either userId or traits are required");
+            assertNotNullOrEmpty(groupId, "groupId");
+
+            Map<String, Object> traits = this.traits;
+            if (isNullOrEmpty(traits)) {
+                traits = Collections.emptyMap();
             }
 
-            return new IdentifyPayload(
+            return new GroupPayload(
                     messageId,
                     timestamp,
                     context,
                     integrations,
                     userId,
                     anonymousId,
+                    groupId,
                     traits,
                     nanosecondTimestamps);
         }

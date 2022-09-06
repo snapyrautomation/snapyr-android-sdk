@@ -25,7 +25,7 @@ package com.snapyr.sdk.inapp;
 
 import android.content.Context;
 import androidx.annotation.NonNull;
-import com.snapyr.sdk.SnapyrAction;
+import com.snapyr.sdk.internal.SnapyrAction;
 
 public class InAppFacade {
     enum InAppState {

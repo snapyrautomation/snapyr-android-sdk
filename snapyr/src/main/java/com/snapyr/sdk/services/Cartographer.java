@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.snapyr.sdk.internal;
+package com.snapyr.sdk.services;
 
 import android.util.JsonReader;
 import android.util.JsonToken;

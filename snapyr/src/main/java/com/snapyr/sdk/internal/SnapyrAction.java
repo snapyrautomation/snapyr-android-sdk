@@ -21,27 +21,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.snapyr.sdk;
+package com.snapyr.sdk.internal;
 
-import java.io.InputStream;
-import java.io.OutputStream;
+import static java.util.Collections.unmodifiableMap;
 
-public abstract class Crypto {
-    public static Crypto none() {
-        return new Crypto() {
-            @Override
-            public InputStream decrypt(InputStream is) {
-                return is;
-            }
+import com.snapyr.sdk.ValueMap;
 
-            @Override
-            public OutputStream encrypt(OutputStream os) {
-                return os;
-            }
-        };
+import java.util.Map;
+
+public class SnapyrAction extends ValueMap {
+
+    @Private
+    SnapyrAction(Map<String, Object> map) {
+        super(unmodifiableMap(map));
     }
 
-    public abstract InputStream decrypt(InputStream is);
-
-    public abstract OutputStream encrypt(OutputStream os);
+    public static SnapyrAction create(Map<String, Object> map) {
+        return new SnapyrAction(map);
+    }
 }

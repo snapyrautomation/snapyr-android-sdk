@@ -23,7 +23,7 @@
  */
 package com.snapyr.sdk
 
-import com.snapyr.sdk.internal.Cartographer
+import com.snapyr.sdk.services.Cartographer
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test

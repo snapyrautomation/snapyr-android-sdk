@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.snapyr.sdk.integrations;
+package com.snapyr.sdk.internal;
 
 import static com.snapyr.sdk.internal.Utils.assertNotNull;
 import static com.snapyr.sdk.internal.Utils.assertNotNullOrEmpty;
@@ -36,7 +36,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.snapyr.sdk.SnapyrContext;
 import com.snapyr.sdk.ValueMap;
-import com.snapyr.sdk.internal.NanoDate;
+
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -51,14 +51,14 @@ import java.util.UUID;
 // sentAt is set on SegmentClient#BatchPayload
 public abstract class BasePayload extends ValueMap {
 
-    static final String TYPE_KEY = "type";
-    static final String ANONYMOUS_ID_KEY = "anonymousId";
-    static final String CHANNEL_KEY = "channel";
-    static final String MESSAGE_ID = "messageId";
-    static final String CONTEXT_KEY = "context";
-    static final String INTEGRATIONS_KEY = "integrations";
-    static final String TIMESTAMP_KEY = "timestamp";
-    static final String USER_ID_KEY = "userId";
+    public static final String TYPE_KEY = "type";
+    public static final String ANONYMOUS_ID_KEY = "anonymousId";
+    public static final String CHANNEL_KEY = "channel";
+    public static final String MESSAGE_ID = "messageId";
+    public static final String CONTEXT_KEY = "context";
+    public static final String INTEGRATIONS_KEY = "integrations";
+    public static final String TIMESTAMP_KEY = "timestamp";
+    public static final String USER_ID_KEY = "userId";
 
     BasePayload(
             @NonNull Type type,

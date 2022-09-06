@@ -21,39 +21,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.snapyr.sdk.integrations;
+package com.snapyr.sdk.internal;
 
-import static com.snapyr.sdk.internal.Utils.assertNotNull;
 import static com.snapyr.sdk.internal.Utils.assertNotNullOrEmpty;
-import static com.snapyr.sdk.internal.Utils.isNullOrEmpty;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import com.snapyr.sdk.Properties;
-import com.snapyr.sdk.internal.Private;
-import java.util.Collections;
+
 import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class TrackPayload extends BasePayload {
+public class AliasPayload extends BasePayload {
 
-    static final String EVENT_KEY = "event";
-    static final String PROPERTIES_KEY = "properties";
+    public static final String PREVIOUS_ID_KEY = "previousId";
 
     @Private
-    TrackPayload(
+    AliasPayload(
             @NonNull String messageId,
             @NonNull Date timestamp,
             @NonNull Map<String, Object> context,
             @NonNull Map<String, Object> integrations,
             @Nullable String userId,
             @NonNull String anonymousId,
-            @NonNull String event,
-            @NonNull Map<String, Object> properties,
+            @NonNull String previousId,
             boolean nanosecondTimestamps) {
         super(
-                Type.track,
+                Type.alias,
                 messageId,
                 timestamp,
                 context,
@@ -61,95 +54,69 @@ public class TrackPayload extends BasePayload {
                 userId,
                 anonymousId,
                 nanosecondTimestamps);
-        put(EVENT_KEY, event);
-        put(PROPERTIES_KEY, properties);
+        put(PREVIOUS_ID_KEY, previousId);
     }
 
     /**
-     * The name of the event. We recommend using title case and past tense for event names, like
-     * "Signed Up".
+     * The previous ID for the user that you want to alias from, that you previously called identify
+     * with as their user ID, or the anonymous ID if you haven't identified the user yet.
      */
-    @NonNull
-    public String event() {
-        return getString(EVENT_KEY);
-    }
-
-    /**
-     * A dictionary of properties that give more information about the event. We have a collection
-     * of special properties that we recognize with semantic meaning. You can also add your own
-     * custom properties.
-     */
-    @NonNull
-    public Properties properties() {
-        return getValueMap(PROPERTIES_KEY, Properties.class);
+    public String previousId() {
+        return getString(PREVIOUS_ID_KEY);
     }
 
     @Override
     public String toString() {
-        return "TrackPayload{event=\"" + event() + "\"}";
+        return "AliasPayload{userId=\"" + userId() + ",previousId=\"" + previousId() + "\"}";
     }
 
     @NonNull
     @Override
-    public TrackPayload.Builder toBuilder() {
+    public AliasPayload.Builder toBuilder() {
         return new Builder(this);
     }
 
-    /** Fluent API for creating {@link TrackPayload} instances. */
-    public static class Builder extends BasePayload.Builder<TrackPayload, Builder> {
+    /** Fluent API for creating {@link AliasPayload} instances. */
+    public static final class Builder extends BasePayload.Builder<AliasPayload, Builder> {
 
-        private String event;
-        private Map<String, Object> properties;
+        private String previousId;
 
         public Builder() {
             // Empty constructor.
         }
 
         @Private
-        Builder(TrackPayload track) {
-            super(track);
-            event = track.event();
-            properties = track.properties();
+        Builder(AliasPayload alias) {
+            super(alias);
+            this.previousId = alias.previousId();
         }
 
         @NonNull
-        public Builder event(@NonNull String event) {
-            this.event = assertNotNullOrEmpty(event, "event");
-            return this;
-        }
-
-        @NonNull
-        public Builder properties(@NonNull Map<String, ?> properties) {
-            assertNotNull(properties, "properties");
-            this.properties = Collections.unmodifiableMap(new LinkedHashMap<>(properties));
+        public Builder previousId(@NonNull String previousId) {
+            this.previousId = assertNotNullOrEmpty(previousId, "previousId");
             return this;
         }
 
         @Override
-        protected TrackPayload realBuild(
+        protected AliasPayload realBuild(
                 @NonNull String messageId,
                 @NonNull Date timestamp,
                 @NonNull Map<String, Object> context,
                 @NonNull Map<String, Object> integrations,
-                String userId,
+                @Nullable String userId,
                 @NonNull String anonymousId,
                 boolean nanosecondTimestamps) {
-            assertNotNullOrEmpty(event, "event");
+            assertNotNullOrEmpty(userId, "userId");
+            assertNotNullOrEmpty(previousId, "previousId");
 
-            Map<String, Object> properties = this.properties;
-            if (isNullOrEmpty(properties)) {
-                properties = Collections.emptyMap();
-            }
-
-            return new TrackPayload(
+            return new AliasPayload(
                     messageId,
                     timestamp,
                     context,
                     integrations,
                     userId,
                     anonymousId,
-                    event,
-                    properties,
+                    previousId,
                     nanosecondTimestamps);
         }
 

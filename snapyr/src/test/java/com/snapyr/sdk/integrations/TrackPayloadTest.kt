@@ -24,7 +24,8 @@
 package com.snapyr.sdk.integrations
 
 import com.nhaarman.mockitokotlin2.any
-import com.snapyr.sdk.integrations.TrackPayload.EVENT_KEY
+import com.snapyr.sdk.internal.TrackPayload
+import com.snapyr.sdk.internal.TrackPayload.EVENT_KEY
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Assert.fail
 import org.junit.Before

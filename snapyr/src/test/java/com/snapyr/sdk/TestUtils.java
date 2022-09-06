@@ -33,7 +33,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 
 import android.app.Application;
-import com.snapyr.sdk.integrations.TrackPayload;
+import com.snapyr.sdk.internal.TrackPayload;
 import com.snapyr.sdk.internal.Utils;
 import java.io.File;
 import java.lang.reflect.Constructor;

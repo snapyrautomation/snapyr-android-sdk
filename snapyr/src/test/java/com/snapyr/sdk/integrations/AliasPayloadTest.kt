@@ -24,6 +24,7 @@
 package com.snapyr.sdk.integrations
 
 import com.nhaarman.mockitokotlin2.any
+import com.snapyr.sdk.internal.AliasPayload
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Assert.fail
 import org.junit.Before
