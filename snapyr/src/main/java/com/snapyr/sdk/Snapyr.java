@@ -44,9 +44,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.ProcessLifecycleOwner;
-
-import com.snapyr.sdk.services.Crypto;
-import com.snapyr.sdk.services.ServiceFacade;
 import com.snapyr.sdk.http.BatchUploadQueue;
 import com.snapyr.sdk.http.ConnectionFactory;
 import com.snapyr.sdk.http.SettingsRequest;
@@ -56,10 +53,6 @@ import com.snapyr.sdk.internal.AliasPayload;
 import com.snapyr.sdk.internal.BasePayload;
 import com.snapyr.sdk.internal.GroupPayload;
 import com.snapyr.sdk.internal.IdentifyPayload;
-import com.snapyr.sdk.services.Logger;
-import com.snapyr.sdk.internal.ScreenPayload;
-import com.snapyr.sdk.internal.TrackPayload;
-import com.snapyr.sdk.services.Cartographer;
 import com.snapyr.sdk.internal.NanoDate;
 import com.snapyr.sdk.internal.Private;
 import com.snapyr.sdk.internal.PushTemplate;
@@ -176,12 +169,12 @@ public class Snapyr {
             InAppConfig inAppConfig) {
 
         // setup the references to the static things used everywhere
-       ServiceFacade.getInstance()
-               .setNetworkExecutor(networkExecutor)
-               .setApplication(application)
-               .setLogger(logger)
-               .setCartographer(cartographer)
-               .setCrypto(crypto);
+        ServiceFacade.getInstance()
+                .setNetworkExecutor(networkExecutor)
+                .setApplication(application)
+                .setLogger(logger)
+                .setCartographer(cartographer)
+                .setCrypto(crypto);
 
         this.traitsCache = traitsCache;
         this.snapyrContext = snapyrContext;
@@ -200,11 +193,7 @@ public class Snapyr {
         this.useNewLifecycleMethods = useNewLifecycleMethods;
         this.PushTemplates = null;
         this.sendQueue =
-                new BatchUploadQueue(
-                        application,
-                        flushIntervalInMillis,
-                        flushQueueSize,
-                        null);
+                new BatchUploadQueue(application, flushIntervalInMillis, flushQueueSize, null);
 
         namespaceSharedPreferences();
 
@@ -284,7 +273,8 @@ public class Snapyr {
         }
 
         notificationLifecycleCallbacks =
-                new SnapyrNotificationLifecycleCallbacks(this, ServiceFacade.getLogger(), trackDeepLinks);
+                new SnapyrNotificationLifecycleCallbacks(
+                        this, ServiceFacade.getLogger(), trackDeepLinks);
         application.registerActivityLifecycleCallbacks(notificationLifecycleCallbacks);
 
         if (inAppConfig != null) {
@@ -424,7 +414,8 @@ public class Snapyr {
         int currentBuild = packageInfo.versionCode;
 
         // Get the previous recorded version.
-        SharedPreferences sharedPreferences = Utils.getSnapyrSharedPreferences(ServiceFacade.getApplication(), tag);
+        SharedPreferences sharedPreferences =
+                Utils.getSnapyrSharedPreferences(ServiceFacade.getApplication(), tag);
         String previousVersion = sharedPreferences.getString(VERSION_KEY, null);
         int previousBuild = sharedPreferences.getInt(BUILD_KEY, -1);
 
@@ -466,7 +457,8 @@ public class Snapyr {
         } catch (PackageManager.NameNotFoundException e) {
             throw new AssertionError("Activity Not Found: " + e);
         } catch (Exception e) {
-            ServiceFacade.getLogger().error(e, "Unable to track screen view for %s", activity.toString());
+            ServiceFacade.getLogger()
+                    .error(e, "Unable to track screen view for %s", activity.toString());
         }
     }
 
@@ -807,11 +799,13 @@ public class Snapyr {
         try {
             advertisingIdLatch.await(15, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
-            ServiceFacade.getLogger().error(e, "Thread interrupted while waiting for advertising ID.");
+            ServiceFacade.getLogger()
+                    .error(e, "Thread interrupted while waiting for advertising ID.");
         }
         if (advertisingIdLatch.getCount() == 1) {
-            ServiceFacade.getLogger().debug(
-                    "Advertising ID may not be collected because the API did not respond within 15 seconds.");
+            ServiceFacade.getLogger()
+                    .debug(
+                            "Advertising ID may not be collected because the API did not respond within 15 seconds.");
         }
     }
 
@@ -886,7 +880,8 @@ public class Snapyr {
      * values.
      */
     public void reset() {
-        SharedPreferences sharedPreferences = Utils.getSnapyrSharedPreferences(ServiceFacade.getApplication(), tag);
+        SharedPreferences sharedPreferences =
+                Utils.getSnapyrSharedPreferences(ServiceFacade.getApplication(), tag);
         // LIB-1578: only remove traits, preserve BUILD and VERSION keys in order to to fix
         // over-sending
         // of 'Application Installed' events and under-sending of 'Application Updated' events
@@ -995,8 +990,11 @@ public class Snapyr {
         } catch (InterruptedException e) {
             ServiceFacade.getLogger().error(e, "Thread interrupted while fetching settings.");
         } catch (ExecutionException e) {
-            ServiceFacade.getLogger().error(
-                    e, "Unable to fetch settings. Retrying in %s ms.", SETTINGS_RETRY_INTERVAL);
+            ServiceFacade.getLogger()
+                    .error(
+                            e,
+                            "Unable to fetch settings. Retrying in %s ms.",
+                            SETTINGS_RETRY_INTERVAL);
         }
         return null;
     }

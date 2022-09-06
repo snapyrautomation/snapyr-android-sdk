@@ -41,13 +41,13 @@ import com.snapyr.sdk.http.ConnectionFactory
 import com.snapyr.sdk.http.HTTPException
 import com.snapyr.sdk.http.QueueFile
 import com.snapyr.sdk.http.WriteConnection
-import com.snapyr.sdk.services.Logger
-import com.snapyr.sdk.services.Logger.with
 import com.snapyr.sdk.internal.TrackPayload.Builder
-import com.snapyr.sdk.services.Cartographer
 import com.snapyr.sdk.internal.Utils.DEFAULT_FLUSH_INTERVAL
 import com.snapyr.sdk.internal.Utils.DEFAULT_FLUSH_QUEUE_SIZE
+import com.snapyr.sdk.services.Cartographer
 import com.snapyr.sdk.services.Crypto
+import com.snapyr.sdk.services.Logger
+import com.snapyr.sdk.services.Logger.with
 import com.snapyr.sdk.services.ServiceFacade
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -567,7 +567,7 @@ class snapyrQueueTest {
                 .setCrypto(Crypto.none())
                 .setNetworkExecutor(networkExecutor)
                 .setCartographer(cartographer)
-                .setLogger(logger);
+                .setLogger(logger)
 
             return BatchUploadQueue(
                 context,

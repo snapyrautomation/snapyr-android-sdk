@@ -31,10 +31,7 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
 import androidx.annotation.Nullable;
-
-import com.snapyr.sdk.internal.SnapyrAction;
 import com.snapyr.sdk.ValueMap;
-import com.snapyr.sdk.services.ServiceFacade;
 import com.snapyr.sdk.inapp.InAppFacade;
 import com.snapyr.sdk.internal.BasePayload;
 import com.snapyr.sdk.internal.Private;
@@ -115,7 +112,8 @@ public class BatchUploadQueue {
                 QueueFile queueFile = createQueueFile(folder, "payload_queue");
                 BatchQueue = new BatchQueue.PersistentQueue(queueFile);
             } catch (IOException e) {
-                ServiceFacade.getLogger().error(e, "Could not create disk queue. Falling back to memory queue.");
+                ServiceFacade.getLogger()
+                        .error(e, "Could not create disk queue. Falling back to memory queue.");
                 BatchQueue = new BatchQueue.MemoryQueue();
             }
         }
@@ -177,13 +175,15 @@ public class BatchUploadQueue {
                 // queue
                 // to bring it below our capacity while we were waiting.
                 if (batchQueue.size() >= MAX_QUEUE_SIZE) {
-                    ServiceFacade.getLogger().info(
-                            "Queue is at max capacity (%s), removing oldest payload.",
-                            batchQueue.size());
+                    ServiceFacade.getLogger()
+                            .info(
+                                    "Queue is at max capacity (%s), removing oldest payload.",
+                                    batchQueue.size());
                     try {
                         batchQueue.remove(1);
                     } catch (IOException e) {
-                        ServiceFacade.getLogger().error(e, "Unable to remove oldest payload from queue.");
+                        ServiceFacade.getLogger()
+                                .error(e, "Unable to remove oldest payload from queue.");
                         return;
                     }
                 }
@@ -200,12 +200,15 @@ public class BatchUploadQueue {
             }
             batchQueue.add(bytes);
         } catch (IOException e) {
-            ServiceFacade.getLogger().error(e, "Could not add payload %s to queue: %s.", payload, batchQueue);
+            ServiceFacade.getLogger()
+                    .error(e, "Could not add payload %s to queue: %s.", payload, batchQueue);
             return;
         }
 
-        ServiceFacade.getLogger().verbose(
-                "Enqueued %s payload. %s elements in the queue.", original, batchQueue.size());
+        ServiceFacade.getLogger()
+                .verbose(
+                        "Enqueued %s payload. %s elements in the queue.",
+                        original, batchQueue.size());
         if (batchQueue.size() >= flushQueueSize) {
             submitFlush();
         }
@@ -224,8 +227,9 @@ public class BatchUploadQueue {
 
         ExecutorService networkExecutor = ServiceFacade.getNetworkExecutor();
         if (networkExecutor.isShutdown()) {
-            ServiceFacade.getLogger().info(
-                    "A call to flush() was made after shutdown() has been called.  In-flight events may not be uploaded right away.");
+            ServiceFacade.getLogger()
+                    .info(
+                            "A call to flush() was made after shutdown() has been called.  In-flight events may not be uploaded right away.");
             return;
         }
 
@@ -263,7 +267,9 @@ public class BatchUploadQueue {
             // Write the payloads into the OutputStream.
             payloadsUploaded =
                     BatchUploadRequest.execute(
-                            this.batchQueue, connection.getOutputStream(), ServiceFacade.getCrypto());
+                            this.batchQueue,
+                            connection.getOutputStream(),
+                            ServiceFacade.getCrypto());
 
             // Process the response.
             int responseCode = connection.getResponseCode();
@@ -294,12 +300,17 @@ public class BatchUploadQueue {
         } catch (HTTPException e) {
             if (e.is4xx() && e.responseCode != 429) {
                 // Simply log and proceed to remove the rejected payloads from the queue.
-                ServiceFacade.getLogger().error(e, "Payloads were rejected by server. Marked for removal.");
+                ServiceFacade.getLogger()
+                        .error(e, "Payloads were rejected by server. Marked for removal.");
                 try {
                     batchQueue.remove(payloadsUploaded);
                 } catch (IOException e1) {
-                    ServiceFacade.getLogger().error(
-                            e, "Unable to remove " + payloadsUploaded + " payload(s) from queue.");
+                    ServiceFacade.getLogger()
+                            .error(
+                                    e,
+                                    "Unable to remove "
+                                            + payloadsUploaded
+                                            + " payload(s) from queue.");
                 }
                 return;
             } else {
@@ -319,13 +330,15 @@ public class BatchUploadQueue {
         try {
             batchQueue.remove(payloadsUploaded);
         } catch (IOException e) {
-            ServiceFacade.getLogger().error(e, "Unable to remove " + payloadsUploaded + " payload(s) from queue.");
+            ServiceFacade.getLogger()
+                    .error(e, "Unable to remove " + payloadsUploaded + " payload(s) from queue.");
             return;
         }
 
-        ServiceFacade.getLogger().verbose(
-                "Uploaded %s payloads. %s remain in the queue.",
-                payloadsUploaded, batchQueue.size());
+        ServiceFacade.getLogger()
+                .verbose(
+                        "Uploaded %s payloads. %s remain in the queue.",
+                        payloadsUploaded, batchQueue.size());
         if (batchQueue.size() > 0) {
             performFlush(); // Flush any remaining items.
         }

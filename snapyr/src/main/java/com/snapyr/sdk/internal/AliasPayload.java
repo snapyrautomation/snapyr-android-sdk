@@ -27,7 +27,6 @@ import static com.snapyr.sdk.internal.Utils.assertNotNullOrEmpty;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import java.util.Date;
 import java.util.Map;
 

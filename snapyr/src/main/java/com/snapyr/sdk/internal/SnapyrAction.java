@@ -26,7 +26,6 @@ package com.snapyr.sdk.internal;
 import static java.util.Collections.unmodifiableMap;
 
 import com.snapyr.sdk.ValueMap;
-
 import java.util.Map;
 
 public class SnapyrAction extends ValueMap {
