@@ -30,6 +30,7 @@ import androidx.core.app.NotificationManagerCompat;
 import com.snapyr.sdk.Properties;
 import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.notifications.SnapyrNotificationHandler;
+import com.snapyr.sdk.services.ServiceFacade;
 
 public class TrackerUtil {
     public static void trackDeepLink(Context context, Intent intent) {
@@ -52,7 +53,7 @@ public class TrackerUtil {
 
     public static void trackNotificationInteraction(Context context, Intent intent) {
         Snapyr snapyr = Snapyr.with(context);
-        Context applicationContext = snapyr.getApplication().getApplicationContext();
+        Context applicationContext = ServiceFacade.getApplication().getApplicationContext();
 
         String deepLinkUrl = intent.getStringExtra(SnapyrNotificationHandler.NOTIF_DEEP_LINK_KEY);
         String actionId = intent.getStringExtra(SnapyrNotificationHandler.ACTION_ID_KEY);

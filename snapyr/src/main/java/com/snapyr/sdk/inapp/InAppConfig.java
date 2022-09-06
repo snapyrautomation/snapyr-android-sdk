@@ -23,7 +23,7 @@
  */
 package com.snapyr.sdk.inapp;
 
-import com.snapyr.sdk.integrations.Logger;
+import com.snapyr.sdk.services.Logger;
 
 public class InAppConfig {
     public Logger Logger = null;

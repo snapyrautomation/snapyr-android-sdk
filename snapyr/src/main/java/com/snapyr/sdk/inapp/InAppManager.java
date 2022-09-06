@@ -26,8 +26,8 @@ package com.snapyr.sdk.inapp;
 import android.content.Context;
 import android.os.Handler;
 import androidx.annotation.NonNull;
-import com.snapyr.sdk.SnapyrAction;
-import com.snapyr.sdk.integrations.Logger;
+import com.snapyr.sdk.internal.SnapyrAction;
+import com.snapyr.sdk.services.Logger;
 import java.util.LinkedList;
 import java.util.Queue;
 

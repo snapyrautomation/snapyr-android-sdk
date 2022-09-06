@@ -26,7 +26,7 @@ package com.snapyr.sdk
 import android.content.ContentResolver
 import android.content.Context
 import android.provider.Settings.Secure
-import com.snapyr.sdk.integrations.Logger
+import com.snapyr.sdk.services.Logger
 import java.util.concurrent.CountDownLatch
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test

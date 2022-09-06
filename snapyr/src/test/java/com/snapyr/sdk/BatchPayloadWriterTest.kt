@@ -25,6 +25,7 @@ package com.snapyr.sdk
 
 import com.snapyr.sdk.http.BatchQueue
 import com.snapyr.sdk.http.BatchUploadRequest
+import com.snapyr.sdk.services.Crypto
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import org.assertj.core.api.Assertions.assertThat

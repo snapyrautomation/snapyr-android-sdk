@@ -21,27 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.snapyr.sdk;
+package com.snapyr.sdk.inapp;
 
-import java.io.InputStream;
-import java.io.OutputStream;
+import com.snapyr.sdk.http.ConnectionFactory;
+import java.io.IOException;
+import java.net.HttpURLConnection;
 
-public abstract class Crypto {
-    public static Crypto none() {
-        return new Crypto() {
-            @Override
-            public InputStream decrypt(InputStream is) {
-                return is;
-            }
+public class AckActionRequest {
+    public static final String AckInappActionUrl = "/v1/actions";
 
-            @Override
-            public OutputStream encrypt(OutputStream os) {
-                return os;
-            }
-        };
+    static void execute(String token) throws IOException {
+        String builtUrl = AckInappActionUrl + "?actionToken=" + token;
+        HttpURLConnection conn = ConnectionFactory.getInstance().engineRequest(builtUrl, "POST");
     }
-
-    public abstract InputStream decrypt(InputStream is);
-
-    public abstract OutputStream encrypt(OutputStream os);
 }

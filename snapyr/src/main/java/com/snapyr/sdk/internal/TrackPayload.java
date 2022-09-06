@@ -21,35 +21,38 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.snapyr.sdk.integrations;
+package com.snapyr.sdk.internal;
 
 import static com.snapyr.sdk.internal.Utils.assertNotNull;
+import static com.snapyr.sdk.internal.Utils.assertNotNullOrEmpty;
 import static com.snapyr.sdk.internal.Utils.isNullOrEmpty;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import com.snapyr.sdk.Traits;
-import com.snapyr.sdk.internal.Private;
+import com.snapyr.sdk.Properties;
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class IdentifyPayload extends BasePayload {
+public class TrackPayload extends BasePayload {
 
-    static final String TRAITS_KEY = "traits";
+    public static final String EVENT_KEY = "event";
+    public static final String PROPERTIES_KEY = "properties";
 
-    IdentifyPayload(
+    @Private
+    TrackPayload(
             @NonNull String messageId,
             @NonNull Date timestamp,
             @NonNull Map<String, Object> context,
             @NonNull Map<String, Object> integrations,
             @Nullable String userId,
             @NonNull String anonymousId,
-            @NonNull Map<String, Object> traits,
+            @NonNull String event,
+            @NonNull Map<String, Object> properties,
             boolean nanosecondTimestamps) {
         super(
-                Type.identify,
+                Type.track,
                 messageId,
                 timestamp,
                 context,
@@ -57,55 +60,72 @@ public class IdentifyPayload extends BasePayload {
                 userId,
                 anonymousId,
                 nanosecondTimestamps);
-        put(TRAITS_KEY, traits);
+        put(EVENT_KEY, event);
+        put(PROPERTIES_KEY, properties);
     }
 
     /**
-     * A dictionary of traits you know about a user, for example email or name. We have a collection
-     * of special traits that we recognize with semantic meaning, which you should always use when
-     * recording that information. You can also add any custom traits that are specific to your
-     * project to the dictionary, like friendCount or subscriptionType.
+     * The name of the event. We recommend using title case and past tense for event names, like
+     * "Signed Up".
      */
     @NonNull
-    public Traits traits() {
-        return getValueMap(TRAITS_KEY, Traits.class);
+    public String event() {
+        return getString(EVENT_KEY);
+    }
+
+    /**
+     * A dictionary of properties that give more information about the event. We have a collection
+     * of special properties that we recognize with semantic meaning. You can also add your own
+     * custom properties.
+     */
+    @NonNull
+    public Properties properties() {
+        return getValueMap(PROPERTIES_KEY, Properties.class);
     }
 
     @Override
     public String toString() {
-        return "IdentifyPayload{\"userId=\"" + userId() + "\"}";
+        return "TrackPayload{event=\"" + event() + "\"}";
     }
 
     @NonNull
     @Override
-    public IdentifyPayload.Builder toBuilder() {
+    public TrackPayload.Builder toBuilder() {
         return new Builder(this);
     }
 
-    /** Fluent API for creating {@link IdentifyPayload} instances. */
-    public static class Builder extends BasePayload.Builder<IdentifyPayload, Builder> {
+    /** Fluent API for creating {@link TrackPayload} instances. */
+    public static class Builder extends BasePayload.Builder<TrackPayload, Builder> {
 
-        private Map<String, Object> traits;
+        private String event;
+        private Map<String, Object> properties;
 
         public Builder() {
             // Empty constructor.
         }
 
         @Private
-        Builder(IdentifyPayload identify) {
-            super(identify);
-            traits = identify.traits();
+        Builder(TrackPayload track) {
+            super(track);
+            event = track.event();
+            properties = track.properties();
         }
 
         @NonNull
-        public Builder traits(@NonNull Map<String, ?> traits) {
-            assertNotNull(traits, "traits");
-            this.traits = Collections.unmodifiableMap(new LinkedHashMap<>(traits));
+        public Builder event(@NonNull String event) {
+            this.event = assertNotNullOrEmpty(event, "event");
+            return this;
+        }
+
+        @NonNull
+        public Builder properties(@NonNull Map<String, ?> properties) {
+            assertNotNull(properties, "properties");
+            this.properties = Collections.unmodifiableMap(new LinkedHashMap<>(properties));
             return this;
         }
 
         @Override
-        IdentifyPayload realBuild(
+        protected TrackPayload realBuild(
                 @NonNull String messageId,
                 @NonNull Date timestamp,
                 @NonNull Map<String, Object> context,
@@ -113,18 +133,22 @@ public class IdentifyPayload extends BasePayload {
                 String userId,
                 @NonNull String anonymousId,
                 boolean nanosecondTimestamps) {
-            if (isNullOrEmpty(userId) && isNullOrEmpty(traits)) {
-                throw new NullPointerException("either userId or traits are required");
+            assertNotNullOrEmpty(event, "event");
+
+            Map<String, Object> properties = this.properties;
+            if (isNullOrEmpty(properties)) {
+                properties = Collections.emptyMap();
             }
 
-            return new IdentifyPayload(
+            return new TrackPayload(
                     messageId,
                     timestamp,
                     context,
                     integrations,
                     userId,
                     anonymousId,
-                    traits,
+                    event,
+                    properties,
                     nanosecondTimestamps);
         }
 

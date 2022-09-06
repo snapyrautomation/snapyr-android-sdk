@@ -23,6 +23,7 @@
  */
 package com.snapyr.sdk
 
+import com.snapyr.sdk.services.Crypto
 import java.io.IOException
 import okio.Buffer
 import okio.ByteString

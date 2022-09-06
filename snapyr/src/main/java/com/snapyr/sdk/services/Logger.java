@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.snapyr.sdk.integrations;
+package com.snapyr.sdk.services;
 
 import static com.snapyr.sdk.Snapyr.LogLevel.DEBUG;
 import static com.snapyr.sdk.Snapyr.LogLevel.INFO;

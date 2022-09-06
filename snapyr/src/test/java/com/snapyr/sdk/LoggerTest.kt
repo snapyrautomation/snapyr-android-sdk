@@ -24,7 +24,7 @@
 package com.snapyr.sdk
 
 import android.util.Log
-import com.snapyr.sdk.integrations.Logger
+import com.snapyr.sdk.services.Logger
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith

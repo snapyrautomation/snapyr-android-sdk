@@ -21,32 +21,38 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.snapyr.sdk.integrations;
+package com.snapyr.sdk.internal;
 
+import static com.snapyr.sdk.internal.Utils.assertNotNull;
 import static com.snapyr.sdk.internal.Utils.assertNotNullOrEmpty;
+import static com.snapyr.sdk.internal.Utils.isNullOrEmpty;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import com.snapyr.sdk.internal.Private;
+import com.snapyr.sdk.Traits;
+import java.util.Collections;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class AliasPayload extends BasePayload {
+public class GroupPayload extends BasePayload {
 
-    static final String PREVIOUS_ID_KEY = "previousId";
+    public static final String GROUP_ID_KEY = "groupId";
+    public static final String TRAITS_KEY = "traits";
 
     @Private
-    AliasPayload(
+    public GroupPayload(
             @NonNull String messageId,
             @NonNull Date timestamp,
             @NonNull Map<String, Object> context,
             @NonNull Map<String, Object> integrations,
             @Nullable String userId,
             @NonNull String anonymousId,
-            @NonNull String previousId,
+            @NonNull String groupId,
+            @NonNull Map<String, Object> traits,
             boolean nanosecondTimestamps) {
         super(
-                Type.alias,
+                Type.group,
                 messageId,
                 timestamp,
                 context,
@@ -54,51 +60,69 @@ public class AliasPayload extends BasePayload {
                 userId,
                 anonymousId,
                 nanosecondTimestamps);
-        put(PREVIOUS_ID_KEY, previousId);
+        put(GROUP_ID_KEY, groupId);
+        put(TRAITS_KEY, traits);
     }
 
     /**
-     * The previous ID for the user that you want to alias from, that you previously called identify
-     * with as their user ID, or the anonymous ID if you haven't identified the user yet.
+     * A unique identifier that refers to the group in your database. For example, if your product
+     * groups people by "organization" you would use the organization's ID in your database as the
+     * group ID.
      */
-    public String previousId() {
-        return getString(PREVIOUS_ID_KEY);
+    @NonNull
+    public String groupId() {
+        return getString(GROUP_ID_KEY);
+    }
+
+    /** The group method also takes a traits dictionary, just like identify. */
+    @NonNull
+    public Traits traits() {
+        return getValueMap(TRAITS_KEY, Traits.class);
     }
 
     @Override
     public String toString() {
-        return "AliasPayload{userId=\"" + userId() + ",previousId=\"" + previousId() + "\"}";
+        return "GroupPayload{groupId=\"" + groupId() + "\"}";
     }
 
     @NonNull
     @Override
-    public AliasPayload.Builder toBuilder() {
+    public GroupPayload.Builder toBuilder() {
         return new Builder(this);
     }
 
-    /** Fluent API for creating {@link AliasPayload} instances. */
-    public static final class Builder extends BasePayload.Builder<AliasPayload, Builder> {
+    /** Fluent API for creating {@link GroupPayload} instances. */
+    public static class Builder extends BasePayload.Builder<GroupPayload, Builder> {
 
-        private String previousId;
+        private String groupId;
+        private Map<String, Object> traits;
 
         public Builder() {
             // Empty constructor.
         }
 
         @Private
-        Builder(AliasPayload alias) {
-            super(alias);
-            this.previousId = alias.previousId();
+        Builder(GroupPayload group) {
+            super(group);
+            groupId = group.groupId();
+            traits = group.traits();
         }
 
         @NonNull
-        public Builder previousId(@NonNull String previousId) {
-            this.previousId = assertNotNullOrEmpty(previousId, "previousId");
+        public Builder groupId(@NonNull String groupId) {
+            this.groupId = assertNotNullOrEmpty(groupId, "groupId");
+            return this;
+        }
+
+        @NonNull
+        public Builder traits(@NonNull Map<String, ?> traits) {
+            assertNotNull(traits, "traits");
+            this.traits = Collections.unmodifiableMap(new LinkedHashMap<>(traits));
             return this;
         }
 
         @Override
-        protected AliasPayload realBuild(
+        protected GroupPayload realBuild(
                 @NonNull String messageId,
                 @NonNull Date timestamp,
                 @NonNull Map<String, Object> context,
@@ -106,17 +130,22 @@ public class AliasPayload extends BasePayload {
                 @Nullable String userId,
                 @NonNull String anonymousId,
                 boolean nanosecondTimestamps) {
-            assertNotNullOrEmpty(userId, "userId");
-            assertNotNullOrEmpty(previousId, "previousId");
+            assertNotNullOrEmpty(groupId, "groupId");
 
-            return new AliasPayload(
+            Map<String, Object> traits = this.traits;
+            if (isNullOrEmpty(traits)) {
+                traits = Collections.emptyMap();
+            }
+
+            return new GroupPayload(
                     messageId,
                     timestamp,
                     context,
                     integrations,
                     userId,
                     anonymousId,
-                    previousId,
+                    groupId,
+                    traits,
                     nanosecondTimestamps);
         }
 

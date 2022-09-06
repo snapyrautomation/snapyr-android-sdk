@@ -24,7 +24,7 @@
 package com.snapyr.sdk.inapp;
 
 import com.snapyr.sdk.ValueMap;
-import com.snapyr.sdk.internal.Cartographer;
+import com.snapyr.sdk.services.Cartographer;
 import java.io.IOException;
 
 public class InAppContent {

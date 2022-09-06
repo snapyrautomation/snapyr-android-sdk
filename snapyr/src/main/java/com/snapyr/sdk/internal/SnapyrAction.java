@@ -21,13 +21,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.snapyr.sdk.inapp;
+package com.snapyr.sdk.internal;
 
-import android.content.Context;
-import com.snapyr.sdk.internal.SnapyrAction;
+import static java.util.Collections.unmodifiableMap;
 
-public interface InAppIFace {
-    void processTrackResponse(SnapyrAction action);
+import com.snapyr.sdk.ValueMap;
+import java.util.Map;
 
-    void dispatchPending(Context context);
+public class SnapyrAction extends ValueMap {
+
+    @Private
+    SnapyrAction(Map<String, Object> map) {
+        super(unmodifiableMap(map));
+    }
+
+    public static SnapyrAction create(Map<String, Object> map) {
+        return new SnapyrAction(map);
+    }
 }

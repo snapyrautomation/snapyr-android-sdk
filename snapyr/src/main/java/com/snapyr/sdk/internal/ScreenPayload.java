@@ -21,39 +21,39 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.snapyr.sdk.integrations;
+package com.snapyr.sdk.internal;
 
 import static com.snapyr.sdk.internal.Utils.assertNotNull;
-import static com.snapyr.sdk.internal.Utils.assertNotNullOrEmpty;
 import static com.snapyr.sdk.internal.Utils.isNullOrEmpty;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import com.snapyr.sdk.Traits;
-import com.snapyr.sdk.internal.Private;
+import com.snapyr.sdk.Properties;
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class GroupPayload extends BasePayload {
+public class ScreenPayload extends BasePayload {
 
-    static final String GROUP_ID_KEY = "groupId";
-    static final String TRAITS_KEY = "traits";
+    public static final String CATEGORY_KEY = "category";
+    public static final String NAME_KEY = "name";
+    public static final String PROPERTIES_KEY = "properties";
 
     @Private
-    public GroupPayload(
+    ScreenPayload(
             @NonNull String messageId,
             @NonNull Date timestamp,
             @NonNull Map<String, Object> context,
             @NonNull Map<String, Object> integrations,
             @Nullable String userId,
             @NonNull String anonymousId,
-            @NonNull String groupId,
-            @NonNull Map<String, Object> traits,
+            @Nullable String name,
+            @Nullable String category,
+            @NonNull Map<String, Object> properties,
             boolean nanosecondTimestamps) {
         super(
-                Type.group,
+                Type.screen,
                 messageId,
                 timestamp,
                 context,
@@ -61,69 +61,95 @@ public class GroupPayload extends BasePayload {
                 userId,
                 anonymousId,
                 nanosecondTimestamps);
-        put(GROUP_ID_KEY, groupId);
-        put(TRAITS_KEY, traits);
+        if (!isNullOrEmpty(name)) {
+            put(NAME_KEY, name);
+        }
+        if (!isNullOrEmpty(category)) {
+            put(CATEGORY_KEY, category);
+        }
+        put(PROPERTIES_KEY, properties);
     }
 
-    /**
-     * A unique identifier that refers to the group in your database. For example, if your product
-     * groups people by "organization" you would use the organization's ID in your database as the
-     * group ID.
-     */
-    @NonNull
-    public String groupId() {
-        return getString(GROUP_ID_KEY);
+    /** The category of the page or screen. We recommend using title case, like "Docs". */
+    @Nullable
+    @Deprecated
+    public String category() {
+        return getString(CATEGORY_KEY);
     }
 
-    /** The group method also takes a traits dictionary, just like identify. */
+    /** The name of the page or screen. We recommend using title case, like "About". */
+    @Nullable
+    public String name() {
+        return getString(NAME_KEY);
+    }
+
+    /** Either the name or category of the screen payload. */
     @NonNull
-    public Traits traits() {
-        return getValueMap(TRAITS_KEY, Traits.class);
+    public String event() {
+        String name = name();
+        if (!isNullOrEmpty(name)) {
+            return name;
+        }
+        return category();
+    }
+
+    /** The page and screen methods also take a properties dictionary, just like track. */
+    @NonNull
+    public Properties properties() {
+        return getValueMap(PROPERTIES_KEY, Properties.class);
     }
 
     @Override
     public String toString() {
-        return "GroupPayload{groupId=\"" + groupId() + "\"}";
+        return "ScreenPayload{name=\"" + name() + ",category=\"" + category() + "\"}";
     }
 
     @NonNull
     @Override
-    public GroupPayload.Builder toBuilder() {
+    public ScreenPayload.Builder toBuilder() {
         return new Builder(this);
     }
 
-    /** Fluent API for creating {@link GroupPayload} instances. */
-    public static class Builder extends BasePayload.Builder<GroupPayload, Builder> {
+    /** Fluent API for creating {@link ScreenPayload} instances. */
+    public static class Builder extends BasePayload.Builder<ScreenPayload, Builder> {
 
-        private String groupId;
-        private Map<String, Object> traits;
+        private String name;
+        private String category;
+        private Map<String, Object> properties;
 
         public Builder() {
             // Empty constructor.
         }
 
         @Private
-        Builder(GroupPayload group) {
-            super(group);
-            groupId = group.groupId();
-            traits = group.traits();
+        Builder(ScreenPayload screen) {
+            super(screen);
+            name = screen.name();
+            properties = screen.properties();
         }
 
         @NonNull
-        public Builder groupId(@NonNull String groupId) {
-            this.groupId = assertNotNullOrEmpty(groupId, "groupId");
+        public Builder name(@Nullable String name) {
+            this.name = name;
             return this;
         }
 
         @NonNull
-        public Builder traits(@NonNull Map<String, ?> traits) {
-            assertNotNull(traits, "traits");
-            this.traits = Collections.unmodifiableMap(new LinkedHashMap<>(traits));
+        @Deprecated
+        public Builder category(@Nullable String category) {
+            this.category = category;
+            return this;
+        }
+
+        @NonNull
+        public Builder properties(@NonNull Map<String, ?> properties) {
+            assertNotNull(properties, "properties");
+            this.properties = Collections.unmodifiableMap(new LinkedHashMap<>(properties));
             return this;
         }
 
         @Override
-        protected GroupPayload realBuild(
+        protected ScreenPayload realBuild(
                 @NonNull String messageId,
                 @NonNull Date timestamp,
                 @NonNull Map<String, Object> context,
@@ -131,22 +157,25 @@ public class GroupPayload extends BasePayload {
                 @Nullable String userId,
                 @NonNull String anonymousId,
                 boolean nanosecondTimestamps) {
-            assertNotNullOrEmpty(groupId, "groupId");
-
-            Map<String, Object> traits = this.traits;
-            if (isNullOrEmpty(traits)) {
-                traits = Collections.emptyMap();
+            if (isNullOrEmpty(name) && isNullOrEmpty(category)) {
+                throw new NullPointerException("either name or category is required");
             }
 
-            return new GroupPayload(
+            Map<String, Object> properties = this.properties;
+            if (isNullOrEmpty(properties)) {
+                properties = Collections.emptyMap();
+            }
+
+            return new ScreenPayload(
                     messageId,
                     timestamp,
                     context,
                     integrations,
                     userId,
                     anonymousId,
-                    groupId,
-                    traits,
+                    name,
+                    category,
+                    properties,
                     nanosecondTimestamps);
         }
 
