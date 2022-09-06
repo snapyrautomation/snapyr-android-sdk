@@ -30,6 +30,7 @@ import static com.snapyr.sdk.internal.Utils.isNullOrEmpty;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.snapyr.sdk.Properties;
+
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;

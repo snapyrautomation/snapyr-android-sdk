@@ -52,15 +52,15 @@ import com.snapyr.sdk.TestUtils.grantPermission
 import com.snapyr.sdk.TestUtils.mockApplication
 import com.snapyr.sdk.http.ConnectionFactory
 import com.snapyr.sdk.http.SettingsRequest
+import com.snapyr.sdk.services.Logger
 import com.snapyr.sdk.internal.TrackPayload
+import com.snapyr.sdk.services.Cartographer
 import com.snapyr.sdk.internal.Utils.AnalyticsNetworkExecutorService
 import com.snapyr.sdk.internal.Utils.DEFAULT_FLUSH_INTERVAL
 import com.snapyr.sdk.internal.Utils.DEFAULT_FLUSH_QUEUE_SIZE
 import com.snapyr.sdk.internal.Utils.isNullOrEmpty
 import com.snapyr.sdk.notifications.SnapyrNotificationLifecycleCallbacks
-import com.snapyr.sdk.services.Cartographer
 import com.snapyr.sdk.services.Crypto
-import com.snapyr.sdk.services.Logger
 import java.io.IOException
 import java.io.OutputStream
 import java.util.concurrent.CountDownLatch

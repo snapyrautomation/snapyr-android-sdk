@@ -24,10 +24,10 @@
 package com.snapyr.sdk.inapp
 
 import com.snapyr.sdk.Snapyr
-import com.snapyr.sdk.TestUtils
 import com.snapyr.sdk.internal.SnapyrAction
-import com.snapyr.sdk.services.Cartographer
+import com.snapyr.sdk.TestUtils
 import com.snapyr.sdk.services.Logger
+import com.snapyr.sdk.services.Cartographer
 import java.io.IOException
 import org.junit.Test
 import org.junit.runner.RunWith

@@ -25,6 +25,7 @@ package com.snapyr.sdk.http;
 
 import static java.net.HttpURLConnection.HTTP_OK;
 
+import com.snapyr.sdk.services.Cartographer;
 import com.snapyr.sdk.internal.Utils;
 import com.snapyr.sdk.services.Cartographer;
 import java.io.IOException;

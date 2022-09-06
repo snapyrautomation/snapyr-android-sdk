@@ -32,6 +32,7 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.DefaultLifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
 import com.snapyr.sdk.Snapyr;
+import com.snapyr.sdk.services.Logger;
 import com.snapyr.sdk.internal.TrackerUtil;
 import com.snapyr.sdk.services.Logger;
 
