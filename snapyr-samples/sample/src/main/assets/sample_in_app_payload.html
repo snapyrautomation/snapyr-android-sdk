@@ -3,13 +3,17 @@
     <!-- Following meta tag is important for displaying content with appropriate scale on device.
          i.e. without this, content will probably be tiny unless you tweak all the styling just
          right -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, viewport-fix=cover" />
     <!-- title doesn't seem to be used but :shrug: -->
     <title>Testing in app</title>
     <style>
         body {
-            /* background-color: blue; */
-            padding: 8px;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        #container {
+            padding: 16px;
             font-family: "Roboto",-apple-system,BlinkMacSystemFont,"Segoe UI Adjusted","Segoe UI","Liberation Sans",sans-serif;
         }
         h1 {
@@ -27,9 +31,21 @@
             font-size: 16px;
             margin: 24px auto;
         }
+        a {
+            color: blue;
+            font-weight: bold;
+        }
     </style>
     <script>
         console.log("FIRST LINE OF SNAPYR JS!");
+
+        function getContainerDimensions() {
+            let c = document.querySelector('#container');
+            let r = c.getBoundingClientRect();
+            const height = r.top + r.height;
+            const width = r.left + r.width;
+            return {height: (height * window.devicePixelRatio), rawHeight: height, width: (width * window.devicePixelRatio), rawWidth: width};
+        }
 
         const ogLog = console.log;
         console.log = function(...messages) {
@@ -42,8 +58,6 @@
             ogError(...messages);
             sendMessageToNative({type: "log", level: "error", message: JSON.stringify(messages)});
         }
-
-        console.log("INAPPBROWSER: LOG FROM JS??!?");
 
         function sendMessageToNative(message) {
             const iosHandler = window.webkit?.messageHandlers?.snapyrMessageHandler;
@@ -59,18 +73,18 @@
             }
 
             // Neither OS seems to have worked if we got here...
-            ogLog("sendMessageToNative: no receiver found. Message:", message);
+            if (message?.type !== "log") {
+                ogLog("sendMessageToNative: no receiver found. Message:", message);
+            }
         }
 
         window.addEventListener("load", (_event) => {
-          console.log("INAPPBROWSER: page is fully loaded");
-          sendMessageToNative({type: "loaded"});
+          sendMessageToNative({type: "loaded", height: getContainerDimensions().height});
 
           // Intentionally adding both "click" and "close" listeners/callbacks to the Close button...
           // could have SDK handle this instead?
           document.querySelectorAll("button").forEach(b => {
               b.addEventListener("click", (event) => {
-                  console.log("Button '" + b.id + "' clicked!");
                   sendMessageToNative({type: "click", id: b.id, parameters: JSON.stringify(b.dataset)});
               });
           });
@@ -79,14 +93,29 @@
               sendMessageToNative({type: "close"});
           });
 
+          document.querySelectorAll("a").forEach(link => {
+              link.addEventListener("click", (event) => {
+                  sendMessageToNative({type: "click", id: link.id, url: link.getAttribute("href"), parameters: JSON.stringify(link.dataset)});
+                  event.preventDefault();
+              });
+          });
+
         });
+
+        window.addEventListener("resize", (event) => {
+            sendMessageToNative({type: "click", id: "resize", parameters: {devicePixelRatio: window.devicePixelRatio, containerDimensions: getContainerDimensions()}});
+        });
+
     </script>
 </head>
 <body>
-<h1>In-App Message mofo!!!</h1>
-<p>Hey you there, look at this flipping amazing offer. I bet you want to click on at LEAST one of these buttons now!</p>
-<button id="action1" data-action="acceptOffer" data-value="1000">Get 1,000 Bonus Coins!</button>
-<button id="action2" data-action="acceptOffer" data-value="xtraLife">Get unlimited extra lives for 15 minutes!</button>
-<button id="close">Close this bad boy</button>
+<div id="container">
+    <h1>In-App Message mofo!!!</h1>
+    <p>Hey you there, look at this <a href="https://www.disney.com">flipping amazing offer</a>. I bet you <a href="https://www.snapyr.com">want to click</a> on at LEAST one of these buttons now!</p>
+    <button id="action1" data-action="acceptOffer" data-value="1000">Get 1,000 Bonus Coins!</button>
+    <button id="action2" data-action="acceptOffer" data-value="xtraLife">Get unlimited extra lives for 15 minutes!</button>
+    <button id="close">Close this bad boy</button>
+    <div id="bottom"></div>
+</div>
 </body>
 </html>

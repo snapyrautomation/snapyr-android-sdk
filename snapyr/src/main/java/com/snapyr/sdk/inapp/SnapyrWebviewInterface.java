@@ -95,7 +95,8 @@ public class SnapyrWebviewInterface {
                 // Fires on window load event in the browser, which indicates that all resources
                 // (including CSS/images)
                 // have finished being fetched
-                callbackHandler.onLoad();
+                float reportedHeight = Float.parseFloat(data.getString("height"));
+                callbackHandler.onLoad(reportedHeight);
                 Log.d("Snapy", "In-App message content loaded!");
                 break;
             case log:

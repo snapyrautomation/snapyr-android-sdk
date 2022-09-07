@@ -30,5 +30,5 @@ public interface SnapyrWebviewInterfaceCallback {
 
     void onClick(String id, ValueMap parameters);
 
-    void onLoad();
+    void onLoad(float clientHeight);
 }
