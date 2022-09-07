@@ -27,9 +27,7 @@ import com.snapyr.sdk.http.HTTPException;
 import com.snapyr.sdk.http.ReadConnection;
 import com.snapyr.sdk.internal.SnapyrAction;
 import com.snapyr.sdk.internal.Utils;
-import com.snapyr.sdk.services.Cartographer;
 import com.snapyr.sdk.services.ServiceFacade;
-
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.LinkedList;
@@ -56,11 +54,14 @@ public class GetUserActionsRequest {
                 throw new HTTPException(responseCode, "failed to fetch in-app messages", "");
             }
             rc = new ReadConnection(conn);
-            results = ServiceFacade.getCartographer().fromJsonArray(Utils.buffer(rc.getInputStream()));
+            results =
+                    ServiceFacade.getCartographer()
+                            .fromJsonArray(Utils.buffer(rc.getInputStream()));
             for (Object actionMap : results) {
                 try {
                     if (actionMap instanceof Map) {
-                        final SnapyrAction action = SnapyrAction.create((Map<String, Object>) actionMap);
+                        final SnapyrAction action =
+                                SnapyrAction.create((Map<String, Object>) actionMap);
                         created.add(new InAppMessage(action));
                     }
                 } catch (InAppMessage.MalformedMessageException e) {

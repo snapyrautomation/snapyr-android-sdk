@@ -29,9 +29,7 @@ import androidx.annotation.NonNull;
 import com.snapyr.sdk.internal.SnapyrAction;
 import com.snapyr.sdk.services.Logger;
 import com.snapyr.sdk.services.ServiceFacade;
-
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -57,7 +55,7 @@ public class InAppManager implements InAppIFace {
     public void processTrackResponse(SnapyrAction action) {
         try {
             InAppMessage message = new InAppMessage(action);
-            try{ // critical section, lock and add
+            try { // critical section, lock and add
                 this.mutex.lock();
                 this.pendingActions.put(message.ActionToken, message);
             } finally {
