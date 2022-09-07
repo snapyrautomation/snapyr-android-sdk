@@ -26,11 +26,14 @@ package com.snapyr.sdk.inapp;
 import android.content.Context;
 import android.os.Handler;
 import androidx.annotation.NonNull;
+
+import com.snapyr.sdk.Traits;
 import com.snapyr.sdk.internal.SnapyrAction;
 import com.snapyr.sdk.services.Logger;
 import com.snapyr.sdk.services.ServiceFacade;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class InAppManager implements InAppIFace {
@@ -51,21 +54,27 @@ public class InAppManager implements InAppIFace {
         this.startBackgroundThread(config.PollingDelayMs);
     }
 
+    private void enqueueAndAckMessage(InAppMessage message){
+        // critical section, lock and add
+        this.mutex.lock();
+        this.pendingActions.put(message.ActionToken, message);
+        this.mutex.unlock();
+        ServiceFacade.getNetworkExecutor().submit(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            AckUserActionRequest.execute(message.UserId, message.ActionToken);
+                        } catch (Exception e) {
+                            ServiceFacade.getLogger().error(e, "failed to ack in-app action");
+                        }
+                    }});
+    }
+
     @Override
     public void processTrackResponse(SnapyrAction action) {
         try {
-            InAppMessage message = new InAppMessage(action);
-            try { // critical section, lock and add
-                this.mutex.lock();
-                this.pendingActions.put(message.ActionToken, message);
-            } finally {
-                this.mutex.unlock();
-            }
-            try {
-                AckUserActionRequest.execute(message.UserId, message.ActionToken);
-            } catch (Exception e) {
-                ServiceFacade.getLogger().error(e, "failed to ack in-app action");
-            }
+            enqueueAndAckMessage(new InAppMessage(action));
         } catch (InAppMessage.MalformedMessageException e) {
             logger.error(e, "failed to convert action to in-app message", action);
         }
@@ -92,6 +101,19 @@ public class InAppManager implements InAppIFace {
                 // TODO: handle internally
             }
         }
+
+        ServiceFacade.getNetworkExecutor().submit(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        List<InAppMessage> polledActions =
+                                GetUserActionsRequest.execute(
+                                        ServiceFacade.getSnapyrContext().traits().userId());
+                        for (InAppMessage action : polledActions) {
+                            enqueueAndAckMessage(action);
+                        }
+                    }
+                });
     }
 
     Handler handler = new Handler();
@@ -102,7 +124,7 @@ public class InAppManager implements InAppIFace {
                     try {
                         dispatchPending(context);
                     } finally {
-                        handler.postDelayed(backgroundThread, 500);
+                        handler.postDelayed(backgroundThread, 10000);
                     }
                 }
             };

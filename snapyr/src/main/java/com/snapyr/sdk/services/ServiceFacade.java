@@ -25,6 +25,7 @@ package com.snapyr.sdk.services;
 
 import android.app.Application;
 import com.snapyr.sdk.Snapyr;
+import com.snapyr.sdk.SnapyrContext;
 import com.snapyr.sdk.http.ConnectionFactory;
 import java.util.concurrent.ExecutorService;
 
@@ -36,6 +37,7 @@ public class ServiceFacade {
     Logger logger;
     Crypto crypto;
     ConnectionFactory connectionFactory;
+    SnapyrContext snapyrContext;
 
     public static ServiceFacade getInstance() {
         if (ServiceFacade.instance == null) {
@@ -44,6 +46,15 @@ public class ServiceFacade {
             ServiceFacade.instance.crypto = Crypto.none();
         }
         return ServiceFacade.instance;
+    }
+
+    public ServiceFacade setSnapyrContext(SnapyrContext snapyrContext) {
+        this.snapyrContext = snapyrContext;
+        return this;
+    }
+
+    public static SnapyrContext getSnapyrContext() {
+        return getInstance().snapyrContext;
     }
 
     public ServiceFacade setConnectionFactory(ConnectionFactory connectionFactory) {

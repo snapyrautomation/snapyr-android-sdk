@@ -87,8 +87,12 @@ public class ConnectionFactory {
     public HttpURLConnection engineRequest(String path, String method) throws IOException {
         HttpURLConnection connection = openConnection(engineURL + path, method);
         connection.setRequestProperty("Authorization", authorizationHeader(writeKey));
-        connection.setDoOutput(true);
-        connection.setChunkedStreamingMode(0);
+        connection.setRequestProperty("Content-Type", "application/json;charset=utf-8");
+        connection.setRequestMethod(method);
+        if (method == "POST"){
+            connection.setDoOutput(true);
+            connection.setChunkedStreamingMode(0);
+        }
         return connection;
     }
 

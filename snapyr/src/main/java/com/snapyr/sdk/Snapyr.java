@@ -117,7 +117,6 @@ public class Snapyr {
 
     @Private final Options defaultOptions;
     @Private final Traits.Cache traitsCache;
-    @Private final SnapyrContext snapyrContext;
     final String tag;
     final Cartographer cartographer;
     @Private final SnapyrActivityLifecycleCallbacks activityLifecycleCallback;
@@ -176,10 +175,10 @@ public class Snapyr {
                 .setLogger(logger)
                 .setCartographer(cartographer)
                 .setConnectionFactory(new ConnectionFactory(writeKey, environment))
+                .setSnapyrContext(snapyrContext)
                 .setCrypto(crypto);
 
         this.traitsCache = traitsCache;
-        this.snapyrContext = snapyrContext;
         this.defaultOptions = defaultOptions;
         this.tag = tag;
         this.cartographer = cartographer;
@@ -395,7 +394,7 @@ public class Snapyr {
         if (!isNullOrEmpty(newSettings)) {
             this.projectSettings = newSettings;
             ValueMap metadata = projectSettings.getValueMap("metadata");
-            snapyrContext.putSdkMeta(metadata);
+            ServiceFacade.getSnapyrContext().putSdkMeta(metadata);
             this.PushTemplates = PushTemplate.ParseTemplate(metadata);
         }
     }
@@ -519,7 +518,7 @@ public class Snapyr {
                         }
 
                         traitsCache.set(traits); // Save the new traits
-                        snapyrContext.setTraits(traits); // Update the references
+                        ServiceFacade.getSnapyrContext().setTraits(traits); // Update the references
 
                         IdentifyPayload.Builder builder =
                                 new IdentifyPayload.Builder()
@@ -791,7 +790,7 @@ public class Snapyr {
                                 new AliasPayload.Builder()
                                         .timestamp(timestamp)
                                         .userId(newId)
-                                        .previousId(snapyrContext.traits().currentId());
+                                        .previousId(ServiceFacade.getSnapyrContext().traits().currentId());
                         fillAndEnqueue(builder, options);
                     }
                 });
@@ -824,8 +823,9 @@ public class Snapyr {
         }
 
         // Create a new working copy
-        SnapyrContext contextCopy = new SnapyrContext(new LinkedHashMap<>(snapyrContext.size()));
-        contextCopy.putAll(snapyrContext);
+        SnapyrContext contextCopy = new SnapyrContext(new LinkedHashMap<>(
+                ServiceFacade.getSnapyrContext().size()));
+        contextCopy.putAll(ServiceFacade.getSnapyrContext());
         contextCopy.putAll(finalOptions.context());
         contextCopy = contextCopy.unmodifiableCopy();
 
@@ -863,7 +863,7 @@ public class Snapyr {
         // TODO (major version change) hide internals (don't give out working copy), expose a better
         // API
         //  for modifying the global context
-        return snapyrContext;
+        return ServiceFacade.getSnapyrContext();
     }
 
     /**
@@ -893,7 +893,7 @@ public class Snapyr {
 
         traitsCache.delete();
         traitsCache.set(Traits.create());
-        snapyrContext.setTraits(traitsCache.get());
+        ServiceFacade.getSnapyrContext().setTraits(traitsCache.get());
     }
 
     /**

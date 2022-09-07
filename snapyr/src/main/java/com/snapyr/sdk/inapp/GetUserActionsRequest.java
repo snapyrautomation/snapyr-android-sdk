@@ -23,6 +23,7 @@
  */
 package com.snapyr.sdk.inapp;
 
+import com.snapyr.sdk.ValueMap;
 import com.snapyr.sdk.http.HTTPException;
 import com.snapyr.sdk.http.ReadConnection;
 import com.snapyr.sdk.internal.SnapyrAction;
@@ -37,16 +38,18 @@ import java.util.Map;
 public class GetUserActionsRequest {
     public static final String AckInAppActionUrl = "v1/actions/";
 
-    static String getUrl(String user, String token) {
-        return AckInAppActionUrl + user;
-    }
 
-    static List<InAppMessage> execute(String user, String token) throws IOException {
-        String builtUrl = getUrl(user, token);
-        List<Object> results;
+    public static List<InAppMessage> execute(String user) {
+
+        String builtUrl = AckInAppActionUrl + user;
         HttpURLConnection conn;
         ReadConnection rc = null;
         List<InAppMessage> created = new LinkedList<>();
+
+        if (Utils.isNullOrEmpty(user)){
+            return created; // no point in querying if there's no user
+        }
+
         try {
             conn = ServiceFacade.getConnectionFactory().engineRequest(builtUrl, "GET");
             int responseCode = conn.getResponseCode();
@@ -54,10 +57,10 @@ public class GetUserActionsRequest {
                 throw new HTTPException(responseCode, "failed to fetch in-app messages", "");
             }
             rc = new ReadConnection(conn);
-            results =
-                    ServiceFacade.getCartographer()
-                            .fromJsonArray(Utils.buffer(rc.getInputStream()));
-            for (Object actionMap : results) {
+            ValueMap results = new ValueMap(ServiceFacade.getCartographer()
+                            .fromJson(Utils.buffer(rc.getInputStream())));
+
+            for (Object actionMap : results.getList("actions", ValueMap.class)) {
                 try {
                     if (actionMap instanceof Map) {
                         final SnapyrAction action =
@@ -68,9 +71,14 @@ public class GetUserActionsRequest {
                     ServiceFacade.getLogger().error(e, "failed parsing in-app message");
                 }
             }
-        } finally {
+
+        } catch (IOException e){
+            ServiceFacade.getLogger().error(e, "failed polling for in-app messages");
+        }finally {
             if (rc != null) {
-                rc.close();
+                try {
+                    rc.close();
+                } catch (IOException e) {}
             }
         }
         return created;
