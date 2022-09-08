@@ -21,11 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.snapyr.sdk.inapp;
+package com.snapyr.sdk.inapp.requests;
 
 import com.snapyr.sdk.ValueMap;
 import com.snapyr.sdk.http.HTTPException;
 import com.snapyr.sdk.http.ReadConnection;
+import com.snapyr.sdk.inapp.InAppMessage;
 import com.snapyr.sdk.internal.SnapyrAction;
 import com.snapyr.sdk.internal.Utils;
 import com.snapyr.sdk.services.ServiceFacade;
@@ -38,27 +39,28 @@ import java.util.Map;
 public class GetUserActionsRequest {
     public static final String AckInAppActionUrl = "v1/actions/";
 
-
     public static List<InAppMessage> execute(String user) {
-
         String builtUrl = AckInAppActionUrl + user;
         HttpURLConnection conn;
         ReadConnection rc = null;
         List<InAppMessage> created = new LinkedList<>();
 
-        if (Utils.isNullOrEmpty(user)){
+        if (Utils.isNullOrEmpty(user)) {
             return created; // no point in querying if there's no user
         }
 
         try {
             conn = ServiceFacade.getConnectionFactory().engineRequest(builtUrl, "GET");
+            conn.setDoInput(false);
             int responseCode = conn.getResponseCode();
             if (responseCode != 200) {
                 throw new HTTPException(responseCode, "failed to fetch in-app messages", "");
             }
             rc = new ReadConnection(conn);
-            ValueMap results = new ValueMap(ServiceFacade.getCartographer()
-                            .fromJson(Utils.buffer(rc.getInputStream())));
+            ValueMap results =
+                    new ValueMap(
+                            ServiceFacade.getCartographer()
+                                    .fromJson(Utils.buffer(rc.getInputStream())));
 
             for (Object actionMap : results.getList("actions", ValueMap.class)) {
                 try {
@@ -72,9 +74,9 @@ public class GetUserActionsRequest {
                 }
             }
 
-        } catch (IOException e){
+        } catch (IOException e) {
             ServiceFacade.getLogger().error(e, "failed polling for in-app messages");
-        }finally {
+        } finally {
             if (rc != null) {
                 try {
                     rc.close();

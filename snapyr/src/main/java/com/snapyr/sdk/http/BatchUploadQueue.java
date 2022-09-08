@@ -162,10 +162,6 @@ public class BatchUploadQueue {
     }
 
     public void performEnqueue(BasePayload original) {
-        // Override any user provided values with anything that was bundled.
-        // e.g. If user did Mixpanel: true and it was bundled, this would correctly override it with
-        // false so that the server doesn't send that event as well.
-        ValueMap providedIntegrations = original.integrations();
         // Make a copy of the payload so we don't mutate the original.
         ValueMap payload = new ValueMap();
         payload.putAll(original);
@@ -194,6 +190,7 @@ public class BatchUploadQueue {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             OutputStream cos = ServiceFacade.getCrypto().encrypt(bos);
             ServiceFacade.getCartographer().toJson(payload, new OutputStreamWriter(cos));
+            cos.close();
             byte[] bytes = bos.toByteArray();
             if (bytes == null || bytes.length == 0 || bytes.length > MAX_PAYLOAD_SIZE) {
                 throw new IOException("Could not serialize payload " + payload);

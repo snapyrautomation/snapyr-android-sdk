@@ -26,94 +26,65 @@ package com.snapyr.sdk.inapp;
 import android.content.Context;
 import android.os.Handler;
 import androidx.annotation.NonNull;
-
-import com.snapyr.sdk.Traits;
+import com.snapyr.sdk.inapp.requests.AckUserActionRequest;
+import com.snapyr.sdk.inapp.requests.GetUserActionsRequest;
+import com.snapyr.sdk.inapp.webview.WebviewModal;
 import com.snapyr.sdk.internal.SnapyrAction;
-import com.snapyr.sdk.services.Logger;
 import com.snapyr.sdk.services.ServiceFacade;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class InAppManager implements InAppIFace {
-    private final int processInterval;
-    private final Logger logger;
-    private final InAppCallback UserCallback;
-    private ReentrantLock mutex = new ReentrantLock();
-    private HashMap<String, InAppMessage> pendingActions;
+    private final int pollingInterval;
+    private final InAppActionProcessor actionProcessor;
     private Context context;
 
+
     public InAppManager(@NonNull InAppConfig config, @NonNull Context context) {
-        this.logger = config.Logger;
-        this.processInterval = config.PollingDelayMs;
-        this.UserCallback = config.Handler;
-        this.pendingActions = new HashMap<>();
-        this.mutex = new ReentrantLock();
+        this.pollingInterval = config.PollingDelayMs;
+        this.actionProcessor = new InAppActionProcessor(config.UserCallback);
         this.context = context;
         this.startBackgroundThread(config.PollingDelayMs);
     }
 
-    private void enqueueAndAckMessage(InAppMessage message){
-        // critical section, lock and add
-        this.mutex.lock();
-        this.pendingActions.put(message.ActionToken, message);
-        this.mutex.unlock();
-        ServiceFacade.getNetworkExecutor().submit(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            AckUserActionRequest.execute(message.UserId, message.ActionToken);
-                        } catch (Exception e) {
-                            ServiceFacade.getLogger().error(e, "failed to ack in-app action");
-                        }
-                    }});
+    private void processAndAck(InAppMessage message) {
+        actionProcessor.process(message);
+        ServiceFacade.getNetworkExecutor()
+                .submit(
+                        () -> {
+                            try {
+                                AckUserActionRequest.execute(message.UserId, message.ActionToken);
+                            } catch (Exception e) {
+                                ServiceFacade.getLogger().error(e, "failed to ack in-app action");
+                            }
+                        });
     }
 
     @Override
     public void processTrackResponse(SnapyrAction action) {
         try {
-            enqueueAndAckMessage(new InAppMessage(action));
+            processAndAck(new InAppMessage(action));
         } catch (InAppMessage.MalformedMessageException e) {
-            logger.error(e, "failed to convert action to in-app message", action);
+            ServiceFacade.getLogger()
+                    .error(e, "failed to convert action to in-app message", action);
         }
     }
 
     @Override
     public void dispatchPending(Context context) {
-        logger.info("polling for in-app content");
-        ArrayList<InAppMessage> messages = new ArrayList<>();
-        try { // critical section, grab the values and clear
-            this.mutex.lock();
-            messages.addAll(this.pendingActions.values());
-            this.pendingActions.clear();
-        } finally {
-            this.mutex.unlock();
-        }
+        ServiceFacade.getLogger().info("polling for in-app content");
+        ServiceFacade.getNetworkExecutor()
+                .submit(
+                        () -> {
+                            List<InAppMessage> polledActions =
+                                    GetUserActionsRequest.execute(
+                                            ServiceFacade.getSnapyrContext().traits().userId());
 
-        // now process
-        for (InAppMessage action : messages) {
-            if (action.ActionType == InAppActionType.ACTION_TYPE_CUSTOM) {
-                logger.info("dispatching user in-app action");
-                this.UserCallback.onAction(action);
-            } else {
-                // TODO: handle internally
-            }
-        }
-
-        ServiceFacade.getNetworkExecutor().submit(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        List<InAppMessage> polledActions =
-                                GetUserActionsRequest.execute(
-                                        ServiceFacade.getSnapyrContext().traits().userId());
-                        for (InAppMessage action : polledActions) {
-                            enqueueAndAckMessage(action);
-                        }
-                    }
-                });
+                            ServiceFacade.getLogger()
+                                    .info("pulled " + polledActions.size() + " actions");
+                            for (InAppMessage action : polledActions) {
+                                processAndAck(action);
+                            }
+                        });
     }
 
     Handler handler = new Handler();
@@ -124,7 +95,7 @@ public class InAppManager implements InAppIFace {
                     try {
                         dispatchPending(context);
                     } finally {
-                        handler.postDelayed(backgroundThread, 10000);
+                        handler.postDelayed(backgroundThread, pollingInterval);
                     }
                 }
             };

@@ -89,9 +89,11 @@ public class ConnectionFactory {
         connection.setRequestProperty("Authorization", authorizationHeader(writeKey));
         connection.setRequestProperty("Content-Type", "application/json;charset=utf-8");
         connection.setRequestMethod(method);
-        if (method == "POST"){
+        if (method == "POST") {
             connection.setDoOutput(true);
             connection.setChunkedStreamingMode(0);
+        } else if (method == "GET") {
+            connection.setDoInput(false);
         }
         return connection;
     }

@@ -174,5 +174,6 @@ public class BatchUploadRequest implements Closeable, BatchQueue.ElementVisitor 
             largeLog("Snapyr", debugString.toString());
         }
         jsonWriter.close();
+        bufferedWriter.close();
     }
 }

@@ -280,7 +280,7 @@ public class Snapyr {
 
         if (inAppConfig != null) {
             InAppFacade.allowInApp();
-            InAppFacade.createInApp(inAppConfig.setLogger(logger), application);
+            InAppFacade.createInApp(inAppConfig, application);
         }
 
         if (enableSnapyrPushHandling) {
@@ -790,7 +790,10 @@ public class Snapyr {
                                 new AliasPayload.Builder()
                                         .timestamp(timestamp)
                                         .userId(newId)
-                                        .previousId(ServiceFacade.getSnapyrContext().traits().currentId());
+                                        .previousId(
+                                                ServiceFacade.getSnapyrContext()
+                                                        .traits()
+                                                        .currentId());
                         fillAndEnqueue(builder, options);
                     }
                 });
@@ -823,8 +826,8 @@ public class Snapyr {
         }
 
         // Create a new working copy
-        SnapyrContext contextCopy = new SnapyrContext(new LinkedHashMap<>(
-                ServiceFacade.getSnapyrContext().size()));
+        SnapyrContext contextCopy =
+                new SnapyrContext(new LinkedHashMap<>(ServiceFacade.getSnapyrContext().size()));
         contextCopy.putAll(ServiceFacade.getSnapyrContext());
         contextCopy.putAll(finalOptions.context());
         contextCopy = contextCopy.unmodifiableCopy();

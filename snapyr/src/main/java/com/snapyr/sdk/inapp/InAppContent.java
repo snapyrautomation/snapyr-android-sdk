@@ -30,7 +30,7 @@ import java.io.IOException;
 public class InAppContent {
     private ValueMap jsonContent;
     private InAppContentType contentType;
-    // private final String htmlContent; // TODO: is there a better type for this? The HTML type
+    private String htmlContent; // TODO: is there a better type for this? The HTML type
     // looks useless
 
     public InAppContent(ValueMap raw) throws InAppMessage.MalformedMessageException {
@@ -62,6 +62,10 @@ public class InAppContent {
                             "unknown format for custom-json");
                 }
                 break;
+            case "html":
+                this.contentType = InAppContentType.CONTENT_TYPE_HTML;
+                this.htmlContent = (String)content;
+                break;
             default:
                 if (this.jsonContent == null) {
                     throw new InAppMessage.MalformedMessageException("unknown format for content");
@@ -81,11 +85,11 @@ public class InAppContent {
         return this.jsonContent;
     }
 
-    public ValueMap getHtmlContent() throws IncorrectContentAccessException {
+    public String getHtmlContent() throws IncorrectContentAccessException {
         if (this.contentType != InAppContentType.CONTENT_TYPE_HTML) {
             throw new IncorrectContentAccessException("content is not html");
         }
-        return this.jsonContent;
+        return this.htmlContent;
     }
 
     public static class IncorrectContentAccessException extends Exception {

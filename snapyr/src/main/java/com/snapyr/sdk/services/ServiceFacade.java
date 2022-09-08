@@ -23,6 +23,7 @@
  */
 package com.snapyr.sdk.services;
 
+import android.app.Activity;
 import android.app.Application;
 import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.SnapyrContext;
@@ -38,6 +39,7 @@ public class ServiceFacade {
     Crypto crypto;
     ConnectionFactory connectionFactory;
     SnapyrContext snapyrContext;
+    Activity currentActivity;
 
     public static ServiceFacade getInstance() {
         if (ServiceFacade.instance == null) {
@@ -105,6 +107,14 @@ public class ServiceFacade {
     public ServiceFacade setNetworkExecutor(ExecutorService networkExecutor) {
         this.networkExecutor = networkExecutor;
         return this;
+    }
+
+    public static Activity getCurrentActivity() {
+        return getInstance().currentActivity;
+    }
+
+    public void setCurrentActivity(Activity currentActivity) {
+        this.currentActivity = currentActivity;
     }
 
     public static ExecutorService getNetworkExecutor() {

@@ -24,6 +24,7 @@
 package com.snapyr.sdk.sample;
 
 import android.app.Application;
+import android.os.StrictMode;
 import android.util.Log;
 import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.ValueMap;
@@ -43,6 +44,12 @@ public class SampleApp extends Application {
     public void onCreate() {
         super.onCreate();
 
+        StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
+                .detectLeakedClosableObjects()
+                .penaltyDeath()
+                .build());
+
+
         ViewPump.init(
                 ViewPump.builder()
                         .addInterceptor(
@@ -60,6 +67,7 @@ public class SampleApp extends Application {
                         .experimentalNanosecondTimestamps()
                         .trackApplicationLifecycleEvents()
                         .trackDeepLinks()
+                        .logLevel(Snapyr.LogLevel.DEBUG)
                         .defaultProjectSettings(
                                 new ValueMap()
                                         .putValue(
@@ -78,7 +86,7 @@ public class SampleApp extends Application {
                         .enableSnapyrPushHandling()
                         .configureInAppHandling(
                                 new InAppConfig()
-                                        .setPollingRate(1000)
+                                        .setPollingRate(30000)
                                         .setActionCallback(
                                                 (inAppMessage) -> {
                                                     userInAppCallback(inAppMessage);

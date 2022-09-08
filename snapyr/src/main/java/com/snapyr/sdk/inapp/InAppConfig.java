@@ -23,17 +23,9 @@
  */
 package com.snapyr.sdk.inapp;
 
-import com.snapyr.sdk.services.Logger;
-
 public class InAppConfig {
-    public Logger Logger = null;
-    public int PollingDelayMs = 5000; // 5 seconds by default
-    public InAppCallback Handler = new NoopHandler();
-
-    public InAppConfig setLogger(Logger logger) {
-        this.Logger = logger;
-        return this;
-    }
+    public int PollingDelayMs = 30000; // 30 seconds by default
+    public InAppCallback UserCallback = new InAppFacade.NoOpHandler();
 
     public InAppConfig setPollingRate(int pollingDelayMs) {
         this.PollingDelayMs = pollingDelayMs;
@@ -41,7 +33,7 @@ public class InAppConfig {
     }
 
     public InAppConfig setActionCallback(InAppCallback handler) {
-        this.Handler = handler;
+        this.UserCallback = handler;
         return this;
     }
 }
