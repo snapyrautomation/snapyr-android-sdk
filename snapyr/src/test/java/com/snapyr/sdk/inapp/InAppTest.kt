@@ -23,12 +23,11 @@
  */
 package com.snapyr.sdk.inapp
 
-import com.snapyr.sdk.Snapyr
 import com.snapyr.sdk.TestUtils
 import com.snapyr.sdk.http.ConnectionFactory
 import com.snapyr.sdk.internal.SnapyrAction
+import com.snapyr.sdk.internal.Utils
 import com.snapyr.sdk.services.Cartographer
-import com.snapyr.sdk.services.Logger
 import com.snapyr.sdk.services.ServiceFacade
 import java.io.IOException
 import org.assertj.core.api.Assertions
@@ -61,6 +60,12 @@ class InAppTest {
     @Throws(IOException::class)
     fun testMessageFromJson() {
         val context = TestUtils.mockApplication()
+        val connFactory = Mockito.mock(ConnectionFactory::class.java)
+        ServiceFacade.getInstance()
+            .setConnectionFactory(connFactory)
+            .setApplication(context)
+            .setNetworkExecutor(TestUtils.SynchronousExecutor())
+
         InAppFacade.allowInApp()
         var callbackCalled = false
         InAppFacade.createInApp(
@@ -77,9 +82,6 @@ class InAppTest {
                 },
             context
         )
-
-        val connFactory = Mockito.mock(ConnectionFactory::class.java)
-        ServiceFacade.getInstance().setConnectionFactory(connFactory)
 
         val path: ArgumentCaptor<String> = ArgumentCaptor.forClass(String::class.java)
         val method: ArgumentCaptor<String> = ArgumentCaptor.forClass(String::class.java)

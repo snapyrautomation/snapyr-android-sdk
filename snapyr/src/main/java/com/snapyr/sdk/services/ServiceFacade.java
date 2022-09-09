@@ -95,17 +95,12 @@ public class ServiceFacade {
         return getInstance().logger;
     }
 
-    public ServiceFacade setApplication(Application application) {
-        this.application = application;
-        return this;
-    }
-
     public static Application getApplication() {
         return getInstance().application;
     }
 
-    public ServiceFacade setNetworkExecutor(ExecutorService networkExecutor) {
-        this.networkExecutor = networkExecutor;
+    public ServiceFacade setApplication(Application application) {
+        this.application = application;
         return this;
     }
 
@@ -119,5 +114,10 @@ public class ServiceFacade {
 
     public static ExecutorService getNetworkExecutor() {
         return getInstance().networkExecutor;
+    }
+
+    public ServiceFacade setNetworkExecutor(ExecutorService networkExecutor) {
+        this.networkExecutor = networkExecutor;
+        return this;
     }
 }

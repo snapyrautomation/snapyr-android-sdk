@@ -56,7 +56,7 @@ public final class Logger {
     /** Log an info message. */
     public void info(String format, Object... extra) {
         if (shouldLog(INFO)) {
-            Log.i(tag, format);
+            Log.i(tag, String.format(format, extra));
         }
     }
 
