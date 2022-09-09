@@ -35,7 +35,6 @@ import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
 import com.snapyr.sdk.internal.TrackerUtil;
 import com.snapyr.sdk.services.ServiceFacade;
-
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;

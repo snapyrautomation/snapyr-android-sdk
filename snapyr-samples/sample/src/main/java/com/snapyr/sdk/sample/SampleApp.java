@@ -24,7 +24,6 @@
 package com.snapyr.sdk.sample;
 
 import android.app.Application;
-import android.os.StrictMode;
 import android.util.Log;
 import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.ValueMap;
@@ -44,11 +43,10 @@ public class SampleApp extends Application {
     public void onCreate() {
         super.onCreate();
 
-        StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
-                .detectLeakedClosableObjects()
-                .penaltyDeath()
-                .build());
-
+        /*StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
+        .detectLeakedClosableObjects()
+        .penaltyDeath()
+        .build());*/
 
         ViewPump.init(
                 ViewPump.builder()

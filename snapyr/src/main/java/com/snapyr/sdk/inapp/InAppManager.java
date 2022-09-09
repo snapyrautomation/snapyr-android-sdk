@@ -28,7 +28,6 @@ import android.os.Handler;
 import androidx.annotation.NonNull;
 import com.snapyr.sdk.inapp.requests.AckUserActionRequest;
 import com.snapyr.sdk.inapp.requests.GetUserActionsRequest;
-import com.snapyr.sdk.inapp.webview.WebviewModal;
 import com.snapyr.sdk.internal.SnapyrAction;
 import com.snapyr.sdk.services.ServiceFacade;
 import java.util.List;
@@ -37,7 +36,6 @@ public class InAppManager implements InAppIFace {
     private final int pollingInterval;
     private final InAppActionProcessor actionProcessor;
     private Context context;
-
 
     public InAppManager(@NonNull InAppConfig config, @NonNull Context context) {
         this.pollingInterval = config.PollingDelayMs;

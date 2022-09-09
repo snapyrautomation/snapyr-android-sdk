@@ -138,7 +138,7 @@ public class WebviewJavascriptAPI {
         }
     }
 
-    public static interface SnapyrWebviewInterfaceCallback {
+    public interface SnapyrWebviewInterfaceCallback {
         void onClose();
 
         void onClick(String id, ValueMap parameters);

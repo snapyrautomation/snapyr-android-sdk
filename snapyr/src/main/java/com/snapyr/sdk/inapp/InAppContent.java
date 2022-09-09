@@ -64,7 +64,7 @@ public class InAppContent {
                 break;
             case "html":
                 this.contentType = InAppContentType.CONTENT_TYPE_HTML;
-                this.htmlContent = (String)content;
+                this.htmlContent = (String) content;
                 break;
             default:
                 if (this.jsonContent == null) {

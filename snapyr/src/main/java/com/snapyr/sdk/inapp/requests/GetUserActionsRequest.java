@@ -80,7 +80,8 @@ public class GetUserActionsRequest {
             if (rc != null) {
                 try {
                     rc.close();
-                } catch (IOException e) {}
+                } catch (IOException e) {
+                }
             }
         }
         return created;
