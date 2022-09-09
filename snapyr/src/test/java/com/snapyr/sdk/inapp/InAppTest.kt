@@ -26,7 +26,6 @@ package com.snapyr.sdk.inapp
 import com.snapyr.sdk.TestUtils
 import com.snapyr.sdk.http.ConnectionFactory
 import com.snapyr.sdk.internal.SnapyrAction
-import com.snapyr.sdk.internal.Utils
 import com.snapyr.sdk.services.Cartographer
 import com.snapyr.sdk.services.ServiceFacade
 import java.io.IOException
