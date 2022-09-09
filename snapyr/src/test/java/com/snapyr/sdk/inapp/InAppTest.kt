@@ -66,7 +66,6 @@ class InAppTest {
         InAppFacade.createInApp(
             InAppConfig()
                 .setPollingRate(50)
-                .setLogger(Logger.with(Snapyr.LogLevel.NONE))
                 .setActionCallback {
                     callbackCalled = true
                     check(it.ActionToken == "actionToken-0817645f-0953-4c49-9743-d3ae887f530c.paul0817.1660936988")
