@@ -70,6 +70,7 @@ public class BatchUploadRequest implements Closeable, BatchQueue.ElementVisitor 
             uploader.close();
         } finally {
             uploader.close();
+            stream.close();
         }
         return uploader.payloadCount;
     }

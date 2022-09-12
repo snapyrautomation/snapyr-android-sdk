@@ -40,7 +40,7 @@ class InAppWebviewClient extends WebViewClient {
 
         // close any active dialogs we have before we transition or they'll be behind the new
         // activity, which is less than ideal
-        WebviewModal.CloseDialogs();
+        WebviewModalView.closePopups();
 
         // nav forward using a new intent/activity
         Intent trackIntent = new Intent(view.getContext(), SnapyrNotificationListener.class);

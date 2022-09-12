@@ -89,6 +89,12 @@ public class ConnectionFactory {
         connection.setRequestProperty("Authorization", authorizationHeader(writeKey));
         connection.setRequestProperty("Content-Type", "application/json;charset=utf-8");
         connection.setRequestMethod(method);
+
+        // Hack: (bs) this is a known bug in android's http client. Found this fix elsewhere
+        // ----
+        // Explicitly tell the server to not gzip the response.
+        // Otherwise, HttpUrlsConnection will open a GzipInflater and not close it,
+        connection.setRequestProperty("Accept-Encoding", "identity");
         if (method == "POST") {
             connection.setDoOutput(true);
             connection.setChunkedStreamingMode(0);

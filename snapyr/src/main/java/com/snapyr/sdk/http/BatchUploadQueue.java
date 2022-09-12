@@ -288,7 +288,6 @@ public class BatchUploadQueue {
                         responseCode, connection.getResponseMessage(), responseBody);
             } else if (inputStream != null) {
                 responseBody = Utils.readFully(inputStream);
-                ServiceFacade.getLogger().info("flush response: " + responseBody);
                 handleActionsIfAny(responseBody);
             }
 

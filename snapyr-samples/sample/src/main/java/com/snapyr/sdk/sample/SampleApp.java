@@ -24,7 +24,11 @@
 package com.snapyr.sdk.sample;
 
 import android.app.Application;
+import android.os.Build;
+import android.os.StrictMode;
+import android.os.strictmode.Violation;
 import android.util.Log;
+import androidx.annotation.RequiresApi;
 import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.ValueMap;
 import com.snapyr.sdk.inapp.InAppConfig;
@@ -32,6 +36,7 @@ import com.snapyr.sdk.inapp.InAppMessage;
 import io.github.inflationx.calligraphy3.CalligraphyConfig;
 import io.github.inflationx.calligraphy3.CalligraphyInterceptor;
 import io.github.inflationx.viewpump.ViewPump;
+import java.util.concurrent.Executors;
 
 public class SampleApp extends Application {
 
@@ -39,14 +44,27 @@ public class SampleApp extends Application {
     //    private static final String ANALYTICS_WRITE_KEY = "HO63Z36e0Ufa8AAgbjDomDuKxFuUICqI";
     private static final String ANALYTICS_WRITE_KEY = "cTcjOQYhhxOTXF6eHFflOCyYPO6pfAOV";
 
+    @RequiresApi(api = Build.VERSION_CODES.P)
     @Override
     public void onCreate() {
         super.onCreate();
 
-        /*StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
-        .detectLeakedClosableObjects()
-        .penaltyDeath()
-        .build());*/
+        StrictMode.setVmPolicy(
+                new StrictMode.VmPolicy.Builder()
+                        .detectLeakedClosableObjects()
+                        .detectLeakedRegistrationObjects()
+                        // .penaltyDeath()
+                        .penaltyListener(
+                                Executors.newSingleThreadExecutor(),
+                                (Violation var1) -> {
+                                    // This catches leaks in our code that would have propagated to
+                                    // client code in the wild. If you want to be really careful
+                                    // uncomment the penaltyDeath line above --BS
+                                    Log.e(
+                                            var1.getLocalizedMessage(),
+                                            String.valueOf(var1.getCause().getStackTrace()));
+                                })
+                        .build());
 
         ViewPump.init(
                 ViewPump.builder()

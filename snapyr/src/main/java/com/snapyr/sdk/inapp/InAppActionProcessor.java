@@ -23,7 +23,7 @@
  */
 package com.snapyr.sdk.inapp;
 
-import com.snapyr.sdk.inapp.webview.WebviewModal;
+import com.snapyr.sdk.inapp.webview.WebviewModalView;
 import com.snapyr.sdk.services.ServiceFacade;
 
 public class InAppActionProcessor {
@@ -56,7 +56,7 @@ public class InAppActionProcessor {
                 ServiceFacade.getLogger().info("no action for json overlays currently");
                 break;
             case CONTENT_TYPE_HTML:
-                WebviewModal.ShowPopup(
+                WebviewModalView.showPopup(
                         ServiceFacade.getCurrentActivity(), message.Content.getHtmlContent());
                 break;
         }

@@ -37,6 +37,7 @@ import java.util.zip.GZIPOutputStream;
 public class WriteConnection extends ReadConnection {
     final HttpURLConnection connection;
     final Boolean gzipped;
+    GZIPOutputStream gzipStream = null;
 
     public WriteConnection(HttpURLConnection connection) {
         super(connection);
@@ -46,10 +47,20 @@ public class WriteConnection extends ReadConnection {
     }
 
     public OutputStream getOutputStream() throws IOException {
-        if (gzipped) {
-            return new GZIPOutputStream(connection.getOutputStream());
+        if (gzipped && gzipStream == null) {
+            gzipStream = new GZIPOutputStream(connection.getOutputStream());
+            return gzipStream;
         } else {
             return connection.getOutputStream();
+        }
+    }
+
+    @Override
+    public void close() throws IOException {
+        super.close();
+        if (gzipStream != null) {
+            gzipStream.finish();
+            gzipStream.close();
         }
     }
 }

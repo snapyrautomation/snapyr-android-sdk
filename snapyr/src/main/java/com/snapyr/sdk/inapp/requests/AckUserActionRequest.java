@@ -40,8 +40,6 @@ public class AckUserActionRequest {
         HttpURLConnection conn = null;
         try {
             conn = ServiceFacade.getConnectionFactory().engineRequest(builtUrl, "POST");
-            conn.setDoInput(false);
-            conn.setDoOutput(false);
             int responseCode = conn.getResponseCode();
             if (responseCode != 200) {
                 throw new HTTPException(responseCode, "failed to ack inapp message", "");

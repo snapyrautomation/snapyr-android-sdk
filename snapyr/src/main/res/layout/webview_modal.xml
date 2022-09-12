@@ -4,30 +4,32 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#00D10909">
+    android:background="#AE000000">
 
     <ImageButton
         android:id="@+id/dismiss_button"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:background="@drawable/ic_snapyr_logo_only"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginBottom="-24dp"
+        android:background="@drawable/ic_snapyr_close"
         android:elevation="2dp"
+        app:layout_constraintBottom_toTopOf="@+id/webview"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
         tools:ignore="SpeakableTextPresentCheck" />
 
     <WebView
         android:id="@+id/webview"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="1dp"
-        android:layout_marginLeft="1dp"
-        android:layout_marginTop="-16dp"
-        android:layout_marginEnd="1dp"
-        android:layout_marginRight="1dp"
-        android:layout_marginBottom="1dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginLeft="24dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginRight="24dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/dismiss_button" />
+        app:layout_constraintTop_toTopOf="parent">
+
+    </WebView>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
