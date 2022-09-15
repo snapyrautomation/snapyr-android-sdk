@@ -127,7 +127,6 @@ public class TrackPayload extends BasePayload {
             return this;
         }
 
-
         @NonNull
         public Builder properties(@NonNull Map<String, ?> properties) {
             assertNotNull(properties, "properties");

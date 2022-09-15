@@ -81,7 +81,7 @@ class SnapyrActivityLifecycleCallbacks
     private final AtomicBoolean firstLaunch;
     private final AtomicBoolean isChangingActivityConfigurations;
     private final Boolean useNewLifecycleMethods;
-    private long  backgroundStart;
+    private long backgroundStart;
 
     private SnapyrActivityLifecycleCallbacks(
             Snapyr snapyr,

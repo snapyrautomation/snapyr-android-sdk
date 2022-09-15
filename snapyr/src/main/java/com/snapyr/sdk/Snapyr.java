@@ -65,9 +65,6 @@ import com.snapyr.sdk.services.Cartographer;
 import com.snapyr.sdk.services.Crypto;
 import com.snapyr.sdk.services.Logger;
 import com.snapyr.sdk.services.ServiceFacade;
-
-import java.sql.Time;
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -314,8 +311,8 @@ public class Snapyr {
         sessionStarted();
     }
 
-    public void sessionStarted(){
-        if (!Utils.isNullOrEmpty(this.sessionId)){
+    public void sessionStarted() {
+        if (!Utils.isNullOrEmpty(this.sessionId)) {
             sessionEnded();
         }
 
@@ -323,21 +320,23 @@ public class Snapyr {
         if ((traits != null) && (!traits.userId().isEmpty())) {
             this.sessionStart = System.currentTimeMillis();
             this.sessionId = UUID.randomUUID().toString();
-            track("snapyr.sessionStart",
+            track(
+                    "snapyr.sessionStart",
                     new Properties(traits)
                             .putValue("sessionId", this.sessionId)
                             .putValue("platform", "android"));
         }
     }
 
-    public void sessionEnded(){
-        if (!Utils.isNullOrEmpty(this.sessionId)){
+    public void sessionEnded() {
+        if (!Utils.isNullOrEmpty(this.sessionId)) {
             return;
         }
         Traits traits = traitsCache.get();
         if ((traits != null) && (!traits.userId().isEmpty())) {
             long elapsed = System.currentTimeMillis() - this.sessionStart;
-            track("snapyr.sessionEnd",
+            track(
+                    "snapyr.sessionEnd",
                     new Properties(traits)
                             .putValue("sessionDuration", elapsed)
                             .putValue("sessionId", this.sessionId)

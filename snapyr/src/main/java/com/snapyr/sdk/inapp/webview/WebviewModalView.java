@@ -101,8 +101,8 @@ public class WebviewModalView extends FrameLayout {
         };
     }
 
-    private void dismissPopup(){
-        if (!wasInteractedWith){
+    private void dismissPopup() {
+        if (!wasInteractedWith) {
             // user didn't click a button, so send the dismissed
             Properties props =
                     new Properties()
@@ -112,11 +112,13 @@ public class WebviewModalView extends FrameLayout {
             snapyr.track("snapyr.observation.event.Behavior", props);
         }
 
-        ServiceFacade.getCurrentActivity().runOnUiThread(() -> {
-            if (WebviewModalView.popupWindow != null) {
-                WebviewModalView.popupWindow.dismiss();
-            }
-        });
+        ServiceFacade.getCurrentActivity()
+                .runOnUiThread(
+                        () -> {
+                            if (WebviewModalView.popupWindow != null) {
+                                WebviewModalView.popupWindow.dismiss();
+                            }
+                        });
     }
 
     private WebView configureWebview(Context context, String actionToken) {
@@ -140,7 +142,7 @@ public class WebviewModalView extends FrameLayout {
 
                             @Override
                             public void onClick(String id, ValueMap parameters) {
-                                if (id.equals("resize")){
+                                if (id.equals("resize")) {
                                     return; // TODO: remove this if we change resizes cb
                                 }
                                 wasInteractedWith = true;
