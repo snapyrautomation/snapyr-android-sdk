@@ -63,7 +63,9 @@ public class TrackPayload extends BasePayload {
                 anonymousId,
                 nanosecondTimestamps);
         put(EVENT_KEY, event);
-        put(SESSION_KEY, session);
+        if (!Utils.isNullOrEmpty(session)){
+            put(SESSION_KEY, session);
+        }
         put(PROPERTIES_KEY, properties);
     }
 
@@ -123,7 +125,7 @@ public class TrackPayload extends BasePayload {
 
         @NonNull
         public Builder session(@NonNull String session) {
-            this.session = assertNotNullOrEmpty(session, "session");
+            this.session = session;
             return this;
         }
 

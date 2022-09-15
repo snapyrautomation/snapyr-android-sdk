@@ -317,7 +317,7 @@ public class Snapyr {
         }
 
         Traits traits = traitsCache.get();
-        if ((traits != null) && (!traits.userId().isEmpty())) {
+        if ((traits != null) && (traits.userId() != null)){
             this.sessionStart = System.currentTimeMillis();
             this.sessionId = UUID.randomUUID().toString();
             track(
@@ -333,7 +333,7 @@ public class Snapyr {
             return;
         }
         Traits traits = traitsCache.get();
-        if ((traits != null) && (!traits.userId().isEmpty())) {
+        if ((traits != null) && (traits.userId() != null)){
             long elapsed = System.currentTimeMillis() - this.sessionStart;
             track(
                     "snapyr.sessionEnd",
