@@ -63,7 +63,7 @@ public class TrackPayload extends BasePayload {
                 anonymousId,
                 nanosecondTimestamps);
         put(EVENT_KEY, event);
-        if (!Utils.isNullOrEmpty(session)){
+        if (!Utils.isNullOrEmpty(session)) {
             put(SESSION_KEY, session);
         }
         put(PROPERTIES_KEY, properties);
