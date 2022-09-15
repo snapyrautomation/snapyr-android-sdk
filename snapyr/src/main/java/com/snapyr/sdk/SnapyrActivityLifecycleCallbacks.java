@@ -119,6 +119,8 @@ class SnapyrActivityLifecycleCallbacks
     public void onStart(@NonNull LifecycleOwner owner) {
         long elapsed = System.currentTimeMillis() - backgroundStart;
         if (elapsed > 30000) {
+            // end the last session whenever the background first occurred
+            snapyr.sessionEnded(backgroundStart);
             snapyr.sessionStarted(); // backgrounded too long, create a new session
         }
 

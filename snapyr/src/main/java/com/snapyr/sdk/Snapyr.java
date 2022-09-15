@@ -329,18 +329,23 @@ public class Snapyr {
     }
 
     public void sessionEnded() {
+        sessionEnded(System.currentTimeMillis());
+    }
+
+    public void sessionEnded(long endTime) {
         if (!Utils.isNullOrEmpty(this.sessionId)) {
             return;
         }
         Traits traits = traitsCache.get();
         if ((traits != null) && (traits.userId() != null)) {
-            long elapsed = System.currentTimeMillis() - this.sessionStart;
+            long elapsed = endTime - this.sessionStart;
             track(
                     "snapyr.sessionEnd",
                     new Properties(traits)
                             .putValue("sessionDuration", elapsed)
                             .putValue("sessionId", this.sessionId)
                             .putValue("platform", "android"));
+            this.sessionId = ""; // clear out the id so we stop associations
         }
     }
 
