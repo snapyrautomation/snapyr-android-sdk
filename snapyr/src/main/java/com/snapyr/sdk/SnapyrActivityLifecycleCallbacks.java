@@ -34,6 +34,7 @@ import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
 import com.snapyr.sdk.internal.TrackerUtil;
+import com.snapyr.sdk.services.ServiceFacade;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -80,6 +81,7 @@ class SnapyrActivityLifecycleCallbacks
     private final AtomicBoolean firstLaunch;
     private final AtomicBoolean isChangingActivityConfigurations;
     private final Boolean useNewLifecycleMethods;
+    private long backgroundStart;
 
     private SnapyrActivityLifecycleCallbacks(
             Snapyr snapyr,
@@ -104,6 +106,7 @@ class SnapyrActivityLifecycleCallbacks
 
     @Override
     public void onStop(@NonNull LifecycleOwner owner) {
+        backgroundStart = System.currentTimeMillis();
         // App in background
         if (shouldTrackApplicationLifecycleEvents
                 && numberOfActivities.decrementAndGet() == 0
@@ -114,6 +117,13 @@ class SnapyrActivityLifecycleCallbacks
 
     @Override
     public void onStart(@NonNull LifecycleOwner owner) {
+        long elapsed = System.currentTimeMillis() - backgroundStart;
+        if (elapsed > 30000) {
+            // end the last session whenever the background first occurred
+            snapyr.sessionEnded(backgroundStart);
+            snapyr.sessionStarted(); // backgrounded too long, create a new session
+        }
+
         // App in foreground
         if (shouldTrackApplicationLifecycleEvents
                 && numberOfActivities.incrementAndGet() == 1
@@ -160,6 +170,7 @@ class SnapyrActivityLifecycleCallbacks
         if (trackDeepLinks) {
             TrackerUtil.trackDeepLink(activity, activity.getIntent());
         }
+        ServiceFacade.getInstance().setCurrentActivity(activity);
     }
 
     @Override

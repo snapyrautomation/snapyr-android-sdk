@@ -57,10 +57,6 @@ import java.util.concurrent.CountDownLatch;
  * attached to every outgoing call. You can add any custom data to the context dictionary that you'd
  * like to have access to in the raw logs.
  *
- * <p>This is renamed to AnalyticsContext on Android to avoid confusion with {@link Context} in the
- * Android framework. Any documentation for Context on our website is referring to AnalyticsContext
- * on Android.
- *
  * <p>Some keys in the context dictionary have semantic meaning and will be collected for you
  * automatically, depending on the library you send data from. Some keys, such as IP address, and
  * speed need to be manually entered, such as IP Address, speed, etc.

@@ -187,6 +187,24 @@ public class Cartographer {
         }
     }
 
+    /**
+     * Deserializes the json read from the specified {@link Reader} into an array of {@link Map}. If
+     * you have the Json in a String form instead of a {@link Reader}, use {@link #fromJson(String)}
+     * instead.
+     */
+    public List<Object> fromJsonArray(Reader reader) throws IOException {
+        if (reader == null) {
+            throw new IllegalArgumentException("reader == null");
+        }
+        JsonReader jsonReader = new JsonReader(reader);
+        jsonReader.setLenient(isLenient);
+        try {
+            return readerToList(jsonReader);
+        } finally {
+            reader.close();
+        }
+    }
+
     /** Deserializes the specified json into an Object (Map, List or primitive type) */
     public Object parseJson(String json) throws IOException {
         if (json == null) {

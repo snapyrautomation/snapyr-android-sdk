@@ -23,7 +23,11 @@
  */
 package com.snapyr.sdk.services;
 
+import android.app.Activity;
 import android.app.Application;
+import com.snapyr.sdk.Snapyr;
+import com.snapyr.sdk.SnapyrContext;
+import com.snapyr.sdk.http.ConnectionFactory;
 import java.util.concurrent.ExecutorService;
 
 public class ServiceFacade {
@@ -33,12 +37,35 @@ public class ServiceFacade {
     Cartographer cartographer;
     Logger logger;
     Crypto crypto;
+    ConnectionFactory connectionFactory;
+    SnapyrContext snapyrContext;
+    Activity currentActivity;
 
     public static ServiceFacade getInstance() {
         if (ServiceFacade.instance == null) {
             ServiceFacade.instance = new ServiceFacade();
+            ServiceFacade.instance.logger = Logger.with(Snapyr.LogLevel.NONE);
+            ServiceFacade.instance.crypto = Crypto.none();
         }
         return ServiceFacade.instance;
+    }
+
+    public ServiceFacade setSnapyrContext(SnapyrContext snapyrContext) {
+        this.snapyrContext = snapyrContext;
+        return this;
+    }
+
+    public static SnapyrContext getSnapyrContext() {
+        return getInstance().snapyrContext;
+    }
+
+    public ServiceFacade setConnectionFactory(ConnectionFactory connectionFactory) {
+        this.connectionFactory = connectionFactory;
+        return this;
+    }
+
+    public static ConnectionFactory getConnectionFactory() {
+        return getInstance().connectionFactory;
     }
 
     public ServiceFacade setCrypto(Crypto crypto) {
@@ -68,21 +95,29 @@ public class ServiceFacade {
         return getInstance().logger;
     }
 
+    public static Application getApplication() {
+        return getInstance().application;
+    }
+
     public ServiceFacade setApplication(Application application) {
         this.application = application;
         return this;
     }
 
-    public static Application getApplication() {
-        return getInstance().application;
+    public static Activity getCurrentActivity() {
+        return getInstance().currentActivity;
+    }
+
+    public void setCurrentActivity(Activity currentActivity) {
+        this.currentActivity = currentActivity;
+    }
+
+    public static ExecutorService getNetworkExecutor() {
+        return getInstance().networkExecutor;
     }
 
     public ServiceFacade setNetworkExecutor(ExecutorService networkExecutor) {
         this.networkExecutor = networkExecutor;
         return this;
-    }
-
-    public static ExecutorService getNetworkExecutor() {
-        return getInstance().networkExecutor;
     }
 }

@@ -70,6 +70,7 @@ public class BatchUploadRequest implements Closeable, BatchQueue.ElementVisitor 
             uploader.close();
         } finally {
             uploader.close();
+            stream.close();
         }
         return uploader.payloadCount;
     }
@@ -174,5 +175,6 @@ public class BatchUploadRequest implements Closeable, BatchQueue.ElementVisitor 
             largeLog("Snapyr", debugString.toString());
         }
         jsonWriter.close();
+        bufferedWriter.close();
     }
 }

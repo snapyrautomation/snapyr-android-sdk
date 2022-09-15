@@ -26,48 +26,63 @@ package com.snapyr.sdk.inapp;
 import android.content.Context;
 import android.os.Handler;
 import androidx.annotation.NonNull;
+import com.snapyr.sdk.inapp.requests.AckUserActionRequest;
+import com.snapyr.sdk.inapp.requests.GetUserActionsRequest;
 import com.snapyr.sdk.internal.SnapyrAction;
-import com.snapyr.sdk.services.Logger;
-import java.util.LinkedList;
-import java.util.Queue;
+import com.snapyr.sdk.services.ServiceFacade;
+import java.util.List;
 
 public class InAppManager implements InAppIFace {
-    private final int processInterval;
-    private final Logger logger;
-    private final InAppCallback UserCallback;
-    private Queue<InAppMessage> pendingActions;
+    private final int pollingInterval;
+    private final InAppActionProcessor actionProcessor;
     private Context context;
 
     public InAppManager(@NonNull InAppConfig config, @NonNull Context context) {
-        this.logger = config.Logger;
-        this.processInterval = config.PollingDelayMs;
-        this.UserCallback = config.Handler;
-        this.pendingActions = new LinkedList<>();
+        this.pollingInterval = config.PollingDelayMs;
+        this.actionProcessor = new InAppActionProcessor(config.UserCallback);
         this.context = context;
         this.startBackgroundThread(config.PollingDelayMs);
+    }
+
+    private void processAndAck(InAppMessage message) {
+        actionProcessor.process(message);
+        ServiceFacade.getNetworkExecutor()
+                .submit(
+                        () -> {
+                            try {
+                                AckUserActionRequest.execute(message.UserId, message.ActionToken);
+                            } catch (Exception e) {
+                                ServiceFacade.getLogger().error(e, "failed to ack in-app action");
+                            }
+                        });
     }
 
     @Override
     public void processTrackResponse(SnapyrAction action) {
         try {
-            this.pendingActions.add(new InAppMessage(action));
+            processAndAck(new InAppMessage(action));
         } catch (InAppMessage.MalformedMessageException e) {
-            logger.error(e, "failed to convert action to in-app message", action);
+            ServiceFacade.getLogger()
+                    .error(e, "failed to convert action to in-app message", action);
         }
     }
 
     @Override
     public void dispatchPending(Context context) {
-        logger.info("polling for in-app content");
-        while (this.pendingActions.peek() != null) {
-            InAppMessage action = this.pendingActions.remove();
-            if (action.ActionType == InAppActionType.ACTION_TYPE_CUSTOM) {
-                logger.info("dispatching user in-app action");
-                this.UserCallback.onAction(action);
-            } else {
-                // TODO: handle internally
-            }
-        }
+        ServiceFacade.getLogger().info("polling for in-app content");
+        ServiceFacade.getNetworkExecutor()
+                .submit(
+                        () -> {
+                            List<InAppMessage> polledActions =
+                                    GetUserActionsRequest.execute(
+                                            ServiceFacade.getSnapyrContext().traits().userId());
+
+                            ServiceFacade.getLogger()
+                                    .info("pulled " + polledActions.size() + " actions");
+                            for (InAppMessage action : polledActions) {
+                                processAndAck(action);
+                            }
+                        });
     }
 
     Handler handler = new Handler();
@@ -78,16 +93,12 @@ public class InAppManager implements InAppIFace {
                     try {
                         dispatchPending(context);
                     } finally {
-                        handler.postDelayed(backgroundThread, 500);
+                        handler.postDelayed(backgroundThread, pollingInterval);
                     }
                 }
             };
 
     private void startBackgroundThread(int pollingDelayMs) {
         this.handler.post(this.backgroundThread);
-    }
-
-    private void ackAction(String token) {
-        // this.httpClient.upload().
     }
 }

@@ -49,28 +49,7 @@ public class ConnectionFactory {
     private final String configURL;
     private final String writeKey;
 
-    private static ConnectionFactory instance;
-
-    public static ConnectionFactory create(
-            String writeKey, ConnectionFactory.Environment environment) {
-        ConnectionFactory.instance = new ConnectionFactory(writeKey, environment);
-        return instance;
-    }
-
-    public static ConnectionFactory getInstance() {
-        return instance;
-    }
-
-    /**
-     * Overrides the instance for testing
-     *
-     * @param instance
-     */
-    public static void setInstance(ConnectionFactory instance) {
-        ConnectionFactory.instance = instance;
-    }
-
-    private ConnectionFactory(String writeKey, ConnectionFactory.Environment environment) {
+    public ConnectionFactory(String writeKey, ConnectionFactory.Environment environment) {
         this.writeKey = writeKey;
         switch (environment) {
             case DEV:
@@ -108,8 +87,20 @@ public class ConnectionFactory {
     public HttpURLConnection engineRequest(String path, String method) throws IOException {
         HttpURLConnection connection = openConnection(engineURL + path, method);
         connection.setRequestProperty("Authorization", authorizationHeader(writeKey));
-        connection.setDoOutput(true);
-        connection.setChunkedStreamingMode(0);
+        connection.setRequestProperty("Content-Type", "application/json;charset=utf-8");
+        connection.setRequestMethod(method);
+
+        // Hack: (bs) this is a known bug in android's http client. Found this fix elsewhere
+        // ----
+        // Explicitly tell the server to not gzip the response.
+        // Otherwise, HttpUrlsConnection will open a GzipInflater and not close it,
+        connection.setRequestProperty("Accept-Encoding", "identity");
+        if (method == "POST") {
+            connection.setDoOutput(true);
+            connection.setChunkedStreamingMode(0);
+        } else if (method == "GET") {
+            connection.setDoInput(false);
+        }
         return connection;
     }
 

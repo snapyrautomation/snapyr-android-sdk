@@ -26,6 +26,7 @@ package com.snapyr.sdk.inapp;
 import android.content.Context;
 import androidx.annotation.NonNull;
 import com.snapyr.sdk.internal.SnapyrAction;
+import com.snapyr.sdk.services.ServiceFacade;
 
 public class InAppFacade {
     enum InAppState {
@@ -34,11 +35,11 @@ public class InAppFacade {
     }
 
     private static InAppState inappState = InAppState.IN_APP_STATE_ALLOWED;
-    private static InAppIFace impl = new NoopInApp();
+    private static InAppIFace impl = new NoOpManager();
 
     public static InAppIFace createInApp(@NonNull InAppConfig config, @NonNull Context context) {
         if (InAppFacade.impl instanceof InAppManager) {
-            config.Logger.info("inApp already initialized");
+            ServiceFacade.getLogger().info("inApp already initialized");
             return impl;
         }
 
@@ -56,6 +57,11 @@ public class InAppFacade {
         InAppFacade.inappState = InAppState.IN_APP_STATE_ALLOWED;
     }
 
+    /**
+     * Processes any actions from a track/identify/etc response
+     *
+     * @param action
+     */
     public static void processTrackResponse(SnapyrAction action) {
         if (InAppFacade.inappState != InAppState.IN_APP_STATE_ALLOWED) {
             return;
@@ -73,5 +79,24 @@ public class InAppFacade {
             return;
         }
         impl.dispatchPending(context);
+    }
+
+    /** Dummy implementation of the InAppIFace that does nothing */
+    public static class NoOpManager implements InAppIFace {
+        public NoOpManager() {}
+
+        @Override
+        public void processTrackResponse(SnapyrAction action) {}
+
+        @Override
+        public void dispatchPending(Context context) {}
+    }
+
+    /** Dummy implementation of the InAppCallback that does nothing */
+    public static class NoOpHandler implements InAppCallback {
+        public NoOpHandler() {}
+
+        @Override
+        public void onAction(InAppMessage message) {}
     }
 }

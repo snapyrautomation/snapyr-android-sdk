@@ -67,6 +67,7 @@ import com.snapyr.sdk.services.Logger;
 import com.snapyr.sdk.services.ServiceFacade;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -117,7 +118,6 @@ public class Snapyr {
 
     @Private final Options defaultOptions;
     @Private final Traits.Cache traitsCache;
-    @Private final SnapyrContext snapyrContext;
     final String tag;
     final Cartographer cartographer;
     @Private final SnapyrActivityLifecycleCallbacks activityLifecycleCallback;
@@ -140,6 +140,8 @@ public class Snapyr {
     private String pushToken;
     private Map<String, PushTemplate> PushTemplates;
     final BatchUploadQueue sendQueue;
+    private String sessionId;
+    private long sessionStart;
 
     Snapyr(
             Application application,
@@ -152,6 +154,7 @@ public class Snapyr {
             Cartographer cartographer,
             ProjectSettings.Cache projectSettingsCache,
             String writeKey,
+            ConnectionFactory.Environment environment,
             int flushQueueSize,
             long flushIntervalInMillis,
             final ExecutorService analyticsExecutor,
@@ -174,10 +177,11 @@ public class Snapyr {
                 .setApplication(application)
                 .setLogger(logger)
                 .setCartographer(cartographer)
+                .setConnectionFactory(new ConnectionFactory(writeKey, environment))
+                .setSnapyrContext(snapyrContext)
                 .setCrypto(crypto);
 
         this.traitsCache = traitsCache;
-        this.snapyrContext = snapyrContext;
         this.defaultOptions = defaultOptions;
         this.tag = tag;
         this.cartographer = cartographer;
@@ -279,7 +283,7 @@ public class Snapyr {
 
         if (inAppConfig != null) {
             InAppFacade.allowInApp();
-            InAppFacade.createInApp(inAppConfig.setLogger(logger), application);
+            InAppFacade.createInApp(inAppConfig, application);
         }
 
         if (enableSnapyrPushHandling) {
@@ -302,6 +306,46 @@ public class Snapyr {
                                     });
                         }
                     });
+        }
+
+        sessionStarted();
+    }
+
+    public void sessionStarted() {
+        if (!Utils.isNullOrEmpty(this.sessionId)) {
+            sessionEnded();
+        }
+
+        Traits traits = traitsCache.get();
+        if ((traits != null) && (traits.userId() != null)) {
+            this.sessionStart = System.currentTimeMillis();
+            this.sessionId = UUID.randomUUID().toString();
+            track(
+                    "snapyr.sessionStart",
+                    new Properties(traits)
+                            .putValue("sessionId", this.sessionId)
+                            .putValue("platform", "android"));
+        }
+    }
+
+    public void sessionEnded() {
+        sessionEnded(System.currentTimeMillis());
+    }
+
+    public void sessionEnded(long endTime) {
+        if (!Utils.isNullOrEmpty(this.sessionId)) {
+            return;
+        }
+        Traits traits = traitsCache.get();
+        if ((traits != null) && (traits.userId() != null)) {
+            long elapsed = endTime - this.sessionStart;
+            track(
+                    "snapyr.sessionEnd",
+                    new Properties(traits)
+                            .putValue("sessionDuration", elapsed)
+                            .putValue("sessionId", this.sessionId)
+                            .putValue("platform", "android"));
+            this.sessionId = ""; // clear out the id so we stop associations
         }
     }
 
@@ -393,7 +437,7 @@ public class Snapyr {
         if (!isNullOrEmpty(newSettings)) {
             this.projectSettings = newSettings;
             ValueMap metadata = projectSettings.getValueMap("metadata");
-            snapyrContext.putSdkMeta(metadata);
+            ServiceFacade.getSnapyrContext().putSdkMeta(metadata);
             this.PushTemplates = PushTemplate.ParseTemplate(metadata);
         }
     }
@@ -517,13 +561,14 @@ public class Snapyr {
                         }
 
                         traitsCache.set(traits); // Save the new traits
-                        snapyrContext.setTraits(traits); // Update the references
+                        ServiceFacade.getSnapyrContext().setTraits(traits); // Update the references
 
                         IdentifyPayload.Builder builder =
                                 new IdentifyPayload.Builder()
                                         .timestamp(timestamp)
                                         .traits(traitsCache.get());
                         fillAndEnqueue(builder, options);
+                        sessionStarted();
                     }
                 });
 
@@ -694,11 +739,13 @@ public class Snapyr {
 
     public void pushNotificationReceived(final @Nullable Properties properties) {
         assertNotShutdown();
+        properties.putValue("platform", "android");
         track("snapyr.observation.event.Impression", properties);
     }
 
     public void pushNotificationClicked(final @Nullable Properties properties) {
         assertNotShutdown();
+        properties.putValue("platform", "android");
         track("snapyr.observation.event.Behavior", properties);
     }
 
@@ -724,23 +771,21 @@ public class Snapyr {
         }
         NanoDate timestamp = new NanoDate();
         analyticsExecutor.submit(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        final Properties finalProperties;
-                        if (properties == null) {
-                            finalProperties = EMPTY_PROPERTIES;
-                        } else {
-                            finalProperties = properties;
-                        }
-
-                        TrackPayload.Builder builder =
-                                new TrackPayload.Builder()
-                                        .timestamp(timestamp)
-                                        .event(event)
-                                        .properties(finalProperties);
-                        fillAndEnqueue(builder, options);
+                () -> {
+                    final Properties finalProperties;
+                    if (properties == null) {
+                        finalProperties = EMPTY_PROPERTIES;
+                    } else {
+                        finalProperties = properties;
                     }
+
+                    TrackPayload.Builder builder =
+                            new TrackPayload.Builder()
+                                    .timestamp(timestamp)
+                                    .event(event)
+                                    .session(sessionId)
+                                    .properties(finalProperties);
+                    fillAndEnqueue(builder, options);
                 });
     }
 
@@ -789,7 +834,10 @@ public class Snapyr {
                                 new AliasPayload.Builder()
                                         .timestamp(timestamp)
                                         .userId(newId)
-                                        .previousId(snapyrContext.traits().currentId());
+                                        .previousId(
+                                                ServiceFacade.getSnapyrContext()
+                                                        .traits()
+                                                        .currentId());
                         fillAndEnqueue(builder, options);
                     }
                 });
@@ -822,8 +870,9 @@ public class Snapyr {
         }
 
         // Create a new working copy
-        SnapyrContext contextCopy = new SnapyrContext(new LinkedHashMap<>(snapyrContext.size()));
-        contextCopy.putAll(snapyrContext);
+        SnapyrContext contextCopy =
+                new SnapyrContext(new LinkedHashMap<>(ServiceFacade.getSnapyrContext().size()));
+        contextCopy.putAll(ServiceFacade.getSnapyrContext());
         contextCopy.putAll(finalOptions.context());
         contextCopy = contextCopy.unmodifiableCopy();
 
@@ -861,7 +910,7 @@ public class Snapyr {
         // TODO (major version change) hide internals (don't give out working copy), expose a better
         // API
         //  for modifying the global context
-        return snapyrContext;
+        return ServiceFacade.getSnapyrContext();
     }
 
     /**
@@ -891,7 +940,7 @@ public class Snapyr {
 
         traitsCache.delete();
         traitsCache.set(Traits.create());
-        snapyrContext.setTraits(traitsCache.get());
+        ServiceFacade.getSnapyrContext().setTraits(traitsCache.get());
     }
 
     /**
@@ -916,6 +965,7 @@ public class Snapyr {
             return;
         }
 
+        sessionEnded();
         flush();
         sendQueue.shutdown();
         Application application = ServiceFacade.getApplication();
@@ -1089,12 +1139,10 @@ public class Snapyr {
         private LogLevel logLevel;
         private ExecutorService networkExecutor;
         private ExecutorService executor;
-        private ConnectionFactory connectionFactory;
         private boolean trackApplicationLifecycleEvents = false;
         private boolean recordScreenViews = false;
         private boolean trackDeepLinks = false;
         private boolean snapyrPushEnabled = false;
-        private boolean snapyrInAppEnabled = false;
         private InAppConfig snapyrInAppConfig = null;
         private boolean nanosecondTimestamps = false;
         private Crypto crypto;
@@ -1225,20 +1273,6 @@ public class Snapyr {
             return this;
         }
 
-        /**
-         * Specify the connection factory for customizing how connections are created.
-         *
-         * <p>This is a beta API, and might be changed in the future. Use it with care!
-         * http://bit.ly/1JVlA2e
-         */
-        public Builder connectionFactory(ConnectionFactory connectionFactory) {
-            if (connectionFactory == null) {
-                throw new IllegalArgumentException("ConnectionFactory must not be null.");
-            }
-            this.connectionFactory = connectionFactory;
-            return this;
-        }
-
         /** Configure Snapyr to use the Snapyr dev environment - internal use only */
         public Builder enableDevEnvironment() {
             this.snapyrEnvironment = ConnectionFactory.Environment.DEV;
@@ -1347,7 +1381,6 @@ public class Snapyr {
             if (Utils.isNullOrEmpty(tag)) {
                 tag = writeKey;
             }
-
             if (defaultOptions == null) {
                 defaultOptions = new Options();
             }
@@ -1357,9 +1390,6 @@ public class Snapyr {
             if (networkExecutor == null) {
                 networkExecutor = new Utils.AnalyticsNetworkExecutorService();
             }
-
-            ConnectionFactory.create(this.writeKey, this.snapyrEnvironment);
-
             if (crypto == null) {
                 crypto = Crypto.none();
             }
@@ -1404,6 +1434,7 @@ public class Snapyr {
                     cartographer,
                     projectSettingsCache,
                     writeKey,
+                    snapyrEnvironment,
                     flushQueueSize,
                     flushIntervalInMillis,
                     executor,

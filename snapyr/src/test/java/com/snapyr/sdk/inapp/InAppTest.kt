@@ -23,16 +23,21 @@
  */
 package com.snapyr.sdk.inapp
 
-import com.snapyr.sdk.Snapyr
 import com.snapyr.sdk.TestUtils
+import com.snapyr.sdk.http.ConnectionFactory
 import com.snapyr.sdk.internal.SnapyrAction
 import com.snapyr.sdk.services.Cartographer
-import com.snapyr.sdk.services.Logger
+import com.snapyr.sdk.services.ServiceFacade
 import java.io.IOException
+import org.assertj.core.api.Assertions
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentCaptor
+import org.mockito.Mockito
+import org.mockito.Mockito.verify
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE)
 class InAppTest {
@@ -54,13 +59,17 @@ class InAppTest {
     @Throws(IOException::class)
     fun testMessageFromJson() {
         val context = TestUtils.mockApplication()
-        val action = SnapyrAction.create(RAW_ACTION)
+        val connFactory = Mockito.mock(ConnectionFactory::class.java)
+        ServiceFacade.getInstance()
+            .setConnectionFactory(connFactory)
+            .setApplication(context)
+            .setNetworkExecutor(TestUtils.SynchronousExecutor())
+
         InAppFacade.allowInApp()
         var callbackCalled = false
         InAppFacade.createInApp(
             InAppConfig()
                 .setPollingRate(50)
-                .setLogger(Logger.with(Snapyr.LogLevel.NONE))
                 .setActionCallback {
                     callbackCalled = true
                     check(it.ActionToken == "actionToken-0817645f-0953-4c49-9743-d3ae887f530c.paul0817.1660936988")
@@ -73,9 +82,20 @@ class InAppTest {
             context
         )
 
+        val path: ArgumentCaptor<String> = ArgumentCaptor.forClass(String::class.java)
+        val method: ArgumentCaptor<String> = ArgumentCaptor.forClass(String::class.java)
+
         InAppFacade.processTrackResponse(SnapyrAction.create(RAW_ACTION))
         InAppFacade.processPending(context)
+        verify(connFactory).engineRequest(path.capture(), method.capture())
+        // should have ack-d the request
+        Assertions.assertThat(path.value).isEqualTo(
+            "v1/actions/Brian?actionToken=actionToken-0817645f-0953-4c49-" +
+                "9743-d3ae887f530c.paul0817.1660936988&status=delivered"
+        )
+        Assertions.assertThat(method.value).isEqualTo("POST")
 
-        check(callbackCalled)
+        // should have called the user callback
+        Assertions.assertThat(callbackCalled).isEqualTo(true)
     }
 }

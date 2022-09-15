@@ -27,6 +27,7 @@ import static java.net.HttpURLConnection.HTTP_OK;
 
 import com.snapyr.sdk.internal.Utils;
 import com.snapyr.sdk.services.Cartographer;
+import com.snapyr.sdk.services.ServiceFacade;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.Map;
@@ -36,7 +37,7 @@ public class SettingsRequest {
         Map<String, Object> results;
         HttpURLConnection connection = null;
         try {
-            connection = ConnectionFactory.getInstance().getSettings();
+            connection = ServiceFacade.getConnectionFactory().getSettings();
             int responseCode = connection.getResponseCode();
             if (responseCode != HTTP_OK) {
                 connection.disconnect();

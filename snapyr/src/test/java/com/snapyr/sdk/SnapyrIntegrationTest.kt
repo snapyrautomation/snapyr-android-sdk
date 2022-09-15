@@ -163,7 +163,7 @@ class snapyrQueueTest {
         `when`(connection.outputStream).thenReturn(os)
         val connFactory = mock(ConnectionFactory::class.java)
         `when`(connFactory.postBatch()).thenReturn(connection)
-        ConnectionFactory.setInstance(connFactory)
+        ServiceFacade.getInstance().setConnectionFactory(connFactory)
         return connection
     }
 
