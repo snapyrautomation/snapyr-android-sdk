@@ -65,8 +65,12 @@ import com.snapyr.sdk.services.Cartographer;
 import com.snapyr.sdk.services.Crypto;
 import com.snapyr.sdk.services.Logger;
 import com.snapyr.sdk.services.ServiceFacade;
+
+import java.sql.Time;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -139,6 +143,8 @@ public class Snapyr {
     private String pushToken;
     private Map<String, PushTemplate> PushTemplates;
     final BatchUploadQueue sendQueue;
+    private String sessionId;
+    private long sessionStart;
 
     Snapyr(
             Application application,
@@ -303,6 +309,39 @@ public class Snapyr {
                                     });
                         }
                     });
+        }
+
+        sessionStarted();
+    }
+
+    public void sessionStarted(){
+        if (!Utils.isNullOrEmpty(this.sessionId)){
+            sessionEnded();
+        }
+
+        Traits traits = traitsCache.get();
+        if ((traits != null) && (!traits.userId().isEmpty())) {
+            this.sessionStart = System.currentTimeMillis();
+            this.sessionId = UUID.randomUUID().toString();
+            track("snapyr.sessionStart",
+                    new Properties(traits)
+                            .putValue("sessionId", this.sessionId)
+                            .putValue("platform", "android"));
+        }
+    }
+
+    public void sessionEnded(){
+        if (!Utils.isNullOrEmpty(this.sessionId)){
+            return;
+        }
+        Traits traits = traitsCache.get();
+        if ((traits != null) && (!traits.userId().isEmpty())) {
+            long elapsed = System.currentTimeMillis() - this.sessionStart;
+            track("snapyr.sessionEnd",
+                    new Properties(traits)
+                            .putValue("sessionDuration", elapsed)
+                            .putValue("sessionId", this.sessionId)
+                            .putValue("platform", "android"));
         }
     }
 
@@ -525,6 +564,7 @@ public class Snapyr {
                                         .timestamp(timestamp)
                                         .traits(traitsCache.get());
                         fillAndEnqueue(builder, options);
+                        sessionStarted();
                     }
                 });
 
@@ -695,11 +735,13 @@ public class Snapyr {
 
     public void pushNotificationReceived(final @Nullable Properties properties) {
         assertNotShutdown();
+        properties.putValue("platform", "android");
         track("snapyr.observation.event.Impression", properties);
     }
 
     public void pushNotificationClicked(final @Nullable Properties properties) {
         assertNotShutdown();
+        properties.putValue("platform", "android");
         track("snapyr.observation.event.Behavior", properties);
     }
 
@@ -725,23 +767,21 @@ public class Snapyr {
         }
         NanoDate timestamp = new NanoDate();
         analyticsExecutor.submit(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        final Properties finalProperties;
-                        if (properties == null) {
-                            finalProperties = EMPTY_PROPERTIES;
-                        } else {
-                            finalProperties = properties;
-                        }
-
-                        TrackPayload.Builder builder =
-                                new TrackPayload.Builder()
-                                        .timestamp(timestamp)
-                                        .event(event)
-                                        .properties(finalProperties);
-                        fillAndEnqueue(builder, options);
+                () -> {
+                    final Properties finalProperties;
+                    if (properties == null) {
+                        finalProperties = EMPTY_PROPERTIES;
+                    } else {
+                        finalProperties = properties;
                     }
+
+                    TrackPayload.Builder builder =
+                            new TrackPayload.Builder()
+                                    .timestamp(timestamp)
+                                    .event(event)
+                                    .session(sessionId)
+                                    .properties(finalProperties);
+                    fillAndEnqueue(builder, options);
                 });
     }
 
@@ -921,6 +961,7 @@ public class Snapyr {
             return;
         }
 
+        sessionEnded();
         flush();
         sendQueue.shutdown();
         Application application = ServiceFacade.getApplication();

@@ -81,6 +81,7 @@ class SnapyrActivityLifecycleCallbacks
     private final AtomicBoolean firstLaunch;
     private final AtomicBoolean isChangingActivityConfigurations;
     private final Boolean useNewLifecycleMethods;
+    private long  backgroundStart;
 
     private SnapyrActivityLifecycleCallbacks(
             Snapyr snapyr,
@@ -105,6 +106,7 @@ class SnapyrActivityLifecycleCallbacks
 
     @Override
     public void onStop(@NonNull LifecycleOwner owner) {
+        backgroundStart = System.currentTimeMillis();
         // App in background
         if (shouldTrackApplicationLifecycleEvents
                 && numberOfActivities.decrementAndGet() == 0
@@ -115,6 +117,11 @@ class SnapyrActivityLifecycleCallbacks
 
     @Override
     public void onStart(@NonNull LifecycleOwner owner) {
+        long elapsed = System.currentTimeMillis() - backgroundStart;
+        if (elapsed > 30000) {
+            snapyr.sessionStarted(); // backgrounded too long, create a new session
+        }
+
         // App in foreground
         if (shouldTrackApplicationLifecycleEvents
                 && numberOfActivities.incrementAndGet() == 1

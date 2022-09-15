@@ -57,7 +57,9 @@ public class InAppActionProcessor {
                 break;
             case CONTENT_TYPE_HTML:
                 WebviewModalView.showPopup(
-                        ServiceFacade.getCurrentActivity(), message.Content.getHtmlContent());
+                        ServiceFacade.getCurrentActivity(),
+                        message.Content.getHtmlContent(),
+                        message.ActionToken);
                 break;
         }
     }

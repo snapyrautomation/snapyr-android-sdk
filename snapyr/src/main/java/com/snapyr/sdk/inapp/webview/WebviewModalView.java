@@ -35,6 +35,8 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
+import com.snapyr.sdk.Properties;
+import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.ValueMap;
 import com.snapyr.sdk.core.R;
 import com.snapyr.sdk.services.ServiceFacade;
@@ -42,13 +44,15 @@ import com.snapyr.sdk.services.ServiceFacade;
 public class WebviewModalView extends FrameLayout {
     static PopupWindow popupWindow = null;
     private final View contents;
+    private boolean wasInteractedWith = false;
+    private final String actionToken;
+    private final Snapyr snapyr;
 
-    public static void showPopup(Activity activity, String rawHtml) {
+    public static void showPopup(Activity activity, String rawHtml, String actionToken) {
         if (WebviewModalView.popupWindow != null) {
             return;
         }
-
-        activity.runOnUiThread(() -> new WebviewModalView(activity, rawHtml));
+        activity.runOnUiThread(() -> new WebviewModalView(activity, rawHtml, actionToken));
     }
 
     public static void closePopups() {
@@ -58,12 +62,13 @@ public class WebviewModalView extends FrameLayout {
         }
     }
 
-    public WebviewModalView(Context context, String html) {
+    public WebviewModalView(Context context, String html, String token) {
         super(context);
-
+        this.actionToken = token;
+        this.snapyr = Snapyr.with(context);
         contents = inflate(getContext(), R.layout.webview_modal, this);
 
-        WebView view = configureWebview(context);
+        WebView view = configureWebview(context, token);
 
         ImageButton dismissButton = this.findViewById(R.id.dismiss_button);
         dismissButton.setOnClickListener(
@@ -84,10 +89,6 @@ public class WebviewModalView extends FrameLayout {
         view.setVisibility(INVISIBLE);
 
         WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-        // WindowManager.LayoutParams p = (WindowManager.LayoutParams) container.getLayoutParams();
-        // p.flags = WindowManager.LayoutParams.FLAG_DIM_BEHIND;
-        // p.dimAmount = 0.3f;
-        // wm.updateViewLayout(container, p);
     }
 
     private InAppWebviewClient createClient() {
@@ -95,76 +96,71 @@ public class WebviewModalView extends FrameLayout {
             @Override
             public void onPageCommitVisible(WebView view, String url) {
                 super.onPageCommitVisible(view, url);
-
-                DisplayMetrics displayMetrics = new DisplayMetrics();
-                ServiceFacade.getCurrentActivity()
-                        .getWindowManager()
-                        .getDefaultDisplay()
-                        .getMetrics(displayMetrics);
-                int height = displayMetrics.heightPixels / displayMetrics.densityDpi;
-
-                // Page finished loading, `onLoad` set height; now we can
-                // actually display
-                // the whole thing without a ton of flicker
-                // show the popup window
-                // which view you pass in doesn't matter, it is only used for the window tolken
-                // int cHeight = view.getContentHeight();
-                // int hOffset = (displayMetrics.heightPixels - cHeight) / 2;
-
-                // view.setTranslationY(hOffset);
                 view.setVisibility(VISIBLE);
-
-                // activeDialog.getWindow().setAttributes(...) MUST be called
-                // after
-                // activeDialog.show() in order to set values successfully.
-                // Set dialog width to MATCH_PARENT, in this case meaning
-                // maximum possible
-                // width for the display
-                // WindowManager.LayoutParams attributes = new WindowManager.LayoutParams();
-                // attributes.copyFrom(activeDialog.getWindow().getAttributes());
-                // attributes.width = WindowManager.LayoutParams.MATCH_PARENT;
-                // activeDialog.getWindow().setAttributes(attributes);
             }
         };
     }
 
-    private WebView configureWebview(Context context) {
+    private void dismissPopup(){
+        if (!wasInteractedWith){
+            // user didn't click a button, so send the dismissed
+            Properties props =
+                    new Properties()
+                            .putValue("actionToken", actionToken)
+                            .putValue("platform", "android")
+                            .putValue("interactionType", "dismiss");
+            snapyr.track("snapyr.observation.event.Behavior", props);
+        }
+
+        ServiceFacade.getCurrentActivity().runOnUiThread(() -> {
+            if (WebviewModalView.popupWindow != null) {
+                WebviewModalView.popupWindow.dismiss();
+            }
+        });
+    }
+
+    private WebView configureWebview(Context context, String actionToken) {
         WebView wv = this.findViewById(R.id.webview);
         DisplayMetrics displayMetrics = new DisplayMetrics();
-        int defaultMargin = 44; // we should get this from somewhere real but it's the PERFECT
         ServiceFacade.getCurrentActivity()
                 .getWindowManager()
                 .getDefaultDisplay()
                 .getMetrics(displayMetrics);
-        int width = displayMetrics.widthPixels - (defaultMargin * 2);
 
         wv.setWebViewClient(createClient());
-
+        wv.getSettings().setJavaScriptEnabled(true);
         wv.addJavascriptInterface(
                 new WebviewJavascriptAPI(
                         context,
                         new WebviewJavascriptAPI.SnapyrWebviewInterfaceCallback() {
                             @Override
                             public void onClose() {
-                                // todo: post to engine
-                                if (popupWindow != null) {
-                                    popupWindow.dismiss();
-                                }
+                                dismissPopup();
                             }
 
                             @Override
                             public void onClick(String id, ValueMap parameters) {
-                                // todo: post to engine
+                                if (id.equals("resize")){
+                                    return; // TODO: remove this if we change resizes cb
+                                }
+                                wasInteractedWith = true;
+                                Properties props =
+                                        new Properties(parameters)
+                                                .putValue("actionToken", actionToken)
+                                                .putValue("platform", "android")
+                                                .putValue("interactionType", "click");
+                                snapyr.track("snapyr.observation.event.Behavior", props);
+                                // TODO: should we dismiss on click?
+                                dismissPopup();
                             }
 
                             @Override
                             public void onLoad(float clientHeight) {
-                                // Now that we've received "real" height reported by the
-                                // web page,
-                                // set the height on the web view
-                                // so it's the right size to fit within the modal
-                                wv.layout(0, 0, width, (int) clientHeight);
-                                wv.requestLayout();
+                                Properties props =
+                                        new Properties()
+                                                .putValue("actionToken", actionToken)
+                                                .putValue("platform", "android");
+                                snapyr.track("snapyr.observation.event.Impression", props);
                             }
                         }),
                 "snapyrMessageHandler");

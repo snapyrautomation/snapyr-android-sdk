@@ -38,6 +38,7 @@ import java.util.Map;
 public class TrackPayload extends BasePayload {
 
     public static final String EVENT_KEY = "event";
+    public static final String SESSION_KEY = "session";
     public static final String PROPERTIES_KEY = "properties";
 
     @Private
@@ -49,6 +50,7 @@ public class TrackPayload extends BasePayload {
             @Nullable String userId,
             @NonNull String anonymousId,
             @NonNull String event,
+            @Nullable String session,
             @NonNull Map<String, Object> properties,
             boolean nanosecondTimestamps) {
         super(
@@ -61,6 +63,7 @@ public class TrackPayload extends BasePayload {
                 anonymousId,
                 nanosecondTimestamps);
         put(EVENT_KEY, event);
+        put(SESSION_KEY, session);
         put(PROPERTIES_KEY, properties);
     }
 
@@ -98,6 +101,7 @@ public class TrackPayload extends BasePayload {
     public static class Builder extends BasePayload.Builder<TrackPayload, Builder> {
 
         private String event;
+        private String session;
         private Map<String, Object> properties;
 
         public Builder() {
@@ -116,6 +120,13 @@ public class TrackPayload extends BasePayload {
             this.event = assertNotNullOrEmpty(event, "event");
             return this;
         }
+
+        @NonNull
+        public Builder session(@NonNull String session) {
+            this.session = assertNotNullOrEmpty(session, "session");
+            return this;
+        }
+
 
         @NonNull
         public Builder properties(@NonNull Map<String, ?> properties) {
@@ -148,6 +159,7 @@ public class TrackPayload extends BasePayload {
                     userId,
                     anonymousId,
                     event,
+                    session,
                     properties,
                     nanosecondTimestamps);
         }

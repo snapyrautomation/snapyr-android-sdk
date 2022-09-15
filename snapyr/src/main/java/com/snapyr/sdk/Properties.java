@@ -68,6 +68,10 @@ public class Properties extends ValueMap {
         super(initialCapacity);
     }
 
+    public Properties(ValueMap values) {
+        super(values);
+    }
+
     // For deserialization
     Properties(Map<String, Object> delegate) {
         super(delegate);
