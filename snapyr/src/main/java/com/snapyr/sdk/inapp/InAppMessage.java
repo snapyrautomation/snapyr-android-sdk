@@ -23,6 +23,7 @@
  */
 package com.snapyr.sdk.inapp;
 
+import com.snapyr.sdk.ValueMap;
 import com.snapyr.sdk.internal.SnapyrAction;
 import com.snapyr.sdk.internal.Utils;
 import java.text.ParseException;
@@ -80,6 +81,21 @@ public class InAppMessage {
             throw new MalformedMessageException("missing actionToken in action");
         }
         this.Content = new InAppContent(action.getValueMap("content"));
+    }
+
+    public ValueMap asValueMap() {
+        ValueMap map =
+                new ValueMap()
+                        .putValue("timestamp", Formatter.format(this.Timestamp))
+                        .putValue("userId", this.UserId)
+                        .putValue("actionToken", this.ActionToken)
+                        .putValue(
+                                "actionType",
+                                (this.ActionType == InAppActionType.ACTION_TYPE_CUSTOM
+                                        ? "custom"
+                                        : "overlay"))
+                        .putValue("content", this.Content.asValueMap());
+        return map;
     }
 
     public static class MalformedMessageException extends Exception {
