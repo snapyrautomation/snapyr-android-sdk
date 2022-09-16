@@ -1273,15 +1273,29 @@ public class Snapyr {
             return this;
         }
 
-        /** Configure Snapyr to use the Snapyr dev environment - internal use only */
+        /**
+         * Configure Snapyr to use the Snapyr dev environment - internal use only
+         *
+         * @deprecated Use {@link #snapyrEnvironment(ConnectionFactory.Environment)} instead.
+         */
         public Builder enableDevEnvironment() {
             this.snapyrEnvironment = ConnectionFactory.Environment.DEV;
             return this;
         }
 
-        /** Configure Snapyr to use the Snapyr Stage environment - internal use only */
+        /**
+         * Configure Snapyr to use the Snapyr Stage environment - internal use only
+         *
+         * @deprecated Use {@link #snapyrEnvironment(ConnectionFactory.Environment)} instead.
+         */
         public Builder enableStageEnvironment() {
             this.snapyrEnvironment = ConnectionFactory.Environment.STAGE;
+            return this;
+        }
+
+        /** Configure Snapyr to use the specified environment - internal use only */
+        public Builder snapyrEnvironment(ConnectionFactory.Environment environment) {
+            this.snapyrEnvironment = environment;
             return this;
         }
 
