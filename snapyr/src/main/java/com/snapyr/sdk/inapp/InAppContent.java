@@ -30,6 +30,7 @@ import java.io.IOException;
 public class InAppContent {
     private ValueMap jsonContent;
     private InAppContentType contentType;
+    private String rawPayload;
     private String htmlContent; // TODO: is there a better type for this? The HTML type
     // looks useless
 
@@ -46,6 +47,8 @@ public class InAppContent {
         if (content == null) {
             throw new InAppMessage.MalformedMessageException("no content");
         }
+
+        this.rawPayload = (String) content;
 
         switch (contentType) {
             case "json":
@@ -90,6 +93,18 @@ public class InAppContent {
             throw new IncorrectContentAccessException("content is not html");
         }
         return this.htmlContent;
+    }
+
+    public ValueMap asValueMap() {
+        ValueMap map =
+                new ValueMap()
+                        .putValue(
+                                "payloadType",
+                                (this.contentType == InAppContentType.CONTENT_TYPE_JSON)
+                                        ? "json"
+                                        : "html")
+                        .putValue("payload", this.rawPayload);
+        return map;
     }
 
     public static class IncorrectContentAccessException extends Exception {
