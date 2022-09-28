@@ -27,6 +27,7 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import androidx.annotation.NonNull;
@@ -256,7 +257,31 @@ class SnapyrActivityLifecycleCallbacks
         if (trackDeepLinks) {
             TrackerUtil.trackDeepLink(activity, activity.getIntent());
         }
+        this.trackNotificationIntent(activity);
         ServiceFacade.getInstance().setCurrentActivity(activity);
+    }
+
+    private void trackNotificationIntent(Activity activity) {
+        if (!trackDeepLinks) {
+            return;
+        }
+
+        Intent launchIntent = activity.getIntent();
+        if (launchIntent == null) {
+            Log.i("Snapyr", "NotifCB: launchIntent is null. Returning.");
+            return;
+        }
+
+        Uri intentData = launchIntent.getData();
+        if (intentData == null) {
+            // No deep link URL - this was a "normal" activity launch, by opening the app or
+            // otherwise.
+            // No notification-related behavior, so nothing to track
+            Log.i("Snapyr", "NotifCB: intentData is null. Returning.");
+            return;
+        }
+
+        TrackerUtil.trackDeepLink(activity, activity.getIntent());
     }
 
     @Override

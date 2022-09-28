@@ -61,7 +61,6 @@ import com.snapyr.sdk.internal.ScreenPayload;
 import com.snapyr.sdk.internal.TrackPayload;
 import com.snapyr.sdk.internal.Utils;
 import com.snapyr.sdk.notifications.SnapyrNotificationHandler;
-import com.snapyr.sdk.notifications.SnapyrNotificationLifecycleCallbacks;
 import com.snapyr.sdk.services.Cartographer;
 import com.snapyr.sdk.services.Crypto;
 import com.snapyr.sdk.services.Logger;
@@ -122,7 +121,6 @@ public class Snapyr {
     final String tag;
     final Cartographer cartographer;
     @Private final SnapyrActivityLifecycleCallbacks activityLifecycleCallback;
-    @Private final SnapyrNotificationLifecycleCallbacks notificationLifecycleCallbacks;
     @Private final Lifecycle lifecycle;
     @Private final String writeKey;
     final int flushQueueSize;
@@ -277,11 +275,6 @@ public class Snapyr {
                     });
         }
 
-        notificationLifecycleCallbacks =
-                new SnapyrNotificationLifecycleCallbacks(
-                        this, ServiceFacade.getLogger(), trackDeepLinks);
-        application.registerActivityLifecycleCallbacks(notificationLifecycleCallbacks);
-
         if (inAppConfig != null) {
             InAppFacade.allowInApp();
             InAppFacade.createInApp(inAppConfig, application);
@@ -290,23 +283,6 @@ public class Snapyr {
         if (enableSnapyrPushHandling) {
             this.notificationHandler = new SnapyrNotificationHandler(application);
             notificationHandler.autoRegisterFirebaseToken(this);
-
-            // Add lifecycle callback observer so we can track user behavior on notifications
-            // (i.e. tapping a notification or tapping an action button on notification)
-
-            analyticsExecutor.submit(
-                    new Runnable() {
-                        @Override
-                        public void run() {
-                            HANDLER.post(
-                                    new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            lifecycle.addObserver(notificationLifecycleCallbacks);
-                                        }
-                                    });
-                        }
-                    });
         }
 
         sessionStarted();
@@ -499,18 +475,14 @@ public class Snapyr {
     public void replayLifecycleOnActivityCreated(
             Activity activity, Bundle activitySavedInstanceState) {
         activityLifecycleCallback.onActivityCreated(activity, activitySavedInstanceState, true);
-        //        notificationLifecycleCallbacks.onActivityCreated(activity,
-        // activitySavedInstanceState, true);
     }
 
     public void replayLifecycleOnActivityStarted(Activity activity) {
         activityLifecycleCallback.onActivityStarted(activity, true);
-        //        notificationLifecycleCallbacks.onActivityStarted(activity, true);
     }
 
     public void replayLifecycleOnActivityResumed(Activity activity) {
         activityLifecycleCallback.onActivityResumed(activity, true);
-        //        notificationLifecycleCallbacks.onActivityResumed(activity, true);
     }
 
     // Analytics API
@@ -996,7 +968,6 @@ public class Snapyr {
         sendQueue.shutdown();
         Application application = ServiceFacade.getApplication();
         application.unregisterActivityLifecycleCallbacks(activityLifecycleCallback);
-        application.unregisterActivityLifecycleCallbacks(notificationLifecycleCallbacks);
         if (useNewLifecycleMethods) {
             // only unregister if feature is enabled
             analyticsExecutor.submit(

@@ -57,7 +57,6 @@ import com.snapyr.sdk.internal.Utils.AnalyticsNetworkExecutorService
 import com.snapyr.sdk.internal.Utils.DEFAULT_FLUSH_INTERVAL
 import com.snapyr.sdk.internal.Utils.DEFAULT_FLUSH_QUEUE_SIZE
 import com.snapyr.sdk.internal.Utils.isNullOrEmpty
-import com.snapyr.sdk.notifications.SnapyrNotificationLifecycleCallbacks
 import com.snapyr.sdk.services.Cartographer
 import com.snapyr.sdk.services.Crypto
 import com.snapyr.sdk.services.Logger
@@ -936,9 +935,7 @@ open class SnapyrTest {
         @Throws(NameNotFoundException::class)
         fun unregisterActivityLifecycleCallbacks() {
             val registeredActivityCallback = AtomicReference<ActivityLifecycleCallbacks>()
-            val registeredNotificationCallback = AtomicReference<ActivityLifecycleCallbacks>()
             val unregisteredActivityCallback = AtomicReference<ActivityLifecycleCallbacks>()
-            val unregisteredNotificationCallback = AtomicReference<ActivityLifecycleCallbacks>()
 
             doNothing()
                 .whenever(application)
@@ -948,9 +945,6 @@ open class SnapyrTest {
                             override fun matchesSafely(item: ActivityLifecycleCallbacks): Boolean {
                                 if (item is SnapyrActivityLifecycleCallbacks) {
                                     registeredActivityCallback.set(item)
-                                }
-                                if (item is SnapyrNotificationLifecycleCallbacks) {
-                                    registeredNotificationCallback.set(item)
                                 }
                                 return true
                             }
@@ -964,9 +958,6 @@ open class SnapyrTest {
                             override fun matchesSafely(item: ActivityLifecycleCallbacks): Boolean {
                                 if (item is SnapyrActivityLifecycleCallbacks) {
                                     unregisteredActivityCallback.set(item)
-                                }
-                                if (item is SnapyrNotificationLifecycleCallbacks) {
-                                    unregisteredNotificationCallback.set(item)
                                 }
                                 return true
                             }
@@ -1007,13 +998,7 @@ open class SnapyrTest {
 
             // Same callback was registered and unregistered
             assertThat(analytics.activityLifecycleCallback).isSameAs(registeredActivityCallback.get())
-            assertThat(analytics.notificationLifecycleCallbacks).isSameAs(
-                registeredNotificationCallback.get()
-            )
             assertThat(analytics.activityLifecycleCallback).isSameAs(unregisteredActivityCallback.get())
-            assertThat(analytics.notificationLifecycleCallbacks).isSameAs(
-                unregisteredNotificationCallback.get()
-            )
         }
 
         @Test
