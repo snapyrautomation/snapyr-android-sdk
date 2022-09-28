@@ -28,6 +28,7 @@ import android.app.Application;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.os.Bundle;
+import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.DefaultLifecycleObserver;
 import androidx.lifecycle.Lifecycle;
@@ -35,12 +36,45 @@ import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
 import com.snapyr.sdk.internal.TrackerUtil;
 import com.snapyr.sdk.services.ServiceFacade;
+import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 class SnapyrActivityLifecycleCallbacks
         implements Application.ActivityLifecycleCallbacks, DefaultLifecycleObserver {
+
+    enum MonitoredCallbacks {
+        ON_ACTIVITY_CREATED,
+        ON_ACTIVITY_STARTED,
+        ON_ACTIVITY_RESUMED,
+    }
+
+    private class ActivityCallbackTracker {
+        public Boolean hasManualCall = false;
+        public Boolean hasAutoCall = false;
+
+        public Boolean callShouldExecute(Boolean isManual) {
+            Boolean shouldExecute = true;
+            if (isManual) {
+                // manual call always skips if any other call has been made
+                if (this.hasManualCall || this.hasAutoCall) {
+                    shouldExecute = false;
+                }
+                this.hasManualCall = true;
+            } else {
+                // if there's been a manual call, the first auto call should skip.
+                // Subsequent auto calls should process, e.g. to allow the same activity to resume
+                // from the background
+                if (this.hasManualCall && !this.hasAutoCall) {
+                    shouldExecute = false;
+                }
+                this.hasAutoCall = true;
+            }
+            return shouldExecute;
+        }
+    }
+
     // This is just a stub LifecycleOwner which is used when we need to call some lifecycle
     // methods without going through the actual lifecycle callbacks
     private static final LifecycleOwner stubOwner =
@@ -80,6 +114,7 @@ class SnapyrActivityLifecycleCallbacks
     private final AtomicInteger numberOfActivities;
     private final AtomicBoolean firstLaunch;
     private final AtomicBoolean isChangingActivityConfigurations;
+    HashMap<String, ActivityCallbackTracker> activityCbs = new HashMap<>();
     private final Boolean useNewLifecycleMethods;
     private long backgroundStart;
 
@@ -159,8 +194,59 @@ class SnapyrActivityLifecycleCallbacks
     @Override
     public void onDestroy(@NonNull LifecycleOwner owner) {}
 
+    /**
+     * Tracks repeated triggers for the same activity lifecycle event, to account for manual
+     * "replay" methods that allow client to explicitly call these, and ensure that we don't trigger
+     * the same callback twice (i.e. once from automatic lifecycle trigger, again from manual client
+     * replay)
+     *
+     * @param callback Which lifecycle callback to check
+     * @param activity The activity undergoing a lifecycle event
+     * @param manualCall Whether the callback was triggered manually by a client call
+     * @return true if this lifecycle has already been processed and should be skipped; otherwise
+     *     false
+     */
+    private Boolean checkAndUpdateCallbackTracked(
+            MonitoredCallbacks callback, Activity activity, Boolean manualCall) {
+        String key = String.valueOf(activity.hashCode()) + callback;
+        ActivityCallbackTracker tracker = activityCbs.get(key);
+        if (tracker == null) {
+            tracker = new ActivityCallbackTracker();
+            tracker.callShouldExecute(manualCall);
+            activityCbs.put(key, tracker);
+            return false;
+        }
+        Boolean result = tracker.callShouldExecute(manualCall);
+        if (!result) {
+            Log.d(
+                    "Snapyr",
+                    String.format(
+                            "Activity lifecycle: %s: already processed; skipping",
+                            callback.name()));
+            return true;
+        }
+        return false;
+    }
+
+    private void resetTrackedCallbacks(Activity activity) {
+        for (MonitoredCallbacks cb : MonitoredCallbacks.values()) {
+            String key = String.valueOf(activity.hashCode()) + cb;
+            activityCbs.remove(key);
+        }
+    }
+
     @Override
-    public void onActivityCreated(Activity activity, Bundle bundle) {
+    public void onActivityCreated(Activity activity, Bundle activitySavedInstanceState) {
+        this.onActivityCreated(activity, activitySavedInstanceState, false);
+    }
+
+    public void onActivityCreated(
+            Activity activity, Bundle activitySavedInstanceState, Boolean manualCall) {
+        if (this.checkAndUpdateCallbackTracked(
+                MonitoredCallbacks.ON_ACTIVITY_CREATED, activity, manualCall)) {
+            return;
+        }
+
         Intent launchIntent = activity.getIntent();
         Bundle x = launchIntent.getExtras();
         if (!useNewLifecycleMethods) {
@@ -175,6 +261,15 @@ class SnapyrActivityLifecycleCallbacks
 
     @Override
     public void onActivityStarted(Activity activity) {
+        this.onActivityStarted(activity, false);
+    }
+
+    public void onActivityStarted(Activity activity, Boolean manualCall) {
+        if (this.checkAndUpdateCallbackTracked(
+                MonitoredCallbacks.ON_ACTIVITY_STARTED, activity, manualCall)) {
+            return;
+        }
+
         if (shouldRecordScreenViews) {
             snapyr.recordScreenViews(activity);
         }
@@ -182,6 +277,15 @@ class SnapyrActivityLifecycleCallbacks
 
     @Override
     public void onActivityResumed(Activity activity) {
+        this.onActivityResumed(activity, false);
+    }
+
+    public void onActivityResumed(Activity activity, Boolean manualCall) {
+        if (this.checkAndUpdateCallbackTracked(
+                MonitoredCallbacks.ON_ACTIVITY_RESUMED, activity, manualCall)) {
+            return;
+        }
+
         if (!useNewLifecycleMethods) {
             onStart(stubOwner);
         }
@@ -189,6 +293,7 @@ class SnapyrActivityLifecycleCallbacks
 
     @Override
     public void onActivityPaused(Activity activity) {
+        this.resetTrackedCallbacks(activity);
         if (!useNewLifecycleMethods) {
             onPause(stubOwner);
         }
@@ -196,6 +301,7 @@ class SnapyrActivityLifecycleCallbacks
 
     @Override
     public void onActivityStopped(Activity activity) {
+        this.resetTrackedCallbacks(activity);
         if (!useNewLifecycleMethods) {
             onStop(stubOwner);
         }
@@ -206,6 +312,7 @@ class SnapyrActivityLifecycleCallbacks
 
     @Override
     public void onActivityDestroyed(Activity activity) {
+        this.resetTrackedCallbacks(activity);
         if (!useNewLifecycleMethods) {
             onDestroy(stubOwner);
         }
