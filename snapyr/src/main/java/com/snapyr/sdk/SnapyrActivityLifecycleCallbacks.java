@@ -248,8 +248,6 @@ class SnapyrActivityLifecycleCallbacks
             return;
         }
 
-        Intent launchIntent = activity.getIntent();
-        Bundle x = launchIntent.getExtras();
         if (!useNewLifecycleMethods) {
             onCreate(stubOwner);
         }
