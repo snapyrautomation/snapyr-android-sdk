@@ -36,6 +36,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -485,6 +486,31 @@ public class Snapyr {
         editor.putString(VERSION_KEY, currentVersion);
         editor.putInt(BUILD_KEY, currentBuild);
         editor.apply();
+    }
+
+    /**
+     * Following 3 methods can be used by client to explicitly/manually run activity lifecycle
+     * callback events if the client knows that this SDK won't be initialized in time to capture
+     * them for the main activity (e.g. when running from React Native)
+     *
+     * <p>Each of these should only be called once per app run, immediately after initializing
+     * Snapyr
+     */
+    public void replayLifecycleOnActivityCreated(
+            Activity activity, Bundle activitySavedInstanceState) {
+        activityLifecycleCallback.onActivityCreated(activity, activitySavedInstanceState, true);
+        //        notificationLifecycleCallbacks.onActivityCreated(activity,
+        // activitySavedInstanceState, true);
+    }
+
+    public void replayLifecycleOnActivityStarted(Activity activity) {
+        activityLifecycleCallback.onActivityStarted(activity, true);
+        //        notificationLifecycleCallbacks.onActivityStarted(activity, true);
+    }
+
+    public void replayLifecycleOnActivityResumed(Activity activity) {
+        activityLifecycleCallback.onActivityResumed(activity, true);
+        //        notificationLifecycleCallbacks.onActivityResumed(activity, true);
     }
 
     // Analytics API
