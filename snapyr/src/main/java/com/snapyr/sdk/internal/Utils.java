@@ -550,10 +550,21 @@ public final class Utils {
     }
 
     public static class AnalyticsThreadFactory implements ThreadFactory {
+        private final AtomicInteger sequenceGenerator;
+        private final String threadPrefix;
+
+        public AnalyticsThreadFactory() {
+            this(THREAD_PREFIX);
+        }
+
+        public AnalyticsThreadFactory(String threadPrefix) {
+            sequenceGenerator = new AtomicInteger(1);
+            this.threadPrefix = threadPrefix;
+        }
 
         @SuppressWarnings("NullableProblems")
         public Thread newThread(Runnable r) {
-            return new AnalyticsThread(r);
+            return new AnalyticsThread(r, threadPrefix + sequenceGenerator.getAndIncrement());
         }
     }
 
@@ -561,8 +572,8 @@ public final class Utils {
 
         private static final AtomicInteger SEQUENCE_GENERATOR = new AtomicInteger(1);
 
-        public AnalyticsThread(Runnable r) {
-            super(r, THREAD_PREFIX + SEQUENCE_GENERATOR.getAndIncrement());
+        public AnalyticsThread(Runnable r, String s) {
+            super(r, s);
         }
 
         @Override
