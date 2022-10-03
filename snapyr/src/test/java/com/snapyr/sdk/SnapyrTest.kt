@@ -134,6 +134,7 @@ open class SnapyrTest {
     fun makeAnalytics(): Snapyr {
         val created = Snapyr(
             application,
+            null,
             networkExecutor,
             traitsCache,
             snapyrContext,
@@ -508,6 +509,7 @@ open class SnapyrTest {
 
         var analytics = Snapyr(
             application,
+            null,
             networkExecutor,
             traitsCache,
             snapyrContext,
@@ -603,6 +605,7 @@ open class SnapyrTest {
 
         var analytics = Snapyr(
             application,
+            null,
             networkExecutor,
             traitsCache,
             snapyrContext,
@@ -669,6 +672,7 @@ open class SnapyrTest {
 
         var analytics = Snapyr(
             application,
+            null,
             networkExecutor,
             traitsCache,
             snapyrContext,
@@ -966,6 +970,7 @@ open class SnapyrTest {
 
             var analytics = Snapyr(
                 application,
+                null,
                 networkExecutor,
                 traitsCache,
                 snapyrContext,
@@ -1034,6 +1039,7 @@ open class SnapyrTest {
 
             var analytics = Snapyr(
                 application,
+                null,
                 networkExecutor,
                 traitsCache,
                 snapyrContext,
@@ -1104,6 +1110,7 @@ open class SnapyrTest {
 
             var analytics = Snapyr(
                 application,
+                null,
                 networkExecutor,
                 traitsCache,
                 snapyrContext,
@@ -1147,6 +1154,7 @@ open class SnapyrTest {
             val defaultProjectSettings = ValueMap()
             var analytics = Snapyr(
                 application,
+                null,
                 networkExecutor,
                 traitsCache,
                 snapyrContext,
@@ -1201,6 +1209,7 @@ open class SnapyrTest {
                 )
             var analytics = Snapyr(
                 application,
+                null,
                 networkExecutor,
                 traitsCache,
                 snapyrContext,
@@ -1257,6 +1266,7 @@ open class SnapyrTest {
         fun enableExperimentalNanosecondResolutionTimestamps() {
             var analytics = Snapyr(
                 application,
+                null,
                 networkExecutor,
                 traitsCache,
                 snapyrContext,

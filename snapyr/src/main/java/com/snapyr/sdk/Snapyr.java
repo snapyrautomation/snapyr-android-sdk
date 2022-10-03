@@ -144,6 +144,7 @@ public class Snapyr {
 
     Snapyr(
             Application application,
+            Activity activity,
             ExecutorService networkExecutor,
             Traits.Cache traitsCache,
             SnapyrContext snapyrContext,
@@ -283,6 +284,15 @@ public class Snapyr {
         if (enableSnapyrPushHandling) {
             this.notificationHandler = new SnapyrNotificationHandler(application);
             notificationHandler.autoRegisterFirebaseToken(this);
+        }
+
+        if (activity != null) {
+            // If user initializes Snapyr after their main activity has already started, we'll miss
+            // activity lifecycle callbacks. If they initialize from within an activity, this will
+            // "replay" lifecycle events to ensure they are caught.
+            this.replayLifecycleOnActivityCreated(activity, null);
+            this.replayLifecycleOnActivityStarted(activity);
+            this.replayLifecycleOnActivityResumed(activity);
         }
 
         sessionStarted();
@@ -1127,6 +1137,7 @@ public class Snapyr {
     public static class Builder {
 
         private final Application application;
+        private Activity activity = null;
         private final String writeKey;
         private boolean collectDeviceID = Utils.DEFAULT_COLLECT_DEVICE_ID;
         private int flushQueueSize = Utils.DEFAULT_FLUSH_QUEUE_SIZE;
@@ -1159,6 +1170,9 @@ public class Snapyr {
             application = (Application) context.getApplicationContext();
             if (application == null) {
                 throw new IllegalArgumentException("Application context must not be null.");
+            }
+            if (context instanceof Activity) {
+                activity = (Activity) context;
             }
 
             if (Utils.isNullOrEmpty(writeKey)) {
@@ -1436,6 +1450,7 @@ public class Snapyr {
             Lifecycle lifecycle = ProcessLifecycleOwner.get().getLifecycle();
             return new Snapyr(
                     application,
+                    activity,
                     networkExecutor,
                     traitsCache,
                     snapyrContext,
