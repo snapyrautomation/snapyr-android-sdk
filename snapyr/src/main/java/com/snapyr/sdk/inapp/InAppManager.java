@@ -24,24 +24,31 @@
 package com.snapyr.sdk.inapp;
 
 import android.content.Context;
-import android.os.Handler;
 import androidx.annotation.NonNull;
 import com.snapyr.sdk.inapp.requests.AckUserActionRequest;
 import com.snapyr.sdk.inapp.requests.GetUserActionsRequest;
 import com.snapyr.sdk.internal.SnapyrAction;
+import com.snapyr.sdk.internal.Utils;
 import com.snapyr.sdk.services.ServiceFacade;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class InAppManager implements InAppIFace {
     private final int pollingInterval;
     private final InAppActionProcessor actionProcessor;
+    private final ScheduledExecutorService pollExecutor;
     private Context context;
 
     public InAppManager(@NonNull InAppConfig config, @NonNull Context context) {
         this.pollingInterval = config.PollingDelayMs;
         this.actionProcessor = new InAppActionProcessor(config.UserCallback);
         this.context = context;
-        this.startBackgroundThread(config.PollingDelayMs);
+        this.pollExecutor =
+                Executors.newScheduledThreadPool(
+                        1, new Utils.AnalyticsThreadFactory("Snapyr-InAppPoller"));
+        this.startBackgroundThread();
     }
 
     private void processAndAck(InAppMessage message) {
@@ -85,20 +92,19 @@ public class InAppManager implements InAppIFace {
                         });
     }
 
-    Handler handler = new Handler();
-    private Runnable backgroundThread =
-            new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        dispatchPending(context);
-                    } finally {
-                        handler.postDelayed(backgroundThread, pollingInterval);
+    private void startBackgroundThread() {
+        this.pollExecutor.scheduleWithFixedDelay(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            dispatchPending(context);
+                        } finally {
+                        }
                     }
-                }
-            };
-
-    private void startBackgroundThread(int pollingDelayMs) {
-        this.handler.post(this.backgroundThread);
+                },
+                0,
+                pollingInterval,
+                TimeUnit.MILLISECONDS);
     }
 }
