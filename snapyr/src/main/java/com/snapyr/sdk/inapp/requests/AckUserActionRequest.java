@@ -40,6 +40,10 @@ public class AckUserActionRequest {
         HttpURLConnection conn = null;
         try {
             conn = ServiceFacade.getConnectionFactory().engineRequest(builtUrl, "POST");
+            // NB "output" stream on URLConnection is for client sending request payload/body.
+            // "input" stream is for reading the response body back from the server.
+            // These ack requests have no payload despite being POST
+            conn.setDoOutput(false);
             int responseCode = conn.getResponseCode();
             if (responseCode != 200) {
                 throw new HTTPException(responseCode, "failed to ack inapp message", "");

@@ -51,7 +51,6 @@ public class GetUserActionsRequest {
 
         try {
             conn = ServiceFacade.getConnectionFactory().engineRequest(builtUrl, "GET");
-            conn.setDoInput(false);
             int responseCode = conn.getResponseCode();
             if (responseCode != 200) {
                 throw new HTTPException(responseCode, "failed to fetch in-app messages", "");

@@ -95,11 +95,14 @@ public class ConnectionFactory {
         // Explicitly tell the server to not gzip the response.
         // Otherwise, HttpUrlsConnection will open a GzipInflater and not close it,
         connection.setRequestProperty("Accept-Encoding", "identity");
+        // NB "output" stream on URLConnection is for client sending request payload/body.
+        // "input" stream is for reading the response body back from the server.
+        // So enable request payload on POST by default, disable on GET by default.
         if (method == "POST") {
             connection.setDoOutput(true);
             connection.setChunkedStreamingMode(0);
         } else if (method == "GET") {
-            connection.setDoInput(false);
+            connection.setDoOutput(false);
         }
         return connection;
     }
@@ -119,6 +122,9 @@ public class ConnectionFactory {
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setRequestProperty("User-Agent", USER_AGENT);
         connection.setRequestMethod(method);
+        // NB "output" stream on URLConnection is for client sending request payload/body.
+        // "input" stream is for reading the response body back from the server.
+        // We always want to read the response back, so enable "input"
         connection.setDoInput(true);
         return connection;
     }
