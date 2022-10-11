@@ -81,7 +81,7 @@ public class WebviewModalView extends FrameLayout {
                 new OnClickListener() {
                     @Override
                     public void onClick(View view1) {
-                    popupWindow.dismiss();
+                        popupWindow.dismiss();
                         dismissPopup();
                     }
                 });
@@ -133,9 +133,9 @@ public class WebviewModalView extends FrameLayout {
                         new Runnable() {
                             @Override
                             public void run() {
-                            if (WebviewModalView.popupWindow != null) {
-                                WebviewModalView.popupWindow.dismiss();
-                            }
+                                if (WebviewModalView.popupWindow != null) {
+                                    WebviewModalView.popupWindow.dismiss();
+                                }
                             }
                         });
     }
