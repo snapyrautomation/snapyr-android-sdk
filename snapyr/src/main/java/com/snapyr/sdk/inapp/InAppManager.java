@@ -55,11 +55,16 @@ public class InAppManager implements InAppIFace {
         actionProcessor.process(message);
         ServiceFacade.getNetworkExecutor()
                 .submit(
-                        () -> {
-                            try {
-                                AckUserActionRequest.execute(message.UserId, message.ActionToken);
-                            } catch (Exception e) {
-                                ServiceFacade.getLogger().error(e, "failed to ack in-app action");
+                        new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    AckUserActionRequest.execute(
+                                            message.UserId, message.ActionToken);
+                                } catch (Exception e) {
+                                    ServiceFacade.getLogger()
+                                            .error(e, "failed to ack in-app action");
+                                }
                             }
                         });
     }
@@ -79,15 +84,18 @@ public class InAppManager implements InAppIFace {
         ServiceFacade.getLogger().info("polling for in-app content");
         ServiceFacade.getNetworkExecutor()
                 .submit(
-                        () -> {
-                            List<InAppMessage> polledActions =
-                                    GetUserActionsRequest.execute(
-                                            ServiceFacade.getSnapyrContext().traits().userId());
+                        new Runnable() {
+                            @Override
+                            public void run() {
+                                List<InAppMessage> polledActions =
+                                        GetUserActionsRequest.execute(
+                                                ServiceFacade.getSnapyrContext().traits().userId());
 
-                            ServiceFacade.getLogger()
-                                    .info("pulled " + polledActions.size() + " actions");
-                            for (InAppMessage action : polledActions) {
-                                processAndAck(action);
+                                ServiceFacade.getLogger()
+                                        .info("pulled " + polledActions.size() + " actions");
+                                for (InAppMessage action : polledActions) {
+                                    processAndAck(action);
+                                }
                             }
                         });
     }

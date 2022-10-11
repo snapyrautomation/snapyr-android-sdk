@@ -779,21 +779,24 @@ public class Snapyr {
         }
         NanoDate timestamp = new NanoDate();
         analyticsExecutor.submit(
-                () -> {
-                    final Properties finalProperties;
-                    if (properties == null) {
-                        finalProperties = EMPTY_PROPERTIES;
-                    } else {
-                        finalProperties = properties;
-                    }
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        final Properties finalProperties;
+                        if (properties == null) {
+                            finalProperties = EMPTY_PROPERTIES;
+                        } else {
+                            finalProperties = properties;
+                        }
 
-                    TrackPayload.Builder builder =
-                            new TrackPayload.Builder()
-                                    .timestamp(timestamp)
-                                    .event(event)
-                                    .session(sessionId)
-                                    .properties(finalProperties);
-                    fillAndEnqueue(builder, options);
+                        TrackPayload.Builder builder =
+                                new TrackPayload.Builder()
+                                        .timestamp(timestamp)
+                                        .event(event)
+                                        .session(sessionId)
+                                        .properties(finalProperties);
+                        fillAndEnqueue(builder, options);
+                    }
                 });
     }
 
