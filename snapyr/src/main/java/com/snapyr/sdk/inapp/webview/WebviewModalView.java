@@ -82,6 +82,7 @@ public class WebviewModalView extends FrameLayout {
                     @Override
                     public void onClick(View view1) {
                     popupWindow.dismiss();
+                        dismissPopup();
                     }
                 });
 
@@ -160,9 +161,6 @@ public class WebviewModalView extends FrameLayout {
 
                             @Override
                             public void onClick(String id, ValueMap parameters) {
-                                if (id.equals("resize")) {
-                                    return; // TODO: remove this if we change resizes cb
-                                }
                                 wasInteractedWith = true;
                                 Properties props =
                                         new Properties(parameters)
