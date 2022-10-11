@@ -52,7 +52,13 @@ public class WebviewModalView extends FrameLayout {
         if (WebviewModalView.popupWindow != null) {
             return;
         }
-        activity.runOnUiThread(() -> new WebviewModalView(activity, rawHtml, actionToken));
+        activity.runOnUiThread(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        new WebviewModalView(activity, rawHtml, actionToken);
+                    }
+                });
     }
 
     public static void closePopups() {
@@ -72,8 +78,11 @@ public class WebviewModalView extends FrameLayout {
 
         ImageButton dismissButton = this.findViewById(R.id.dismiss_button);
         dismissButton.setOnClickListener(
-                view1 -> {
+                new OnClickListener() {
+                    @Override
+                    public void onClick(View view1) {
                     popupWindow.dismiss();
+                    }
                 });
 
         // I don't know why this needs to be base64 but w/e
@@ -84,7 +93,13 @@ public class WebviewModalView extends FrameLayout {
         int height = LinearLayout.LayoutParams.MATCH_PARENT;
 
         popupWindow = new PopupWindow(this, width, height, true);
-        popupWindow.setOnDismissListener(() -> WebviewModalView.popupWindow = null);
+        popupWindow.setOnDismissListener(
+                new PopupWindow.OnDismissListener() {
+                    @Override
+                    public void onDismiss() {
+                        WebviewModalView.popupWindow = null;
+                    }
+                });
         popupWindow.showAtLocation(contents, Gravity.CENTER, 0, 0);
         view.setVisibility(INVISIBLE);
 
@@ -114,9 +129,12 @@ public class WebviewModalView extends FrameLayout {
 
         ServiceFacade.getCurrentActivity()
                 .runOnUiThread(
-                        () -> {
+                        new Runnable() {
+                            @Override
+                            public void run() {
                             if (WebviewModalView.popupWindow != null) {
                                 WebviewModalView.popupWindow.dismiss();
+                            }
                             }
                         });
     }
