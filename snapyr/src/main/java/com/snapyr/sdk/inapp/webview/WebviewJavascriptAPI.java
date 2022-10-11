@@ -39,6 +39,7 @@ public class WebviewJavascriptAPI {
         log,
         click,
         close,
+        resize,
     }
 
     public enum LogLevel {
@@ -79,7 +80,7 @@ public class WebviewJavascriptAPI {
             ServiceFacade.getLogger()
                     .error(
                             e,
-                            "Received message from in-app webview, but unable to parse JSON: %s",
+                            "Received message from in-app webview, but no valid message type found: %s",
                             jsonData);
             return;
         }
@@ -114,11 +115,8 @@ public class WebviewJavascriptAPI {
                 ValueMap parameters = null;
                 try {
                     // All `data-x` attributes on the element that was clicked (may be empty object)
-                    parameters =
-                            new ValueMap(
-                                    ServiceFacade.getCartographer()
-                                            .fromJson(data.getString("parameters")));
-                } catch (IOException e) {
+                    parameters = data.getValueMap("parameters");
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
                 Log.e(
@@ -134,6 +132,9 @@ public class WebviewJavascriptAPI {
                 // But also, close the webview
                 Log.e("Snapyr", "In-App close received!");
                 callbackHandler.onClose();
+                break;
+            case resize:
+                // not handling yet
                 break;
         }
     }
