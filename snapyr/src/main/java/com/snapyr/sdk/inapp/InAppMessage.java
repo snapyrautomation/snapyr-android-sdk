@@ -30,16 +30,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-enum InAppActionType {
-    ACTION_TYPE_CUSTOM,
-    ACTION_TYPE_OVERLAY,
-}
-
-enum InAppContentType {
-    CONTENT_TYPE_JSON,
-    CONTENT_TYPE_HTML,
-}
-
 public class InAppMessage {
     public static final SimpleDateFormat Formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
     public final Date Timestamp;
