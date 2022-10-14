@@ -40,6 +40,7 @@ public class InAppManager implements InAppIFace {
     private final InAppActionProcessor actionProcessor;
     private final ScheduledExecutorService pollExecutor;
     private Context context;
+    private Boolean dispatchInProgress = false;
 
     public InAppManager(@NonNull InAppConfig config, @NonNull Context context) {
         this.pollingInterval = config.PollingDelayMs;
@@ -80,22 +81,39 @@ public class InAppManager implements InAppIFace {
         }
     }
 
+    private synchronized Boolean setDispatchInProgress(Boolean value) {
+        if (this.dispatchInProgress == true && value == true) {
+            return false;
+        }
+        this.dispatchInProgress = value;
+        return true;
+    }
+
     @Override
     public void dispatchPending(Context context) {
+        if (!setDispatchInProgress(true)) {
+            // prevent requests from piling up; this function will be run again at the next polling interval
+            ServiceFacade.getLogger().info("in-app: dispatch already in progress; skipping poll");
+            return;
+        }
         ServiceFacade.getLogger().info("polling for in-app content");
         ServiceFacade.getNetworkExecutor()
                 .submit(
                         new Runnable() {
                             @Override
                             public void run() {
-                                List<InAppMessage> polledActions =
-                                        GetUserActionsRequest.execute(
-                                                ServiceFacade.getSnapyrContext().traits().userId());
+                                try {
+                                    List<InAppMessage> polledActions =
+                                            GetUserActionsRequest.execute(
+                                                    ServiceFacade.getSnapyrContext().traits().userId());
 
-                                ServiceFacade.getLogger()
-                                        .info("pulled " + polledActions.size() + " actions");
-                                for (InAppMessage action : polledActions) {
-                                    processAndAck(action);
+                                    ServiceFacade.getLogger()
+                                            .info("pulled " + polledActions.size() + " actions");
+                                    for (InAppMessage action : polledActions) {
+                                        processAndAck(action);
+                                    }
+                                } finally {
+                                    setDispatchInProgress(false);
                                 }
                             }
                         });
