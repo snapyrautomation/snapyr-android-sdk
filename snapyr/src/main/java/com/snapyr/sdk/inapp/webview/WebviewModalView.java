@@ -120,12 +120,7 @@ public class WebviewModalView extends FrameLayout {
     private void dismissPopup() {
         if (!wasInteractedWith) {
             // user didn't click a button, so send the dismissed
-            Properties props =
-                    new Properties()
-                            .putValue("actionToken", actionToken)
-                            .putValue("platform", "android")
-                            .putValue("interactionType", "dismiss");
-            snapyr.track("snapyr.observation.event.Behavior", props);
+            snapyr.trackInAppMessageDismiss(actionToken);
         }
 
         ServiceFacade.getCurrentActivity()
@@ -162,23 +157,15 @@ public class WebviewModalView extends FrameLayout {
                             @Override
                             public void onClick(String id, ValueMap parameters) {
                                 wasInteractedWith = true;
-                                Properties props =
-                                        new Properties(parameters)
-                                                .putValue("actionToken", actionToken)
-                                                .putValue("platform", "android")
-                                                .putValue("interactionType", "click");
-                                snapyr.track("snapyr.observation.event.Behavior", props);
+                                Properties props = new Properties(parameters);
+                                snapyr.trackInAppMessageClick(actionToken, props);
                                 // TODO: should we dismiss on click?
                                 dismissPopup();
                             }
 
                             @Override
                             public void onLoad(float clientHeight) {
-                                Properties props =
-                                        new Properties()
-                                                .putValue("actionToken", actionToken)
-                                                .putValue("platform", "android");
-                                snapyr.track("snapyr.observation.event.Impression", props);
+                                snapyr.trackInAppMessageImpression(actionToken);
                             }
                         }),
                 "snapyrMessageHandler");
