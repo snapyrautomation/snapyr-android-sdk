@@ -52,7 +52,6 @@ public class InAppManager implements InAppIFace {
     }
 
     private void processAndAck(InAppMessage message) {
-        actionProcessor.process(message);
         ServiceFacade.getNetworkExecutor()
                 .submit(
                         new Runnable() {
@@ -61,6 +60,8 @@ public class InAppManager implements InAppIFace {
                                 try {
                                     AckUserActionRequest.execute(
                                             message.UserId, message.ActionToken);
+                                    // Trigger user callbacks only after ack'ing, to prevent duplicate user callback triggers in the event of ack failure
+                                    actionProcessor.process(message);
                                 } catch (Exception e) {
                                     ServiceFacade.getLogger()
                                             .error(e, "failed to ack in-app action");
