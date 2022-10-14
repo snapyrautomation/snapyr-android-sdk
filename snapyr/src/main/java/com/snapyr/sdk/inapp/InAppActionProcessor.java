@@ -24,20 +24,33 @@
 package com.snapyr.sdk.inapp;
 
 import com.snapyr.sdk.inapp.webview.WebviewModalView;
+import com.snapyr.sdk.internal.Utils;
 import com.snapyr.sdk.services.ServiceFacade;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class InAppActionProcessor {
     private final InAppCallback userCallback;
+    private final ExecutorService userCallbackExecutor;
 
     InAppActionProcessor(InAppCallback userCallback) {
         this.userCallback = userCallback;
+        // Used to fire-and-forget user callback. Pool size of 1 means callbacks will fire sequentially (additional executions will be queued and processed in order by the executor automatically)
+        // This allows us to loop through our own list without the potential for user code to affect timing or interrupt processing due to errors
+        this.userCallbackExecutor = Executors.newFixedThreadPool(1, new Utils.AnalyticsThreadFactory("Snapyr-InAppUserCallback"));
     }
 
     public void process(InAppMessage message) {
         switch (message.ActionType) {
             case ACTION_TYPE_CUSTOM:
                 ServiceFacade.getLogger().info("dispatching user in-app action");
-                userCallback.onAction(message);
+                userCallbackExecutor.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        userCallback.onAction(message);
+                    }
+                });
                 break;
             case ACTION_TYPE_OVERLAY:
                 try {
