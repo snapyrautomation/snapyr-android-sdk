@@ -757,6 +757,35 @@ public class Snapyr {
         track("snapyr.observation.event.Behavior", properties);
     }
 
+    public void trackInAppMessageImpression(final @Nullable String actionToken) {
+        assertNotShutdown();
+        Properties props =
+                new Properties()
+                        .putValue("actionToken", actionToken)
+                        .putValue("platform", "android");
+        track("snapyr.observation.event.Impression", props);
+    }
+
+    public void trackInAppMessageClick(
+            final @Nullable String actionToken, final @Nullable Properties properties) {
+        assertNotShutdown();
+        properties
+                .putValue("actionToken", actionToken)
+                .putValue("platform", "android")
+                .putValue("interactionType", "click");
+        track("snapyr.observation.event.Behavior", properties);
+    }
+
+    public void trackInAppMessageDismiss(final @Nullable String actionToken) {
+        assertNotShutdown();
+        Properties props =
+                new Properties()
+                        .putValue("actionToken", actionToken)
+                        .putValue("platform", "android")
+                        .putValue("interactionType", "dismiss");
+        track("snapyr.observation.event.Behavior", props);
+    }
+
     /**
      * The track method is how you record any actions your users perform. Each action is known by a
      * name, like 'Purchased a T-Shirt'. You can also record properties specific to those actions.
