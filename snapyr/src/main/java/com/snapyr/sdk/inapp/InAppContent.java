@@ -103,7 +103,11 @@ public class InAppContent {
                                 (this.contentType == InAppContentType.CONTENT_TYPE_JSON)
                                         ? "json"
                                         : "html")
-                        .putValue("payload", this.rawPayload);
+                        .putValue(
+                                "payload",
+                                (this.contentType == InAppContentType.CONTENT_TYPE_JSON)
+                                        ? this.jsonContent
+                                        : this.htmlContent);
         return map;
     }
 
