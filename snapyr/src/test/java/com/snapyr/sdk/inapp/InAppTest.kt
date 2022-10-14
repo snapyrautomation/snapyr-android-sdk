@@ -23,12 +23,16 @@
  */
 package com.snapyr.sdk.inapp
 
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.whenever
 import com.snapyr.sdk.TestUtils
 import com.snapyr.sdk.http.ConnectionFactory
 import com.snapyr.sdk.internal.SnapyrAction
 import com.snapyr.sdk.services.Cartographer
 import com.snapyr.sdk.services.ServiceFacade
 import java.io.IOException
+import java.net.HttpURLConnection
+import java.util.concurrent.Semaphore
 import org.assertj.core.api.Assertions
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -59,7 +63,10 @@ class InAppTest {
     @Throws(IOException::class)
     fun testMessageFromJson() {
         val context = TestUtils.mockApplication()
+        val connection = Mockito.mock(HttpURLConnection::class.java)
+        whenever(connection.getResponseCode()).thenReturn(200)
         val connFactory = Mockito.mock(ConnectionFactory::class.java)
+        whenever(connFactory.engineRequest(any(), any())).thenReturn(connection)
         ServiceFacade.getInstance()
             .setConnectionFactory(connFactory)
             .setApplication(context)
@@ -67,6 +74,8 @@ class InAppTest {
 
         InAppFacade.allowInApp()
         var callbackCalled = false
+        var callbackSemaphore = Semaphore(1)
+        callbackSemaphore.acquire()
         InAppFacade.createInApp(
             InAppConfig()
                 .setPollingRate(50)
@@ -78,6 +87,7 @@ class InAppTest {
                     check(it.ActionType == InAppActionType.ACTION_TYPE_CUSTOM)
                     check(it.Content.type == InAppContentType.CONTENT_TYPE_JSON)
                     check(it.Content.jsonContent != null)
+                    callbackSemaphore.release()
                 },
             context
         )
@@ -96,6 +106,7 @@ class InAppTest {
         Assertions.assertThat(method.value).isEqualTo("POST")
 
         // should have called the user callback
+        callbackSemaphore.acquire() // wait for user callback thread to complete in case it was out of order
         Assertions.assertThat(callbackCalled).isEqualTo(true)
     }
 }

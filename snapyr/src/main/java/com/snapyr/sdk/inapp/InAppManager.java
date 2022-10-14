@@ -61,7 +61,8 @@ public class InAppManager implements InAppIFace {
                                 try {
                                     AckUserActionRequest.execute(
                                             message.UserId, message.ActionToken);
-                                    // Trigger user callbacks only after ack'ing, to prevent duplicate user callback triggers in the event of ack failure
+                                    // Trigger user callbacks only after ack'ing, to prevent
+                                    // duplicate user callback triggers in the event of ack failure
                                     actionProcessor.process(message);
                                 } catch (Exception e) {
                                     ServiceFacade.getLogger()
@@ -92,7 +93,8 @@ public class InAppManager implements InAppIFace {
     @Override
     public void dispatchPending(Context context) {
         if (!setDispatchInProgress(true)) {
-            // prevent requests from piling up; this function will be run again at the next polling interval
+            // prevent requests from piling up; this function will be run again at the next polling
+            // interval
             ServiceFacade.getLogger().info("in-app: dispatch already in progress; skipping poll");
             return;
         }
@@ -105,7 +107,9 @@ public class InAppManager implements InAppIFace {
                                 try {
                                     List<InAppMessage> polledActions =
                                             GetUserActionsRequest.execute(
-                                                    ServiceFacade.getSnapyrContext().traits().userId());
+                                                    ServiceFacade.getSnapyrContext()
+                                                            .traits()
+                                                            .userId());
 
                                     ServiceFacade.getLogger()
                                             .info("pulled " + polledActions.size() + " actions");
