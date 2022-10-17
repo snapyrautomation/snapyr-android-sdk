@@ -85,8 +85,8 @@ class InAppTest {
                     check(it.Timestamp == InAppMessage.Formatter.parse("2022-08-31T17:15:30.135145417Z"))
                     check(it.UserId == "Brian")
                     check(it.ActionType == InAppActionType.ACTION_TYPE_CUSTOM)
-                    check(it.Content.type == InAppContentType.CONTENT_TYPE_JSON)
-                    check(it.Content.jsonContent != null)
+                    check(it.Content.type == InAppPayloadType.PAYLOAD_TYPE_JSON)
+                    check(it.Content.jsonPayload != null)
                     callbackSemaphore.release()
                 },
             context
