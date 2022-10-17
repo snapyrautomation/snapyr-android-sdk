@@ -70,13 +70,13 @@ public class InAppActionProcessor {
     private void handleOverlay(InAppMessage message)
             throws InAppContent.IncorrectContentAccessException {
         switch (message.Content.getType()) {
-            case CONTENT_TYPE_JSON:
+            case PAYLOAD_TYPE_JSON:
                 ServiceFacade.getLogger().info("no action for json overlays currently");
                 break;
-            case CONTENT_TYPE_HTML:
+            case PAYLOAD_TYPE_HTML:
                 WebviewModalView.showPopup(
                         ServiceFacade.getCurrentActivity(),
-                        message.Content.getHtmlContent(),
+                        message.Content.getHtmlPayload(),
                         message.ActionToken);
                 break;
         }

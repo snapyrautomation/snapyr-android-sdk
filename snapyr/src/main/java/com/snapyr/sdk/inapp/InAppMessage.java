@@ -49,13 +49,13 @@ public class InAppMessage {
             throw new MalformedMessageException("malformed timestamp");
         }
 
-        String contentType = action.getString("actionType");
-        if (Utils.isNullOrEmpty(contentType)) {
+        String actionType = action.getString("actionType");
+        if (Utils.isNullOrEmpty(actionType)) {
             throw new MalformedMessageException("missing actionType in action");
         }
         this.UserId = action.getString("userId");
 
-        switch (contentType) {
+        switch (actionType) {
             case "custom":
                 this.ActionType = InAppActionType.ACTION_TYPE_CUSTOM;
                 break;
@@ -63,7 +63,7 @@ public class InAppMessage {
                 this.ActionType = InAppActionType.ACTION_TYPE_OVERLAY;
                 break;
             default:
-                throw new MalformedMessageException("unknown content type: " + contentType);
+                throw new MalformedMessageException("unknown content type: " + actionType);
         }
 
         this.ActionToken = action.getString("actionToken");
