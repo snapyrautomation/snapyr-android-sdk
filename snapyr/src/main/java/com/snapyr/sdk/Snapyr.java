@@ -745,19 +745,19 @@ public class Snapyr {
         track("snapyr.hidden.fcmTokenSet", new Properties().putValue("token", token));
     }
 
-    public void pushNotificationReceived(final @Nullable Properties properties) {
+    public void pushNotificationReceived(final @NonNull Properties properties) {
         assertNotShutdown();
         properties.putValue("platform", "android");
         track("snapyr.observation.event.Impression", properties);
     }
 
-    public void pushNotificationClicked(final @Nullable Properties properties) {
+    public void pushNotificationClicked(final @NonNull Properties properties) {
         assertNotShutdown();
         properties.putValue("platform", "android");
         track("snapyr.observation.event.Behavior", properties);
     }
 
-    public void trackInAppMessageImpression(final @Nullable String actionToken) {
+    public void trackInAppMessageImpression(final @NonNull String actionToken) {
         assertNotShutdown();
         Properties props =
                 new Properties()
@@ -766,8 +766,12 @@ public class Snapyr {
         track("snapyr.observation.event.Impression", props);
     }
 
+    public void trackInAppMessageClick(final @NonNull String actionToken) {
+        trackInAppMessageClick(actionToken, new Properties());
+    }
+
     public void trackInAppMessageClick(
-            final @Nullable String actionToken, final @Nullable Properties properties) {
+            final @NonNull String actionToken, final @NonNull Properties properties) {
         assertNotShutdown();
         properties
                 .putValue("actionToken", actionToken)
@@ -776,7 +780,7 @@ public class Snapyr {
         track("snapyr.observation.event.Behavior", properties);
     }
 
-    public void trackInAppMessageDismiss(final @Nullable String actionToken) {
+    public void trackInAppMessageDismiss(final @NonNull String actionToken) {
         assertNotShutdown();
         Properties props =
                 new Properties()
