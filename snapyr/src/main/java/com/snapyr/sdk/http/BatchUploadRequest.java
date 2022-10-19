@@ -40,9 +40,9 @@ import java.util.Date;
 /** A wrapper that emits a JSON formatted batch payload to the underlying writer. */
 public class BatchUploadRequest implements Closeable, BatchQueue.ElementVisitor {
     /**
-     * Our servers only accept batches < 500KB. This limit is 475KB to account for extra data that
-     * is not present in payloads themselves, but is added later, such as {@code sentAt}, {@code
-     * integrations} and other json tokens.
+     * Our servers only accept batches up to 500KB. This limit is 475KB to account for extra data
+     * that is not present in payloads themselves, but is added later, such as {@code sentAt},
+     * {@code integrations} and other json tokens.
      */
     @Private static final int MAX_BATCH_SIZE = 475000; // 475KB.
 
