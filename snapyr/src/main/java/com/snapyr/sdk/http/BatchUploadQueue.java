@@ -60,7 +60,7 @@ public class BatchUploadQueue {
      * QueueFile's 2GB limit.
      */
     public static final int MAX_QUEUE_SIZE = 1000;
-    /** Our servers only accept payloads < 32KB. */
+    /** Our servers only accept payloads up to 32KB. */
     public static final int MAX_PAYLOAD_SIZE = 32000; // 32KB.
 
     private static final String SNAPYR_THREAD_NAME = Utils.THREAD_PREFIX + "SnapyrDispatcher";
