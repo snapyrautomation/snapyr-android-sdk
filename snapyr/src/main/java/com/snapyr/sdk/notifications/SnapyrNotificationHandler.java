@@ -32,6 +32,7 @@ import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -56,6 +57,8 @@ import java.util.Map;
 import java.util.Random;
 
 public class SnapyrNotificationHandler {
+    public static final String NOTIF_ICON_SNAPYR_DEFAULT = "ic_snapyr_notification_default";
+    public static final String NOTIF_ICON_FALLBACK = "ic_notification";
     public static final String NOTIF_TITLE_KEY = "title";
     public static final String NOTIF_SUBTITLE_KEY = "subtitle";
     public static final String NOTIF_CONTENT_KEY = "contentText";
@@ -129,7 +132,7 @@ public class SnapyrNotificationHandler {
 
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(this.context, channelId);
-        builder.setSmallIcon(applicationContext.getApplicationInfo().icon)
+        builder.setSmallIcon(getNotificationIcon())
                 .setContentTitle((String) data.get(NOTIF_TITLE_KEY))
                 .setContentText((String) data.get(NOTIF_CONTENT_KEY))
                 .setSubText((String) data.get(NOTIF_SUBTITLE_KEY))
@@ -178,6 +181,48 @@ public class SnapyrNotificationHandler {
 
         Notification notification = builder.build();
         notificationMgr.notify(notificationId, notification);
+    }
+
+    private int getNotificationIcon() {
+        // Resource value of 0 means it was not found. We try to find the best icon in order of
+        // preference, looking for each in both `drawable` and `mipmap`.
+        Resources resources = applicationContext.getResources();
+        int result =
+                resources.getIdentifier(
+                        NOTIF_ICON_SNAPYR_DEFAULT, "drawable", applicationContext.getPackageName());
+        if (result == 0) {
+            result =
+                    resources.getIdentifier(
+                            NOTIF_ICON_SNAPYR_DEFAULT,
+                            "mipmap",
+                            applicationContext.getPackageName());
+        }
+        if (result == 0) {
+            result =
+                    resources.getIdentifier(
+                            NOTIF_ICON_FALLBACK, "drawable", applicationContext.getPackageName());
+        }
+        if (result == 0) {
+            result =
+                    resources.getIdentifier(
+                            NOTIF_ICON_FALLBACK, "mipmap", applicationContext.getPackageName());
+        }
+        if (result == 0) {
+            // Nothing found yet; use the app's own launcher icon. Should always be set...
+            Log.d(
+                    "Snapyr",
+                    "SnapyrNotificationHandler: couldn't find notification icon; falling back to your app's launcher icon");
+            result = applicationContext.getApplicationInfo().icon;
+        }
+        if (result == 0) {
+            // ... if not, use an Android built-in icon guaranteed to be present (a bell)
+            Log.d(
+                    "Snapyr",
+                    "SnapyrNotificationHandler: couldn't find app's launcher icon; falling back to system icon");
+            result = android.R.drawable.ic_popup_reminder;
+        }
+
+        return result;
     }
 
     private Intent getLaunchIntent() {
@@ -236,7 +281,7 @@ public class SnapyrNotificationHandler {
     public void showSampleNotification() {
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(this.context, this.defaultChannelId);
-        builder.setSmallIcon(R.drawable.ic_snapyr_logo_only)
+        builder.setSmallIcon(getNotificationIcon())
                 .setContentTitle("Snapyr: Title")
                 .setSubText("Snapyr: Subtext")
                 .setContentText("Snapyr: Content text")
