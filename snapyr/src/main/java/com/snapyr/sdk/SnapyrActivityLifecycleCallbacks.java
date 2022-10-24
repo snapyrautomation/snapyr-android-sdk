@@ -36,6 +36,7 @@ import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
 import com.snapyr.sdk.internal.TrackerUtil;
+import com.snapyr.sdk.notifications.SnapyrNotificationListener;
 import com.snapyr.sdk.services.ServiceFacade;
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
@@ -229,6 +230,14 @@ class SnapyrActivityLifecycleCallbacks
         return false;
     }
 
+    private Boolean shouldTrackForActivity(Activity activity) {
+        // don't act on internal Snapyr SDK activities
+        if (activity instanceof SnapyrNotificationListener) {
+            return false;
+        }
+        return true;
+    }
+
     private void resetTrackedCallbacks(Activity activity) {
         for (MonitoredCallbacks cb : MonitoredCallbacks.values()) {
             String key = String.valueOf(activity.hashCode()) + cb;
@@ -238,6 +247,7 @@ class SnapyrActivityLifecycleCallbacks
 
     @Override
     public void onActivityCreated(Activity activity, Bundle activitySavedInstanceState) {
+        if (!shouldTrackForActivity(activity)) return;
         this.onActivityCreated(activity, activitySavedInstanceState, false);
     }
 
@@ -266,7 +276,9 @@ class SnapyrActivityLifecycleCallbacks
 
         Intent launchIntent = activity.getIntent();
         if (launchIntent == null) {
-            Log.i("Snapyr", "NotifCB: launchIntent is null. Returning.");
+            Log.i(
+                    "Snapyr",
+                    "SnapyrActivityLifecycleCallbacks: trackNotificationIntent: launchIntent is null. Returning.");
             return;
         }
 
@@ -275,7 +287,9 @@ class SnapyrActivityLifecycleCallbacks
             // No deep link URL - this was a "normal" activity launch, by opening the app or
             // otherwise.
             // No notification-related behavior, so nothing to track
-            Log.i("Snapyr", "NotifCB: intentData is null. Returning.");
+            Log.i(
+                    "Snapyr",
+                    "SnapyrActivityLifecycleCallbacks: trackNotificationIntent: intentData is null. Returning.");
             return;
         }
 
@@ -284,6 +298,7 @@ class SnapyrActivityLifecycleCallbacks
 
     @Override
     public void onActivityStarted(Activity activity) {
+        if (!shouldTrackForActivity(activity)) return;
         this.onActivityStarted(activity, false);
     }
 
@@ -300,6 +315,7 @@ class SnapyrActivityLifecycleCallbacks
 
     @Override
     public void onActivityResumed(Activity activity) {
+        if (!shouldTrackForActivity(activity)) return;
         this.onActivityResumed(activity, false);
     }
 
@@ -316,6 +332,7 @@ class SnapyrActivityLifecycleCallbacks
 
     @Override
     public void onActivityPaused(Activity activity) {
+        if (!shouldTrackForActivity(activity)) return;
         this.resetTrackedCallbacks(activity);
         if (!useNewLifecycleMethods) {
             onPause(stubOwner);
@@ -324,6 +341,7 @@ class SnapyrActivityLifecycleCallbacks
 
     @Override
     public void onActivityStopped(Activity activity) {
+        if (!shouldTrackForActivity(activity)) return;
         this.resetTrackedCallbacks(activity);
         if (!useNewLifecycleMethods) {
             onStop(stubOwner);
@@ -331,10 +349,13 @@ class SnapyrActivityLifecycleCallbacks
     }
 
     @Override
-    public void onActivitySaveInstanceState(Activity activity, Bundle bundle) {}
+    public void onActivitySaveInstanceState(Activity activity, Bundle bundle) {
+        if (!shouldTrackForActivity(activity)) return;
+    }
 
     @Override
     public void onActivityDestroyed(Activity activity) {
+        if (!shouldTrackForActivity(activity)) return;
         this.resetTrackedCallbacks(activity);
         if (!useNewLifecycleMethods) {
             onDestroy(stubOwner);
