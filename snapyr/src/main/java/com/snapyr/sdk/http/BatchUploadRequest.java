@@ -68,6 +68,10 @@ public class BatchUploadRequest implements Closeable, BatchQueue.ElementVisitor 
             uploader.endBatchArray();
             uploader.endObject();
             uploader.close();
+            if (DEBUG_MODE) {
+                Log.e("Snapyr", "Payload sent to Snapyr engine:");
+                largeLog("Snapyr", uploader.debugString.toString());
+            }
         } finally {
             uploader.close();
             stream.close();
@@ -170,10 +174,6 @@ public class BatchUploadRequest implements Closeable, BatchQueue.ElementVisitor 
 
     @Override
     public void close() throws IOException {
-        if (DEBUG_MODE) {
-            Log.e("Snapyr", "Payload sent to Snapyr engine:");
-            largeLog("Snapyr", debugString.toString());
-        }
         jsonWriter.close();
         bufferedWriter.close();
     }
