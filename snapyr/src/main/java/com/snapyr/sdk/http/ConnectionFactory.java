@@ -23,6 +23,7 @@
  */
 package com.snapyr.sdk.http;
 
+import android.net.TrafficStats;
 import android.util.Base64;
 import com.snapyr.sdk.core.BuildConfig;
 import java.io.IOException;
@@ -80,7 +81,7 @@ public class ConnectionFactory {
      * https://engine.snapyr.com/v1/import}.
      */
     public WriteConnection postBatch() throws IOException {
-        return new WriteConnection(engineRequest("v1/batch", "POST"));
+        return new WriteConnection(engineRequest("v1/batch?deets=true", "POST"));
     }
 
     public HttpURLConnection engineRequest(String path, String method) throws IOException {
@@ -115,6 +116,7 @@ public class ConnectionFactory {
             throw new IOException("Attempted to use malformed url: " + url, e);
         }
 
+        TrafficStats.setThreadStatsTag((int) Thread.currentThread().getId());
         HttpURLConnection connection = (HttpURLConnection) requestedURL.openConnection();
         connection.setConnectTimeout(DEFAULT_CONNECT_TIMEOUT_MILLIS);
         connection.setReadTimeout(DEFAULT_READ_TIMEOUT_MILLIS);

@@ -98,7 +98,7 @@ public class InAppManager implements InAppIFace {
             ServiceFacade.getLogger().info("in-app: dispatch already in progress; skipping poll");
             return;
         }
-        ServiceFacade.getLogger().info("polling for in-app content");
+        //        ServiceFacade.getLogger().info("polling for in-app content");
         ServiceFacade.getNetworkExecutor()
                 .submit(
                         new Runnable() {
@@ -111,8 +111,13 @@ public class InAppManager implements InAppIFace {
                                                             .traits()
                                                             .userId());
 
-                                    ServiceFacade.getLogger()
-                                            .info("pulled " + polledActions.size() + " actions");
+                                    if (polledActions.size() != 0) {
+                                        ServiceFacade.getLogger()
+                                                .info(
+                                                        "pulled "
+                                                                + polledActions.size()
+                                                                + " actions");
+                                    }
                                     for (InAppMessage action : polledActions) {
                                         processAndAck(action);
                                     }

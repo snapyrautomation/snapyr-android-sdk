@@ -24,6 +24,8 @@
 package com.snapyr.sdk.notifications;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -32,6 +34,7 @@ import androidx.core.app.NotificationManagerCompat;
 import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.internal.TrackerUtil;
 import com.snapyr.sdk.internal.Utils;
+import java.text.MessageFormat;
 
 /**
  * SnapyrNotificationListener Activity that triggers and fires off a track event with the payload
@@ -42,9 +45,22 @@ import com.snapyr.sdk.internal.Utils;
 public class SnapyrNotificationListener extends Activity {
     private static final String TAG = "SnapyrNotificationListener";
 
+    public SnapyrNotificationListener() {
+        super();
+        Log.e("XXX", "SnapyrNotificationListener: CONSTRUCTOR");
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        Log.e("XXX", "SnapyrNotificationListener: FINALIZE");
+        super.finalize();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.e("XXX", "SnapyrNotificationListener: onCreate - ATTACH DEBUGGER!!!");
+        //        android.os.Debug.waitForDebugger();
         Intent intent = this.getIntent();
         String deepLink = intent.getStringExtra(SnapyrNotificationHandler.ACTION_DEEP_LINK_KEY);
         int notificationId = intent.getIntExtra(SnapyrNotificationHandler.NOTIFICATION_ID, -1);
@@ -67,9 +83,39 @@ public class SnapyrNotificationListener extends Activity {
             deepLinkIntent.setAction("com.snapyr.sdk.notifications.ACTION_DEEPLINK");
             deepLinkIntent.setData(Uri.parse(deepLink));
             deepLinkIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            this.startActivity(deepLinkIntent);
+
+            //            getPackageManager().resolveActivity(deepLinkIntent)
+            ComponentName componentName = deepLinkIntent.resolveActivity(getPackageManager());
+            Log.e(
+                    "XXX",
+                    MessageFormat.format(
+                            "SnapyrNotificationListener: intent component: {0}", componentName));
+
+            try {
+                this.startActivity(deepLinkIntent);
+            } catch (ActivityNotFoundException e) {
+                Log.e("XXX", "RUH ROH! ACTIVITY NOT FOUND!");
+            }
         }
 
         this.finish(); // Nothing to do, go back in the stack
+    }
+
+    @Override
+    protected void onStop() {
+        Log.e("XXX", "SnapyrNotificationListener: onStop");
+        super.onStop();
+    }
+
+    @Override
+    protected void onPause() {
+        Log.e("XXX", "SnapyrNotificationListener: onPause");
+        super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        Log.e("XXX", "SnapyrNotificationListener: onDestroy");
+        super.onDestroy();
     }
 }

@@ -24,6 +24,7 @@
 package com.snapyr.sdk.sample;
 
 import android.app.Application;
+import android.graphics.Typeface;
 import android.os.Build;
 import android.os.StrictMode;
 import android.os.strictmode.Violation;
@@ -31,7 +32,6 @@ import android.util.Log;
 import androidx.annotation.RequiresApi;
 import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.ValueMap;
-import com.snapyr.sdk.inapp.InAppConfig;
 import com.snapyr.sdk.inapp.InAppMessage;
 import io.github.inflationx.calligraphy3.CalligraphyConfig;
 import io.github.inflationx.calligraphy3.CalligraphyInterceptor;
@@ -42,29 +42,93 @@ public class SampleApp extends Application {
 
     // https://segment.com/segment-engineering/sources/android-test/settings/keys
     //    private static final String ANALYTICS_WRITE_KEY = "HO63Z36e0Ufa8AAgbjDomDuKxFuUICqI";
-    private static final String ANALYTICS_WRITE_KEY = "cTcjOQYhhxOTXF6eHFflOCyYPO6pfAOV";
+    //    private static final String ANALYTICS_WRITE_KEY = "MsZEepxHLRM9d7CU0ClTC84T0E9w9H8w"; //
+    // Paul's workspace - DEV
+    private static final String ANALYTICS_WRITE_KEY =
+            "Kl34fEmzG753oODf9UhGz76wYMXW6Gia"; // Paul's push/in-app testing WS - PROD
+
+    //    public SampleApp()
+    public SampleApp() {
+        super();
+        Log.e("XXX", "SampleApp: constructor - ATTACH DEBUGGER!!!");
+        //        android.os.Debug.waitForDebugger();
+        Log.e("XXX", "SampleApp: constructor - resuming.");
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        Log.e("XXX", "SampleApp: FINALIZE");
+        super.finalize();
+    }
+
+    @Override
+    public void onTerminate() {
+        super.onTerminate();
+        Log.e("XXX", "SampleApp: onTerminate");
+    }
 
     @RequiresApi(api = Build.VERSION_CODES.P)
     @Override
     public void onCreate() {
         super.onCreate();
+        Log.e("XXX", "SampleApp: onCreate - ATTACH DEBUGGER!!!");
+        //        android.os.Debug.waitForDebugger();
+        Log.e("XXX", "SampleApp: onCreate - resuming.");
 
-        StrictMode.setVmPolicy(
+        StrictMode.VmPolicy.Builder policyBuilder =
                 new StrictMode.VmPolicy.Builder()
                         .detectLeakedClosableObjects()
                         .detectLeakedRegistrationObjects()
-                        // .penaltyDeath()
+                        .detectActivityLeaks()
+                        //                        .detectAll()
+                        //                        .penaltyLog()
+                        //                                         .penaltyDeath()
                         .penaltyListener(
                                 Executors.newSingleThreadExecutor(),
-                                (Violation var1) -> {
-                                    // This catches leaks in our code that would have propagated to
-                                    // client code in the wild. If you want to be really careful
-                                    // uncomment the penaltyDeath line above --BS
-                                    Log.e(
-                                            var1.getLocalizedMessage(),
-                                            String.valueOf(var1.getCause().getStackTrace()));
-                                })
-                        .build());
+                                new StrictMode.OnVmViolationListener() {
+                                    @Override
+                                    public void onVmViolation(Violation v) {
+                                        // This catches leaks in our code that would have propagated
+                                        // to
+                                        // client code in the wild. If you want to be really careful
+                                        // uncomment the penaltyDeath line above --BS
+                                        Log.e("Snapyr", "onVmViolation:" + v.toString(), v);
+                                        android.os.Debug.waitForDebugger();
+                                        v.printStackTrace();
+                                        Log.e("Snapyr", "getCause():", v.getCause());
+                                        Log.e(
+                                                "Snapyr",
+                                                "fillInStackTrace():",
+                                                v.fillInStackTrace());
+                                        Throwable[] suppressed = v.getSuppressed();
+                                        String stackTraceString =
+                                                Log.getStackTraceString(v.fillInStackTrace());
+                                    }
+                                });
+        //                        .penaltyListener(
+        //                                Executors.newSingleThreadExecutor(),
+        //                                (Violation var1) -> {
+        //                                    // This catches leaks in our code that
+        // would have propagated to
+        //                                    // client code in the wild. If you
+        // want to be really careful
+        //                                    // uncomment the penaltyDeath line
+        // above --BS
+        //                                    Log.e(
+        //                                            var1.getLocalizedMessage(),
+        //
+        // String.valueOf(var1.getCause().getStackTrace()));
+        //                                })
+
+        //        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        //            policyBuilder.detectIncorrectContextUse();
+        //        }
+        StrictMode.setVmPolicy(policyBuilder.build());
+
+        //                        .build());
+
+        Typeface typeface =
+                Typeface.createFromAsset(this.getAssets(), "fonts/CircularStd-Book.otf");
 
         ViewPump.init(
                 ViewPump.builder()
@@ -72,18 +136,19 @@ public class SampleApp extends Application {
                                 new CalligraphyInterceptor(
                                         new CalligraphyConfig.Builder()
                                                 .setDefaultFontPath("fonts/CircularStd-Book.otf")
-                                                .setFontAttrId(R.attr.fontPath)
+                                                //
+                                                // .setFontAttrId(R.attr.fontPath)
                                                 .build()))
                         .build());
 
         // Initialize a new instance of the Analytics client.
         Snapyr.Builder builder =
                 new Snapyr.Builder(this, ANALYTICS_WRITE_KEY)
-                        .enableDevEnvironment()
+                        //                        .enableDevEnvironment()
                         .experimentalNanosecondTimestamps()
                         .trackApplicationLifecycleEvents()
                         .trackDeepLinks()
-                        .logLevel(Snapyr.LogLevel.DEBUG)
+                        .logLevel(Snapyr.LogLevel.VERBOSE)
                         .defaultProjectSettings(
                                 new ValueMap()
                                         .putValue(
@@ -98,22 +163,26 @@ public class SampleApp extends Application {
                                                                         .putValue(
                                                                                 "trackAttributionData",
                                                                                 true))))
-                        .flushQueueSize(1)
+                        .flushQueueSize(20)
                         .enableSnapyrPushHandling()
-                        .configureInAppHandling(
-                                new InAppConfig()
-                                        .setPollingRate(30000)
-                                        .setActionCallback(
-                                                (inAppMessage) -> {
-                                                    userInAppCallback(inAppMessage);
-                                                }))
+                        //                                .configureInAppHandling(
+                        //                                        new InAppConfig()
+                        //                                                .setPollingRate(30000)
+                        //                                                .setActionCallback(
+                        //                                                        (inAppMessage) ->
+                        // {
+                        //
+                        // userInAppCallback(inAppMessage);
+                        //                                                        }))
                         .recordScreenViews();
 
         // Set the initialized instance as a globally accessible instance.
         Snapyr.setSingletonInstance(builder.build());
 
         // Now anytime you call Snapyr.with, the custom instance will be returned.
-        Snapyr snapyr = Snapyr.with(this);
+        //        Snapyr snapyr = Snapyr.with(this);
+
+        Log.e("XXX", "SampleApp: onCreate - done, and Snapyr initialized.");
     }
 
     private void userInAppCallback(InAppMessage message) {

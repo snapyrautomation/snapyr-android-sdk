@@ -43,6 +43,7 @@ import android.os.Build;
 import android.os.Process;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
+import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.snapyr.sdk.Snapyr;
@@ -53,6 +54,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Array;
+import java.text.MessageFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -317,9 +319,13 @@ public final class Utils {
     /** Get the string resource for the given key. Returns null if not found. */
     public static String getResourceString(Context context, String key) {
         int id = getIdentifier(context, "string", key);
+        Log.e("XXX", MessageFormat.format("getResourceString: id: {0}", id));
         if (id != 0) {
-            return context.getResources().getString(id);
+            String result = context.getResources().getString(id);
+            Log.e("XXX", MessageFormat.format("getResourceString: result: {0}", result));
+            return result;
         } else {
+            Log.e("XXX", "getResourceString: NO RESULT FOUND");
             return null;
         }
     }

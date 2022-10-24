@@ -38,15 +38,29 @@ import android.widget.Toast;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import com.google.firebase.installations.FirebaseInstallations;
 import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.Traits;
 import io.github.inflationx.viewpump.ViewPumpContextWrapper;
 import java.util.List;
 
 public class MainActivity extends Activity {
+    private static final String ANALYTICS_WRITE_KEY =
+            "Kl34fEmzG753oODf9UhGz76wYMXW6Gia"; // Paul's push/in-app testing WS - PROD
+
     @BindView(R.id.user_id)
     EditText userId;
+
+    public MainActivity() {
+        Log.e("XXX", "MainActivity: CONSTRUCTOR");
+        //        android.os.Debug.waitForDebugger();
+        //        Log.e("XXX", "SampleApp: onCreate - resuming.");
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        Log.e("XXX", "MainActivity: FINALIZE");
+        super.finalize();
+    }
 
     /** Returns true if the string is null, or empty (when trimmed). */
     public static boolean isNullOrEmpty(String text) {
@@ -55,17 +69,77 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.e("XXX", "MainActivity: onCreate");
         super.onCreate(savedInstanceState);
+
+        //                Snapyr.Builder builder =
+        //                        new Snapyr.Builder(this, ANALYTICS_WRITE_KEY)
+        //        //                        .enableDevEnvironment()
+        //                                .experimentalNanosecondTimestamps()
+        //                                .trackApplicationLifecycleEvents()
+        //                                .trackDeepLinks()
+        //                                .logLevel(Snapyr.LogLevel.VERBOSE)
+        //                                .defaultProjectSettings(
+        //                                        new ValueMap()
+        //                                                .putValue(
+        //                                                        "integrations",
+        //                                                        new ValueMap()
+        //                                                                .putValue(
+        //                                                                        "Snapyr",
+        //                                                                        new ValueMap()
+        //                                                                                .putValue(
+        //
+        // "apiKey",
+        //
+        //         ANALYTICS_WRITE_KEY)
+        //                                                                                .putValue(
+        //
+        //         "trackAttributionData",
+        //
+        // true))))
+        //                                .flushQueueSize(1)
+        //                                .enableSnapyrPushHandling()
+        //                                .recordScreenViews();
+        //
+        //                // Set the initialized instance as a globally accessible instance.
+        //                Snapyr.setSingletonInstance(builder.build());
 
         Intent intent = getIntent();
         if (intent != null) {
             handleOpenIntent(intent);
         }
 
-        FirebaseInstallations.getInstance().delete();
+        // For debugging - destroys the FB token so a new one will be created. Probably does some
+        // other stuff too
+        //        FirebaseInstallations.getInstance().delete();
 
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+        Log.e("XXX", "MainActivity: onCreate DONE");
+    }
+
+    @Override
+    protected void onStart() {
+        Log.e("XXX", "MainActivity: onStart");
+        super.onStart();
+    }
+
+    @Override
+    protected void onResume() {
+        Log.e("XXX", "MainActivity: onResume");
+        super.onResume();
+    }
+
+    @Override
+    protected void onStop() {
+        Log.e("XXX", "MainActivity: onStop");
+        super.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.e("XXX", "MainActivity: onDestroy");
     }
 
     public void handleOpenIntent(Intent intent) {
@@ -81,17 +155,18 @@ public class MainActivity extends Activity {
             String text = paths.get(1);
             Toast.makeText(this, text, Toast.LENGTH_LONG).show();
             Log.e("Snapyr", "Sample app open intent data: " + data);
+            Log.e("Snapyr", "SHOULD SHOW TOAST SAYING::: " + text);
         }
     }
 
     @OnClick(R.id.action_track_a)
     void onButtonAClicked() {
-        Snapyr.with(this).track("Button A Clicked");
+        Snapyr.with(this).track("pushTest");
     }
 
     @OnClick(R.id.action_track_b)
     void onButtonBClicked() {
-        Snapyr.with(this).track("Button B Clicked");
+        Snapyr.with(this).track("pushTestAll");
     }
 
     @OnClick(R.id.action_show_notification)

@@ -29,8 +29,8 @@
     <string name="action_view_docs">Docs</string>
     <string name="no_browser_available">No browser to open link</string>
 
-    <string name="button_a">Button A</string>
-    <string name="button_b">Button B</string>
+    <string name="button_a">pushTest</string>
+    <string name="button_b">pushTestAll</string>
 
     <string name="show_notification">Show Local Notification</string>
 

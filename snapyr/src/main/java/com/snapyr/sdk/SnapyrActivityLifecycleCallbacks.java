@@ -128,6 +128,7 @@ class SnapyrActivityLifecycleCallbacks
             Boolean shouldRecordScreenViews,
             PackageInfo packageInfo,
             Boolean useNewLifecycleMethods) {
+        Log.d("XXX", "SnapyrActivityLifecycleCallbacks: CONSTRUCTOR");
         this.trackedApplicationLifecycleEvents = new AtomicBoolean(false);
         this.numberOfActivities = new AtomicInteger(1);
         this.firstLaunch = new AtomicBoolean(false);
@@ -143,6 +144,7 @@ class SnapyrActivityLifecycleCallbacks
 
     @Override
     public void onStop(@NonNull LifecycleOwner owner) {
+        Log.d("XXX", "SnapyrActivityLifecycleCallbacks: onStop");
         backgroundStart = System.currentTimeMillis();
         // App in background
         if (shouldTrackApplicationLifecycleEvents
@@ -150,10 +152,12 @@ class SnapyrActivityLifecycleCallbacks
                 && !isChangingActivityConfigurations.get()) {
             snapyr.track("Application Backgrounded");
         }
+        Log.d("XXX", "SnapyrActivityLifecycleCallbacks: onStop: done");
     }
 
     @Override
     public void onStart(@NonNull LifecycleOwner owner) {
+        Log.d("XXX", "SnapyrActivityLifecycleCallbacks: onStart");
         long elapsed = System.currentTimeMillis() - backgroundStart;
         if (elapsed > 30000) {
             // end the last session whenever the background first occurred
@@ -174,27 +178,36 @@ class SnapyrActivityLifecycleCallbacks
             properties.putValue("from_background", !firstLaunch.getAndSet(false));
             snapyr.track("Application Opened", properties);
         }
+        Log.d("XXX", "SnapyrActivityLifecycleCallbacks: onStart: done");
     }
 
     @Override
     public void onCreate(@NonNull LifecycleOwner owner) {
         // App created
+        Log.d("XXX", "SnapyrActivityLifecycleCallbacks: onCreate");
         if (!trackedApplicationLifecycleEvents.getAndSet(true)
                 && shouldTrackApplicationLifecycleEvents) {
             numberOfActivities.set(0);
             firstLaunch.set(true);
             snapyr.trackApplicationLifecycleEvents();
         }
+        Log.d("XXX", "SnapyrActivityLifecycleCallbacks: onCreate: done");
     }
 
     @Override
-    public void onResume(@NonNull LifecycleOwner owner) {}
+    public void onResume(@NonNull LifecycleOwner owner) {
+        Log.e("XXX", "SnapyrActivityLifecycleCallbacks: onResume");
+    }
 
     @Override
-    public void onPause(@NonNull LifecycleOwner owner) {}
+    public void onPause(@NonNull LifecycleOwner owner) {
+        Log.e("XXX", "SnapyrActivityLifecycleCallbacks: onPause");
+    }
 
     @Override
-    public void onDestroy(@NonNull LifecycleOwner owner) {}
+    public void onDestroy(@NonNull LifecycleOwner owner) {
+        Log.e("XXX", "SnapyrActivityLifecycleCallbacks: onDestroy");
+    }
 
     /**
      * Tracks repeated triggers for the same activity lifecycle event, to account for manual
@@ -248,7 +261,9 @@ class SnapyrActivityLifecycleCallbacks
     @Override
     public void onActivityCreated(Activity activity, Bundle activitySavedInstanceState) {
         if (!shouldTrackForActivity(activity)) return;
+        Log.d("XXX", "SnapyrActivityLifecycleCallbacks: onActivityCreated");
         this.onActivityCreated(activity, activitySavedInstanceState, false);
+        Log.d("XXX", "SnapyrActivityLifecycleCallbacks: onActivityCreated: done");
     }
 
     public void onActivityCreated(
@@ -270,7 +285,9 @@ class SnapyrActivityLifecycleCallbacks
     }
 
     private void trackNotificationIntent(Activity activity) {
+        Log.i("XXX", "SnapyrActivityLifecycleCallbacks: trackNotificationIntent");
         if (!trackDeepLinks) {
+            Log.i("XXX", "trackDeepLinks off; returning");
             return;
         }
 
@@ -299,7 +316,9 @@ class SnapyrActivityLifecycleCallbacks
     @Override
     public void onActivityStarted(Activity activity) {
         if (!shouldTrackForActivity(activity)) return;
+        Log.d("XXX", "SnapyrActivityLifecycleCallbacks: onActivityStarted");
         this.onActivityStarted(activity, false);
+        Log.d("XXX", "SnapyrActivityLifecycleCallbacks: onActivityStarted: done");
     }
 
     public void onActivityStarted(Activity activity, Boolean manualCall) {
@@ -316,7 +335,9 @@ class SnapyrActivityLifecycleCallbacks
     @Override
     public void onActivityResumed(Activity activity) {
         if (!shouldTrackForActivity(activity)) return;
+        Log.d("XXX", "SnapyrActivityLifecycleCallbacks: onActivityResumed");
         this.onActivityResumed(activity, false);
+        Log.d("XXX", "SnapyrActivityLifecycleCallbacks: onActivityResumed: done");
     }
 
     public void onActivityResumed(Activity activity, Boolean manualCall) {
@@ -333,33 +354,41 @@ class SnapyrActivityLifecycleCallbacks
     @Override
     public void onActivityPaused(Activity activity) {
         if (!shouldTrackForActivity(activity)) return;
+        Log.d("XXX", "SnapyrActivityLifecycleCallbacks: onActivityPaused");
         this.resetTrackedCallbacks(activity);
         if (!useNewLifecycleMethods) {
             onPause(stubOwner);
         }
+        Log.d("XXX", "SnapyrActivityLifecycleCallbacks: onActivityPaused: done");
     }
 
     @Override
     public void onActivityStopped(Activity activity) {
         if (!shouldTrackForActivity(activity)) return;
+        Log.d("XXX", "SnapyrActivityLifecycleCallbacks: onActivityStopped");
         this.resetTrackedCallbacks(activity);
         if (!useNewLifecycleMethods) {
             onStop(stubOwner);
         }
+        Log.d("XXX", "SnapyrActivityLifecycleCallbacks: onActivityStopped: done");
     }
 
     @Override
     public void onActivitySaveInstanceState(Activity activity, Bundle bundle) {
         if (!shouldTrackForActivity(activity)) return;
+        Log.d("XXX", "SnapyrActivityLifecycleCallbacks: onActivitySaveInstanceState");
+        Log.d("XXX", "SnapyrActivityLifecycleCallbacks: onActivitySaveInstanceState: done");
     }
 
     @Override
     public void onActivityDestroyed(Activity activity) {
         if (!shouldTrackForActivity(activity)) return;
+        Log.d("XXX", "SnapyrActivityLifecycleCallbacks: onActivityDestroyed");
         this.resetTrackedCallbacks(activity);
         if (!useNewLifecycleMethods) {
             onDestroy(stubOwner);
         }
+        Log.d("XXX", "SnapyrActivityLifecycleCallbacks: onActivityDestroyed: done");
     }
 
     public static class Builder {

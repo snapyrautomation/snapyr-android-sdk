@@ -35,7 +35,8 @@ import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
+import android.net.TrafficStats;
+import android.net.Uri;
 import android.os.Build;
 import android.util.Log;
 import androidx.annotation.NonNull;
@@ -49,6 +50,8 @@ import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.core.R;
 import com.snapyr.sdk.internal.ActionButton;
 import com.snapyr.sdk.internal.PushTemplate;
+import com.snapyr.sdk.internal.Utils;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -92,6 +95,9 @@ public class SnapyrNotificationHandler {
     private int nextActionButtonCode = 0;
 
     public SnapyrNotificationHandler(Context ctx) {
+        Log.e("XXX", "SnapyrNotificationHandler: constructor - ATTACH DEBUGGER!!!");
+        //        android.os.Debug.waitForDebugger();
+        Log.e("XXX", "SnapyrNotificationHandler: constructor - resuming.");
         context = ctx;
         applicationContext = context.getApplicationContext();
         notificationMgr = NotificationManagerCompat.from(applicationContext);
@@ -100,7 +106,13 @@ public class SnapyrNotificationHandler {
                 defaultChannelName,
                 defaultChannelDescription,
                 defaultChannelImportance);
-        getLaunchIntent();
+        //        getLaunchIntent();
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        Log.e("XXX", "SnapyrNotificationHandler: FINALIZE");
+        super.finalize();
     }
 
     public void registerChannel(String channelId, String name, String description, int importance) {
@@ -121,6 +133,7 @@ public class SnapyrNotificationHandler {
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     public void showRemoteNotification(Map<String, Object> data) {
+        Log.e("XXX", "SnapyrNotificationHandler: showRemoteNotification");
         String channelId = getOrDefault(data, NOTIF_CHANNEL_ID_KEY, defaultChannelId);
         String channelName = getOrDefault(data, NOTIF_CHANNEL_NAME_KEY, defaultChannelName);
         String channelDescription =
@@ -136,7 +149,7 @@ public class SnapyrNotificationHandler {
                 .setContentTitle((String) data.get(NOTIF_TITLE_KEY))
                 .setContentText((String) data.get(NOTIF_CONTENT_KEY))
                 .setSubText((String) data.get(NOTIF_SUBTITLE_KEY))
-                .setColor(Color.BLUE) // TODO (@paulwsmith): make configurable
+                //                .setColor(Color.BLUE) // TODO (@paulwsmith): make configurable
                 .setAutoCancel(true); // true means notification auto dismissed after tapping. TODO
 
         TaskStackBuilder ts = TaskStackBuilder.create(this.context);
@@ -148,7 +161,23 @@ public class SnapyrNotificationHandler {
         trackIntent.putExtra(NOTIFICATION_ID, notificationId);
         trackIntent.putExtra(NOTIF_TOKEN_KEY, (String) data.get(NOTIF_TOKEN_KEY));
 
-        ts.addNextIntent(getLaunchIntent());
+        // TODO: check about urls not configured as a scheme in manifest, e.g. app configured to
+        // handle `snapyrtest://demo/asdf` but marketer passes deep link `http://www.disney.com`
+        if (trackIntent.resolveActivity(applicationContext.getPackageManager()) == null) {
+            Log.e(
+                    "Snapyr",
+                    "App reports it cannot resolve activity `com.snapyr.sdk.notifications.SnapyrNotificationListener`. Make sure it's configured in your manifest. Falling back to default launch intent for this notification.");
+        }
+
+        Intent launchIntent = getLaunchIntent();
+        String deepLinkUrl = (String) data.get(NOTIF_DEEP_LINK_KEY);
+        if (deepLinkUrl != null) {
+            launchIntent.setData(Uri.parse(deepLinkUrl));
+            if (launchIntent.resolveActivity(applicationContext.getPackageManager()) == null) {
+                Log.e("Snapyr", "App reports the other thing isnt gonna work blah blah blah");
+            }
+        }
+        ts.addNextIntent(launchIntent);
         ts.addNextIntent(trackIntent);
 
         int flags = getDefaultIntentFlags();
@@ -176,6 +205,8 @@ public class SnapyrNotificationHandler {
                 builder.setStyle(new NotificationCompat.BigPictureStyle().bigPicture(image));
             } catch (IOException e) {
                 e.printStackTrace();
+            } finally {
+                Utils.closeQuietly(inputStream);
             }
         }
 
@@ -236,6 +267,13 @@ public class SnapyrNotificationHandler {
                         Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 launchIntent.setPackage(applicationContext.getPackageName());
             }
+            String x = launchIntent.getDataString();
+            Log.i(
+                    "XXX",
+                    "SnapyrNotificationHandler: getLaunchIntent: "
+                            + x
+                            + " - "
+                            + launchIntent.toString());
             return launchIntent;
         } catch (Exception e) {
             Log.e("Snapyr", "Could not get launch intent", e);
@@ -321,10 +359,9 @@ public class SnapyrNotificationHandler {
 
                                 // Get new Instance ID token
                                 String token = task.getResult();
-                                Log.e(
+                                Log.i(
                                         "Snapyr",
-                                        "SnapyrFirebaseMessagingService: applying FB token: "
-                                                + token);
+                                        "SnapyrNotificationHandler: applying FB token: " + token);
                                 snapyrInstance.setPushNotificationToken(token);
                             }
                         });

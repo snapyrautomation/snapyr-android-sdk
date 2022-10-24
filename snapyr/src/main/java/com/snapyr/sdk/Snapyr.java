@@ -40,6 +40,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -148,6 +149,12 @@ public class Snapyr {
     private ConnectionFactory.Environment environment;
     private boolean isHelperInstance = false;
 
+    @Override
+    protected void finalize() throws Throwable {
+        Log.e("XXX", "Snapyr: FINALIZE");
+        super.finalize();
+    }
+
     Snapyr(
             Application application,
             Activity activity,
@@ -177,6 +184,8 @@ public class Snapyr {
             boolean enableSnapyrPushHandling,
             InAppConfig inAppConfig,
             boolean isHelperInstance) {
+
+        Log.e("XXX", "Snapyr: CONSTRUCTOR");
 
         // setup the references to the static things used everywhere
         ServiceFacade.getInstance()
@@ -388,6 +397,10 @@ public class Snapyr {
      */
     public static Snapyr with(Context context) {
         if (singleton == null) {
+            Log.e("Snapyr", "WARNING WARNING WARNING WARNING!!!");
+            Log.e("Snapyr", "WARNING WARNING WARNING WARNING!!!");
+            Log.e("Snapyr", "WARNING WARNING WARNING WARNING!!!");
+            Log.e("Snapyr", "WARNING WARNING WARNING WARNING!!!");
             if (context == null) {
                 throw new IllegalArgumentException("Context must not be null.");
             }
@@ -443,6 +456,7 @@ public class Snapyr {
                 throw new IllegalStateException("Singleton instance already exists.");
             }
             singleton = analytics;
+            Log.e("XXX", "SINGLETON SET!!!");
         }
     }
 
@@ -619,6 +633,7 @@ public class Snapyr {
 
         if (pushToken != null) {
             track("snapyr.hidden.fcmTokenSet", new Properties().putValue("token", pushToken));
+            track("paul.hidden.fcmTokenSet", new Properties().putValue("token", pushToken));
         }
     }
 
@@ -780,18 +795,23 @@ public class Snapyr {
         }
         this.pushToken = token;
         track("snapyr.hidden.fcmTokenSet", new Properties().putValue("token", token));
+        track("paul.hidden.fcmTokenSet", new Properties().putValue("token", token));
     }
 
     public void pushNotificationReceived(final @NonNull Properties properties) {
+        Log.e("Snapyr", "PUSHNOTIFICATIONRECEIVED!!!");
         assertNotShutdown();
         properties.putValue("platform", "android");
         track("snapyr.observation.event.Impression", properties);
+        track("paul.observation.event.Impression", properties);
     }
 
     public void pushNotificationClicked(final @NonNull Properties properties) {
+        Log.e("Snapyr", "PUSHNOTIFICATIONCLICKED!!!");
         assertNotShutdown();
         properties.putValue("platform", "android");
         track("snapyr.observation.event.Behavior", properties);
+        track("paul.observation.event.Behavior", properties);
     }
 
     public void trackInAppMessageImpression(final @NonNull String actionToken) {
@@ -801,6 +821,7 @@ public class Snapyr {
                         .putValue("actionToken", actionToken)
                         .putValue("platform", "android");
         track("snapyr.observation.event.Impression", props);
+        track("paul.observation.event.Impression", props);
     }
 
     public void trackInAppMessageClick(final @NonNull String actionToken) {
@@ -815,6 +836,7 @@ public class Snapyr {
                 .putValue("platform", "android")
                 .putValue("interactionType", "click");
         track("snapyr.observation.event.Behavior", properties);
+        track("paul.observation.event.Behavior", properties);
     }
 
     public void trackInAppMessageDismiss(final @NonNull String actionToken) {
@@ -825,6 +847,7 @@ public class Snapyr {
                         .putValue("platform", "android")
                         .putValue("interactionType", "dismiss");
         track("snapyr.observation.event.Behavior", props);
+        track("paul.observation.event.Behavior", props);
     }
 
     /**
@@ -982,7 +1005,13 @@ public class Snapyr {
         if (shutdown) {
             throw new IllegalStateException("Cannot enqueue messages after client is shutdown.");
         }
-        sendQueue.flush();
+        analyticsExecutor.submit(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        sendQueue.flush();
+                    }
+                });
     }
 
     /** Get the {@link SnapyrContext} used by this instance. */

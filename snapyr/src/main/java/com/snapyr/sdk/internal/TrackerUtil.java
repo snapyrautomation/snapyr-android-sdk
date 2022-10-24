@@ -26,15 +26,19 @@ package com.snapyr.sdk.internal;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.util.Log;
 import androidx.core.app.NotificationManagerCompat;
 import com.snapyr.sdk.Properties;
 import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.notifications.SnapyrNotificationHandler;
 import com.snapyr.sdk.services.ServiceFacade;
+import java.text.MessageFormat;
 
 public class TrackerUtil {
     public static void trackDeepLink(Context context, Intent intent) {
+        Log.i("XXX", "TrackerUtil: trackDeepLink");
         if (intent == null || intent.getData() == null) {
+            Log.i("XXX", "Intent or intent data is null; returning");
             return;
         }
 
@@ -48,10 +52,14 @@ public class TrackerUtil {
         }
 
         properties.put("url", uri.toString());
+        Log.i(
+                "XXX",
+                MessageFormat.format("TrackerUtil: Deep Link Opened:{0}", properties.toString()));
         Snapyr.with(context).track("Deep Link Opened", properties);
     }
 
     public static void trackNotificationInteraction(Snapyr snapyrInst, Intent intent) {
+        Log.i("XXX", "TrackerUtil: trackNotificationInteraction");
         Context applicationContext = ServiceFacade.getApplication().getApplicationContext();
 
         String deepLinkUrl = intent.getStringExtra(SnapyrNotificationHandler.NOTIF_DEEP_LINK_KEY);
