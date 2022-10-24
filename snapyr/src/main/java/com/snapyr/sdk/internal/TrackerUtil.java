@@ -51,8 +51,7 @@ public class TrackerUtil {
         Snapyr.with(context).track("Deep Link Opened", properties);
     }
 
-    public static void trackNotificationInteraction(Context context, Intent intent) {
-        Snapyr snapyr = Snapyr.with(context);
+    public static void trackNotificationInteraction(Snapyr snapyrInst, Intent intent) {
         Context applicationContext = ServiceFacade.getApplication().getApplicationContext();
 
         String deepLinkUrl = intent.getStringExtra(SnapyrNotificationHandler.NOTIF_DEEP_LINK_KEY);
@@ -80,6 +79,6 @@ public class TrackerUtil {
         // can be called from other activities. I'll leave it commented out for now
         // applicationContext.sendBroadcast(new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
 
-        snapyr.pushNotificationClicked(props);
+        snapyrInst.pushNotificationClicked(props);
     }
 }

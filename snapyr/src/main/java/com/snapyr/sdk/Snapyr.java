@@ -45,6 +45,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.ProcessLifecycleOwner;
+import com.snapyr.sdk.http.BatchQueue;
 import com.snapyr.sdk.http.BatchUploadQueue;
 import com.snapyr.sdk.http.ConnectionFactory;
 import com.snapyr.sdk.http.SettingsRequest;
@@ -65,6 +66,7 @@ import com.snapyr.sdk.services.Cartographer;
 import com.snapyr.sdk.services.Crypto;
 import com.snapyr.sdk.services.Logger;
 import com.snapyr.sdk.services.ServiceFacade;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -104,11 +106,13 @@ public class Snapyr {
             };
 
     @Private static final String OPT_OUT_PREFERENCE_KEY = "opt-out";
-    static final String WRITE_KEY_RESOURCE_IDENTIFIER = "analytics_write_key";
+    public static final String WRITE_KEY_RESOURCE_IDENTIFIER = "snapyr_write_key";
     @Private static final Properties EMPTY_PROPERTIES = new Properties();
     private static final String VERSION_KEY = "version";
     private static final String BUILD_KEY = "build";
     private static final String TRAITS_KEY = "traits";
+    public static final String SERVICE_PREFS_TAG = "shared-prefs";
+    public static final String SERVICE_PREFS_KEY_ENV = "env";
     // Handler Logic.
     private static final long SETTINGS_REFRESH_INTERVAL = 1000 * 60 * 60 * 24; // 24 hours
     private static final long SETTINGS_RETRY_INTERVAL = 1000 * 60; // 1 minute
@@ -141,6 +145,8 @@ public class Snapyr {
     final BatchUploadQueue sendQueue;
     private String sessionId;
     private long sessionStart;
+    private ConnectionFactory.Environment environment;
+    private boolean isHelperInstance = false;
 
     Snapyr(
             Application application,
@@ -169,7 +175,8 @@ public class Snapyr {
             boolean nanosecondTimestamps,
             boolean useNewLifecycleMethods,
             boolean enableSnapyrPushHandling,
-            InAppConfig inAppConfig) {
+            InAppConfig inAppConfig,
+            boolean isHelperInstance) {
 
         // setup the references to the static things used everywhere
         ServiceFacade.getInstance()
@@ -187,6 +194,7 @@ public class Snapyr {
         this.cartographer = cartographer;
         this.projectSettingsCache = projectSettingsCache;
         this.writeKey = writeKey;
+        this.environment = environment;
         this.flushQueueSize = flushQueueSize;
         this.flushIntervalInMillis = flushIntervalInMillis;
         this.advertisingIdLatch = advertisingIdLatch;
@@ -195,11 +203,20 @@ public class Snapyr {
         this.lifecycle = lifecycle;
         this.nanosecondTimestamps = nanosecondTimestamps;
         this.useNewLifecycleMethods = useNewLifecycleMethods;
-        this.PushTemplates = null;
+        this.PushTemplates = new HashMap<>();
+        this.isHelperInstance = isHelperInstance;
+
+        BatchQueue queueOverride = null;
+        if (isHelperInstance) {
+            // One-off Snapyr instance used in notification handlers. Use one-off memory queue to
+            // avoid interacting with any state saved on the main queue, and set high params to
+            // prevent auto flushing (consumer is responsible for explicit flushing).
+            this.sendQueue =
+                    new BatchUploadQueue(application, 999999, 999, new BatchQueue.MemoryQueue());
+        } else {
         this.sendQueue =
                 new BatchUploadQueue(application, flushIntervalInMillis, flushQueueSize, null);
-
-        namespaceSharedPreferences();
+        }
 
         analyticsExecutor.submit(
                 new Runnable() {
@@ -245,7 +262,14 @@ public class Snapyr {
                     }
                 });
 
-        logger.debug("Created analytics client for project with tag:%s.", tag);
+        logger.debug("Created Snapyr client for project with tag:%s.", tag);
+
+        if (isHelperInstance) {
+            // lifecycle and in-app functionality disabled for notification helper context
+            activityLifecycleCallback = null;
+            this.notificationHandler = new SnapyrNotificationHandler(application);
+            return;
+        }
 
         activityLifecycleCallback =
                 new SnapyrActivityLifecycleCallbacks.Builder()
@@ -284,6 +308,7 @@ public class Snapyr {
         if (enableSnapyrPushHandling) {
             this.notificationHandler = new SnapyrNotificationHandler(application);
             notificationHandler.autoRegisterFirebaseToken(this);
+            storePushConfigs();
         }
 
         if (activity != null) {
@@ -296,6 +321,16 @@ public class Snapyr {
         }
 
         sessionStarted();
+    }
+
+    private void storePushConfigs() {
+        SharedPreferences servicePreferences =
+                Utils.getSnapyrSharedPreferences(ServiceFacade.getApplication(), SERVICE_PREFS_TAG);
+        servicePreferences
+                .edit()
+                .putString(WRITE_KEY_RESOURCE_IDENTIFIER, writeKey)
+                .putString(SERVICE_PREFS_KEY_ENV, environment.name())
+                .apply();
     }
 
     public void sessionStarted() {
@@ -1194,6 +1229,7 @@ public class Snapyr {
         private boolean useNewLifecycleMethods = true; // opt-out feature
         private ConnectionFactory.Environment snapyrEnvironment =
                 ConnectionFactory.Environment.PROD;
+        private boolean isHelperInstance = false; // internal use only
 
         /** Start building a new {@link Snapyr} instance. */
         public Builder(Context context, String writeKey) {
@@ -1428,6 +1464,14 @@ public class Snapyr {
             return this;
         }
 
+        public Builder enableHelperInstance(Context ctx) {
+            if (ctx.getClass().getPackage() != SnapyrNotificationHandler.class.getPackage()) {
+                throw new IllegalAccessError("Snapyr internal use only");
+            }
+            this.isHelperInstance = true;
+            return this;
+        }
+
         /**
          * The executor on which payloads are dispatched asynchronously. This is not exposed
          * publicly.
@@ -1511,7 +1555,8 @@ public class Snapyr {
                     nanosecondTimestamps,
                     useNewLifecycleMethods,
                     snapyrPushEnabled,
-                    snapyrInAppConfig);
+                    snapyrInAppConfig,
+                    isHelperInstance);
         }
     }
 }
