@@ -294,6 +294,17 @@ public class Snapyr {
                                         @Override
                                         public void run() {
                                             lifecycle.addObserver(activityLifecycleCallback);
+                                            if (activity != null) {
+                                                // If user initializes Snapyr after their main
+                                                // activity has already started, we'll miss
+                                                // activity lifecycle callbacks. If they initialize
+                                                // from within an activity, this will
+                                                // "replay" lifecycle events to ensure they are
+                                                // caught.
+                                                replayLifecycleOnActivityCreated(activity, null);
+                                                replayLifecycleOnActivityStarted(activity);
+                                                replayLifecycleOnActivityResumed(activity);
+                                            }
                                         }
                                     });
                         }
@@ -309,15 +320,6 @@ public class Snapyr {
             this.notificationHandler = new SnapyrNotificationHandler(application);
             notificationHandler.autoRegisterFirebaseToken(this);
             storePushConfigs();
-        }
-
-        if (activity != null) {
-            // If user initializes Snapyr after their main activity has already started, we'll miss
-            // activity lifecycle callbacks. If they initialize from within an activity, this will
-            // "replay" lifecycle events to ensure they are caught.
-            this.replayLifecycleOnActivityCreated(activity, null);
-            this.replayLifecycleOnActivityStarted(activity);
-            this.replayLifecycleOnActivityResumed(activity);
         }
 
         sessionStarted();
