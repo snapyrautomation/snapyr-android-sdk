@@ -214,8 +214,8 @@ public class Snapyr {
             this.sendQueue =
                     new BatchUploadQueue(application, 999999, 999, new BatchQueue.MemoryQueue());
         } else {
-        this.sendQueue =
-                new BatchUploadQueue(application, flushIntervalInMillis, flushQueueSize, null);
+            this.sendQueue =
+                    new BatchUploadQueue(application, flushIntervalInMillis, flushQueueSize, null);
         }
 
         analyticsExecutor.submit(
