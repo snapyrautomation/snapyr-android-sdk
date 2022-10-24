@@ -87,9 +87,15 @@ public class SnapyrFirebaseMessagingService extends FirebaseMessagingService {
             data.put(key, value);
         }
 
-        Snapyr snapyr = Snapyr.with(this);
+        Snapyr snapyrInstance = SnapyrNotificationUtils.getSnapyrInstance(this);
+        if (snapyrInstance == null) {
+            Log.e(
+                    "Snapyr",
+                    "Notification service couldn't initialize Snapyr. Make sure you've initialized Snapyr from within your main application prior to receiving notifications.");
+            return;
+        }
 
-        PushTemplate template = processPushTemplate(data);
+        PushTemplate template = processPushTemplate(data, snapyrInstance);
         if (template != null) {
             // rich push, inject the template data into the context data we're passing down
             data.put(SnapyrNotificationHandler.ACTION_BUTTONS_KEY, template);
@@ -97,12 +103,13 @@ public class SnapyrFirebaseMessagingService extends FirebaseMessagingService {
 
         com.snapyr.sdk.Properties properties = new com.snapyr.sdk.Properties();
         properties.putAll(data);
-        Snapyr.with(this).pushNotificationReceived(properties);
-        Snapyr.with(this).getNotificationHandler().showRemoteNotification(data);
+        snapyrInstance.pushNotificationReceived(properties);
+        snapyrInstance.getNotificationHandler().showRemoteNotification(data);
+        snapyrInstance.flush();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    private PushTemplate processPushTemplate(@NonNull ValueMap templateObject) {
+    private PushTemplate processPushTemplate(@NonNull ValueMap templateObject, Snapyr sdkInstance) {
         String templateRaw = templateObject.get("pushTemplate").toString();
         String templateId = null;
         Date modified = null;
@@ -123,7 +130,6 @@ public class SnapyrFirebaseMessagingService extends FirebaseMessagingService {
             return null;
         }
 
-        Snapyr sdkInstance = Snapyr.with(this);
         PushTemplate template = sdkInstance.getPushTemplates().get(templateId);
         if ((template != null) && (!template.getModified().before(modified))) {
             // if the modified date in the push payload is equal to or older than the cached

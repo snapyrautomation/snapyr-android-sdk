@@ -159,7 +159,8 @@ open class SnapyrTest {
             false,
             true,
             false,
-            null
+            null,
+            false
         )
         connectionFactory = `mock`(ConnectionFactory::class.java)
         ServiceFacade.getInstance().setConnectionFactory(connectionFactory)
@@ -534,7 +535,8 @@ open class SnapyrTest {
             false,
             true,
             false,
-            null
+            null,
+            false
         )
 
         callback.get().onCreate(mockLifecycleOwner)
@@ -630,7 +632,8 @@ open class SnapyrTest {
             false,
             true,
             false,
-            null
+            null,
+            false
         )
 
         val activity = Mockito.mock(Activity::class.java)
@@ -697,7 +700,8 @@ open class SnapyrTest {
             false,
             true,
             false,
-            null
+            null,
+            false
         )
         Snapyr.setSingletonInstance(analytics)
 
@@ -995,7 +999,8 @@ open class SnapyrTest {
                 false,
                 true,
                 false,
-                null
+                null,
+                false
             )
 
             assertThat(analytics.shutdown).isFalse
@@ -1064,7 +1069,8 @@ open class SnapyrTest {
                 false,
                 true,
                 false,
-                null
+                null,
+                false
             )
 
             assertThat(analytics.shutdown).isFalse
@@ -1135,7 +1141,8 @@ open class SnapyrTest {
                 false,
                 true,
                 false,
-                null
+                null,
+                false
             )
 
             assertThat(analytics.projectSettings).hasSize(3)
@@ -1179,7 +1186,8 @@ open class SnapyrTest {
                 false,
                 true,
                 false,
-                null
+                null,
+                false
             )
 
             assertThat(analytics.projectSettings).hasSize(3)
@@ -1234,7 +1242,8 @@ open class SnapyrTest {
                 false,
                 true,
                 false,
-                null
+                null,
+                false
             )
 
             assertThat(analytics.projectSettings).hasSize(3)
@@ -1291,7 +1300,8 @@ open class SnapyrTest {
                 true,
                 true,
                 false,
-                null
+                null,
+                false
             )
 
             analytics.track("event")

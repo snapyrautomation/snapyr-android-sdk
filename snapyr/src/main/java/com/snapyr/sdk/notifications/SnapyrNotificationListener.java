@@ -27,7 +27,9 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import androidx.core.app.NotificationManagerCompat;
+import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.internal.TrackerUtil;
 import com.snapyr.sdk.internal.Utils;
 
@@ -47,7 +49,15 @@ public class SnapyrNotificationListener extends Activity {
         String deepLink = intent.getStringExtra(SnapyrNotificationHandler.ACTION_DEEP_LINK_KEY);
         int notificationId = intent.getIntExtra(SnapyrNotificationHandler.NOTIFICATION_ID, -1);
 
-        TrackerUtil.trackNotificationInteraction(this, intent);
+        try {
+            Snapyr snapyrInst = SnapyrNotificationUtils.getSnapyrInstance(this);
+            TrackerUtil.trackNotificationInteraction(snapyrInst, intent);
+            snapyrInst.flush();
+        } catch (Exception e) {
+            Log.e(
+                    "Snapyr",
+                    "Notification interaction listener couldn't initialize Snapyr. Make sure you've initialized Snapyr from within your main application prior to receiving notifications.");
+        }
 
         // Dismiss source notification
         NotificationManagerCompat.from(this.getApplicationContext()).cancel(notificationId);
