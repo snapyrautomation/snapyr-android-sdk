@@ -26,6 +26,7 @@ package com.snapyr.sdk;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
 import android.net.Uri;
 import android.os.Bundle;
@@ -142,6 +143,15 @@ class SnapyrActivityLifecycleCallbacks
         this.isChangingActivityConfigurations = new AtomicBoolean(false);
     }
 
+    private void registerDeeplinkReceiver() {
+        IntentFilter filter = new IntentFilter("com.snapyr.sdk.notifications.ACTION_DEEPLINK"); // sample scope
+//        filter.addAction(Intent.ACTION_AIRPLANE_MODE_CHANGED);
+        NonImplicitReceiver nonImplicitReceiver = new NonImplicitReceiver();
+
+        ServiceFacade.getApplication().registerReceiver(nonImplicitReceiver, filter);
+        Log.e("YYY", "LIFECYCLE: registered receiver!");
+    }
+
     @Override
     public void onStop(@NonNull LifecycleOwner owner) {
         Log.d("XXX", "SnapyrActivityLifecycleCallbacks: onStop");
@@ -158,6 +168,9 @@ class SnapyrActivityLifecycleCallbacks
     @Override
     public void onStart(@NonNull LifecycleOwner owner) {
         Log.d("XXX", "SnapyrActivityLifecycleCallbacks: onStart");
+
+        registerDeeplinkReceiver();
+
         long elapsed = System.currentTimeMillis() - backgroundStart;
         if (elapsed > 30000) {
             // end the last session whenever the background first occurred
@@ -185,6 +198,9 @@ class SnapyrActivityLifecycleCallbacks
     public void onCreate(@NonNull LifecycleOwner owner) {
         // App created
         Log.d("XXX", "SnapyrActivityLifecycleCallbacks: onCreate");
+
+        registerDeeplinkReceiver();
+
         if (!trackedApplicationLifecycleEvents.getAndSet(true)
                 && shouldTrackApplicationLifecycleEvents) {
             numberOfActivities.set(0);
@@ -197,6 +213,8 @@ class SnapyrActivityLifecycleCallbacks
     @Override
     public void onResume(@NonNull LifecycleOwner owner) {
         Log.e("XXX", "SnapyrActivityLifecycleCallbacks: onResume");
+
+        registerDeeplinkReceiver();
     }
 
     @Override

@@ -23,6 +23,9 @@
  */
 package com.snapyr.sdk.inapp;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.snapyr.sdk.ValueMap;
 import com.snapyr.sdk.internal.SnapyrAction;
 import com.snapyr.sdk.internal.Utils;
@@ -30,7 +33,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class InAppMessage {
+public class InAppMessage implements Parcelable {
     public static final SimpleDateFormat Formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
     public final Date Timestamp;
     public final InAppActionType ActionType;
@@ -93,4 +96,52 @@ public class InAppMessage {
             super(error);
         }
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeValue(this.asValueMap());
+
+
+//        dest.writeLong(this.Timestamp != null ? this.Timestamp.getTime() : -1);
+//        dest.writeInt(this.ActionType == null ? -1 : this.ActionType.ordinal());
+//        dest.writeString(this.ActionToken);
+//        dest.writeParcelable(this.Content, flags);
+//        dest.writeString(this.UserId);
+    }
+
+//    public void readFromParcel(Parcel source) {
+//
+////        long tmpTimestamp = source.readLong();
+////        this.Timestamp = tmpTimestamp == -1 ? null : new Date(tmpTimestamp);
+////        int tmpActionType = source.readInt();
+////        this.ActionType = tmpActionType == -1 ? null : InAppActionType.values()[tmpActionType];
+////        this.ActionToken = source.readString();
+////        this.Content = source.readParcelable(InAppContent.class.getClassLoader());
+////        this.UserId = source.readString();
+//    }
+
+
+
+    public static final Parcelable.Creator<InAppMessage> CREATOR = new Parcelable.Creator<InAppMessage>() {
+        @Override
+        public InAppMessage createFromParcel(Parcel source) {
+            SnapyrAction decodedAction = SnapyrAction.create( (ValueMap) source.readValue(null));
+            try {
+                return new InAppMessage(decodedAction);
+            } catch (MalformedMessageException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        @Override
+        public InAppMessage[] newArray(int size) {
+            return new InAppMessage[size];
+        }
+    };
 }

@@ -25,27 +25,39 @@ package com.snapyr.sdk.sample;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.Traits;
+import com.snapyr.sdk.inapp.InAppMessage;
+
 import io.github.inflationx.viewpump.ViewPumpContextWrapper;
+
+import java.text.MessageFormat;
 import java.util.List;
 
 public class MainActivity extends Activity {
     private static final String ANALYTICS_WRITE_KEY =
             "Kl34fEmzG753oODf9UhGz76wYMXW6Gia"; // Paul's push/in-app testing WS - PROD
+
+    private String currentActionToken;
 
     @BindView(R.id.user_id)
     EditText userId;
@@ -67,10 +79,26 @@ public class MainActivity extends Activity {
         return TextUtils.isEmpty(text) || text.trim().length() == 0;
     }
 
+    // Our handler for received Intents. This will be called whenever an Intent
+    // with an action named "custom-event-name" is broadcasted.
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            // Get extra data included in the Intent
+            String message = intent.getStringExtra("message");
+            InAppMessage inAppMessage = (InAppMessage) intent.getParcelableExtra("inAppMessage");
+            Log.d("YYY", MessageFormat.format("Got message: {0} inAppMessage: {1}", message, inAppMessage));
+            currentActionToken = inAppMessage.ActionToken;
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.e("XXX", "MainActivity: onCreate");
         super.onCreate(savedInstanceState);
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
+                new IntentFilter("sample-intent-passer"));
 
         //                Snapyr.Builder builder =
         //                        new Snapyr.Builder(this, ANALYTICS_WRITE_KEY)
@@ -159,14 +187,57 @@ public class MainActivity extends Activity {
         }
     }
 
+    @OnClick(R.id.send_broadcast)
+    void onSendBroadcast() {
+        Log.e("YYY", "Send broadcast 13");
+
+//        Intent intent = new Intent("com.snapyr.sdk.notifications.ACTION_DEEPLINK");
+//        sendBroadcast(intent);
+//        SystemClock.sleep(500);
+//        sendBroadcast(intent, "owner.custom.permission");
+//        Log.e("YYY", MessageFormat.format("BROADCAST SENT FROM ACTIVITY: {0}", intent));
+
+//        Intent intent = new Intent("com.snapyr.sdk.ACTION_DEEPLINK");
+//        sendBroadcast(intent, "owner.custom.permission");
+//        Log.e("YYY", MessageFormat.format("BROADCAST SENT FROM ACTIVITY: {0}", intent));
+//
+        Intent intent = new Intent("com.snapyr.sdk.sample.ACTION_DEEPLINK");
+        sendBroadcast(intent);
+//        sendBroadcast(intent, "owner.custom.permission");
+        Log.e("YYY", MessageFormat.format("BROADCAST SENT FROM ACTIVITY: {0}", intent));
+
+//        Intent intent = new Intent(this, )
+//        sendBroadcast(intent, "owner.custom.permission");
+    }
+
+    @OnClick(R.id.track_impression)
+    void onTrackImpressionClicked() {
+        Snapyr.with(this).trackInAppMessageImpression(currentActionToken);
+        Snapyr.with(this).flush();
+    }
+
+    @OnClick(R.id.track_click)
+    void onTrackClickClicked() {
+        Snapyr.with(this).trackInAppMessageClick(currentActionToken);
+        Snapyr.with(this).flush();
+    }
+
+    @OnClick(R.id.track_dismiss)
+    void onTrackDismissClicked() {
+        Snapyr.with(this).trackInAppMessageDismiss(currentActionToken);
+        Snapyr.with(this).flush();
+    }
+
     @OnClick(R.id.action_track_a)
     void onButtonAClicked() {
-        Snapyr.with(this).track("pushTest");
+        Snapyr.with(this).track("customJson");
+        Snapyr.with(this).flush();
     }
 
     @OnClick(R.id.action_track_b)
     void onButtonBClicked() {
         Snapyr.with(this).track("pushTestAll");
+        Snapyr.with(this).flush();
     }
 
     @OnClick(R.id.action_show_notification)
@@ -182,6 +253,7 @@ public class MainActivity extends Activity {
         } else {
             Traits traits = new Traits().putValue("testAmount", 100);
             Snapyr.with(this).identify(id, traits, null);
+            Snapyr.with(this).flush();
         }
     }
 

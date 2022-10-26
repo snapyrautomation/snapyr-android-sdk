@@ -340,8 +340,41 @@ public class SnapyrNotificationHandler {
                         "button_two", "button_two", "button_two", "snapyrsample://secondtest"),
                 "");
 
-        builder.setContentIntent(
-                PendingIntent.getActivity(applicationContext, 0, getLaunchIntent(), 0));
+        TaskStackBuilder ts = TaskStackBuilder.create(this.context);
+
+        String sampleDeepLinkUrl = "https://www.disney.com";
+
+        Intent trackIntent = new Intent(this.context, SnapyrNotificationListener.class);
+        trackIntent.setAction(NOTIFICATION_ACTION);
+//        trackIntent.putExtra(ACTION_ID_KEY, (String) data.get(ACTION_ID_KEY));
+        trackIntent.putExtra(ACTION_DEEP_LINK_KEY, sampleDeepLinkUrl);
+        trackIntent.putExtra(NOTIFICATION_ID, notificationId);
+//        trackIntent.putExtra(NOTIF_TOKEN_KEY, (String) data.get(NOTIF_TOKEN_KEY));
+
+        // TODO: check about urls not configured as a scheme in manifest, e.g. app configured to
+        // handle `snapyrtest://demo/asdf` but marketer passes deep link `http://www.disney.com`
+        if (trackIntent.resolveActivity(applicationContext.getPackageManager()) == null) {
+            Log.e(
+                    "Snapyr",
+                    "App reports it cannot resolve activity `com.snapyr.sdk.notifications.SnapyrNotificationListener`. Make sure it's configured in your manifest. Falling back to default launch intent for this notification.");
+        }
+
+        Intent launchIntent = getLaunchIntent();
+        String deepLinkUrl = sampleDeepLinkUrl;
+        if (deepLinkUrl != null) {
+            launchIntent.setData(Uri.parse(deepLinkUrl));
+            if (launchIntent.resolveActivity(applicationContext.getPackageManager()) == null) {
+                Log.e("Snapyr", "App reports the other thing isnt gonna work blah blah blah");
+            }
+        }
+        ts.addNextIntent(launchIntent);
+        ts.addNextIntent(trackIntent);
+
+        int flags = getDefaultIntentFlags();
+        builder.setContentIntent(ts.getPendingIntent(0, flags));
+
+//        builder.setContentIntent(
+//                PendingIntent.getActivity(applicationContext, 0, getLaunchIntent(), 0));
         Notification notification = builder.build();
         notificationMgr.notify(nextMessageId++, notification);
     }

@@ -31,6 +31,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.internal.TrackerUtil;
 import com.snapyr.sdk.internal.Utils;
@@ -59,7 +61,7 @@ public class SnapyrNotificationListener extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.e("XXX", "SnapyrNotificationListener: onCreate - ATTACH DEBUGGER!!!");
+        Log.e("YYY", "SnapyrNotificationListener: onCreate - ATTACH DEBUGGER!!!");
         //        android.os.Debug.waitForDebugger();
         Intent intent = this.getIntent();
         String deepLink = intent.getStringExtra(SnapyrNotificationHandler.ACTION_DEEP_LINK_KEY);
@@ -86,15 +88,29 @@ public class SnapyrNotificationListener extends Activity {
 
             //            getPackageManager().resolveActivity(deepLinkIntent)
             ComponentName componentName = deepLinkIntent.resolveActivity(getPackageManager());
+
             Log.e(
-                    "XXX",
+                    "YYY",
                     MessageFormat.format(
                             "SnapyrNotificationListener: intent component: {0}", componentName));
 
             try {
-                this.startActivity(deepLinkIntent);
+//                this.startActivity(deepLinkIntent);
+//                LocalBroadcastManager.getInstance(this).sendBroadcast(deepLinkIntent);
+//                sendBroadcast(deepLinkIntent);
+
+//                sendBroadcast(deepLinkIntent, "owner.custom.permission");
+//                Log.e("YYY", MessageFormat.format("BROADCAST SENT FROM SnapyrNotificationListener: {0}", deepLinkIntent));
+//                Log.e("YYY", "Broadcast sent without error!");
+                Intent intent2 = new Intent("com.snapyr.sdk.notifications.ACTION_DEEPLINK"); // notifications scope
+//                Intent intent2 = new Intent("com.snapyr.sdk.sample.ACTION_DEEPLINK");  // sample scope
+                sendBroadcast(intent2);
+//                sendBroadcast(intent2, "owner.custom.permission");
+                Log.e("YYY", MessageFormat.format("BROADCAST SENT FROM SnapyrNotificationListener: {0}", intent2));
             } catch (ActivityNotFoundException e) {
-                Log.e("XXX", "RUH ROH! ACTIVITY NOT FOUND!");
+                Log.e("YYY", "RUH ROH! ACTIVITY NOT FOUND!");
+            } catch (Exception e) {
+                Log.e("YYY", MessageFormat.format("OTHER ERROR: {0}", e));
             }
         }
 
