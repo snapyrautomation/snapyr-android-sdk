@@ -28,10 +28,10 @@ import com.snapyr.sdk.services.Cartographer;
 import java.io.IOException;
 
 public class InAppContent {
-    private ValueMap jsonPayload;
-    private InAppPayloadType payloadType;
-    private String rawPayload;
-    private String htmlPayload; // TODO: is there a better type for this? The HTML type
+    public ValueMap jsonPayload;
+    public InAppPayloadType payloadType;
+    public String rawPayload;
+    public String htmlPayload; // TODO: is there a better type for this? The HTML type
     // looks useless
 
     public InAppContent(ValueMap raw) throws InAppMessage.MalformedMessageException {

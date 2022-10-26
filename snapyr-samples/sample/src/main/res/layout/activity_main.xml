@@ -84,6 +84,39 @@
             android:layout_height="wrap_content"
             android:text="@string/flush" />
 
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="16dp"
+            android:background="@android:color/black" />
+
+        <Button
+            android:id="@+id/track_impression"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Track Impression" />
+
+        <Button
+            android:id="@+id/track_click"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Track Click" />
+
+        <Button
+            android:id="@+id/track_dismiss"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Track Dismiss" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="16dp" />
+
+        <Button
+            android:id="@+id/send_broadcast"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Send Broadcast" />
+
     </LinearLayout>
 
 </ScrollView>
