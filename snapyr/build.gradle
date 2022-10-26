@@ -9,6 +9,7 @@ android {
 		consumerProguardFiles 'proguard-rules-lib.txt'
 		buildConfigField 'String', 'VERSION_NAME', "\"$VERSION_NAME\""
 	}
+    namespace 'com.snapyr.sdk.core'
 }
 
 dependencies {
