@@ -27,7 +27,6 @@ android {
 		buildConfigField 'String', 'WEBHOOK_AUTH_USERNAME', "\"$WEBHOOK_AUTH_USERNAME\""
 		buildConfigField 'boolean', 'RUN_E2E_TESTS', "$RUN_E2E_TESTS"
 	}
-    namespace 'com.snapyr.sdk.sample'
 }
 
 dependencies {
