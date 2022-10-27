@@ -21,6 +21,13 @@ task androidJavadocs(type: Javadoc) {
     android.libraryVariants.all { variant ->
         if (variant.name == 'release') {
             owner.classpath += variant.javaCompileProvider.get().classpath
+            // Add generated BuildConfig to classpath - fixes javadoc errors like
+            // "error: cannot find symbol import com.snapyr.sdk.core.BuildConfig;"
+            owner.classpath += files(project.buildDir.absolutePath + "/generated/source/buildConfig/release")
+        } else if (variant.name == 'debug') {
+            // Add generated BuildConfig to classpath - fixes javadoc errors like
+            // "error: cannot find symbol import com.snapyr.sdk.core.BuildConfig;"
+            owner.classpath += files(project.buildDir.absolutePath + "/generated/source/buildConfig/debug")
         }
     }
     exclude '**/R.html', '**/R.*.html', '**/index.html'

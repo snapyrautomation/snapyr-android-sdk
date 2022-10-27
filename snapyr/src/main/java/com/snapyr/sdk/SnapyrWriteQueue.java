@@ -63,12 +63,12 @@ class SnapyrWriteQueue {
      * QueueFile's 2GB limit.
      */
     static final int MAX_QUEUE_SIZE = 1000;
-    /** Our servers only accept payloads < 32KB. */
+    /** Our servers only accept payloads up to 32KB. */
     static final int MAX_PAYLOAD_SIZE = 32000; // 32KB.
     /**
-     * Our servers only accept batches < 500KB. This limit is 475KB to account for extra data that
-     * is not present in payloads themselves, but is added later, such as {@code sentAt}, {@code
-     * integrations} and other json tokens.
+     * Our servers only accept batches up to 500KB. This limit is 475KB to account for extra data
+     * that is not present in payloads themselves, but is added later, such as {@code sentAt},
+     * {@code integrations} and other json tokens.
      */
     @Private static final int MAX_BATCH_SIZE = 475000; // 475KB.
 
