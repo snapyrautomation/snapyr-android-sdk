@@ -25,7 +25,10 @@ package com.snapyr.sdk
 
 import android.content.Context
 import android.content.Context.CONNECTIVITY_SERVICE
+import android.content.Context.TELEPHONY_SERVICE
 import android.net.ConnectivityManager
+import android.telephony.TelephonyManager
+import androidx.test.core.app.ApplicationProvider
 import com.google.common.collect.ImmutableMap
 import com.nhaarman.mockitokotlin2.whenever
 import com.snapyr.sdk.Utils.createContext
@@ -40,23 +43,41 @@ import org.mockito.Mockito.mock
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
+import org.robolectric.shadow.api.Shadow
+import org.robolectric.shadows.ShadowBuild
+import org.robolectric.shadows.ShadowTelephonyManager
 
 @RunWith(RobolectricTestRunner::class)
-@Config(manifest = Config.NONE)
+@Config(manifest = Config.NONE, qualifiers = "w320dp-h520dp-hdpi")
 class SnapyrContextTest {
 
     lateinit var context: SnapyrContext
     lateinit var traits: Traits
+    lateinit var mContext: Context
+    lateinit var telephonyManager: TelephonyManager
+    lateinit var shadowTelephonyManager: ShadowTelephonyManager
 
     @Before
     fun setUp() {
         traits = Traits.create()
         context = createContext(traits)
+        mContext = ApplicationProvider.getApplicationContext()
+        telephonyManager = mContext.getSystemService(TELEPHONY_SERVICE) as TelephonyManager
+        shadowTelephonyManager = Shadow.extract(telephonyManager)
+
+        ShadowBuild.setManufacturer("unknown")
+        ShadowBuild.setModel("unknown")
+        ShadowBuild.setDevice("unknown")
+        ShadowBuild.setVersionRelease("10.0")
+
+        shadowTelephonyManager.setNetworkOperatorName(null)
+//        `when`(mContext.getSystemService(Context.TELEPHONY_SERVICE)).thenReturn(shadowTelephonyManager)
     }
 
     @Test
     fun create() {
-        context = SnapyrContext.create(RuntimeEnvironment.application, traits, true)
+//        context = ApplicationProvider.getApplicationContext()
+        context = SnapyrContext.create(ApplicationProvider.getApplicationContext(), traits, true)
         assertThat(context)
             .containsKeys(
                 "app",
@@ -72,11 +93,11 @@ class SnapyrContextTest {
         assertThat(context).containsEntry("userAgent", "undefined")
 
         assertThat(context.getValueMap("app"))
-            .containsEntry("name", "org.robolectric.default")
+            .containsEntry("name", "com.snapyr.sdk.core.test")
         assertThat(context.getValueMap("app"))
             .containsEntry("version", "undefined")
         assertThat(context.getValueMap("app"))
-            .containsEntry("namespace", "org.robolectric.default")
+            .containsEntry("namespace", "com.snapyr.sdk.core.test")
         assertThat(context.getValueMap("app"))
             .containsEntry("build", "0")
 
@@ -96,20 +117,19 @@ class SnapyrContextTest {
         assertThat(context.getValueMap("library"))
             .containsEntry("version", BuildConfig.VERSION_NAME)
 
-        // todo: mock network state?
         assertThat(context.getValueMap("network")).isEmpty()
 
         assertThat(context.getValueMap("os"))
             .containsEntry("name", "Android")
         assertThat(context.getValueMap("os"))
-            .containsEntry("version", "4.1.2_r1")
+            .containsEntry("version", "10.0")
 
         assertThat(context.getValueMap("screen"))
             .containsEntry("density", 1.5f)
         assertThat(context.getValueMap("screen"))
             .containsEntry("width", 480)
         assertThat(context.getValueMap("screen"))
-            .containsEntry("height", 800)
+            .containsEntry("height", 780)
     }
 
     @Test

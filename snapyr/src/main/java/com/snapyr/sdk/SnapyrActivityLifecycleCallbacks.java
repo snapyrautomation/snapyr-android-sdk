@@ -144,8 +144,9 @@ class SnapyrActivityLifecycleCallbacks
     }
 
     private void registerDeeplinkReceiver() {
-        IntentFilter filter = new IntentFilter("com.snapyr.sdk.notifications.ACTION_DEEPLINK"); // sample scope
-//        filter.addAction(Intent.ACTION_AIRPLANE_MODE_CHANGED);
+        IntentFilter filter =
+                new IntentFilter("com.snapyr.sdk.notifications.ACTION_DEEPLINK"); // sample scope
+        //        filter.addAction(Intent.ACTION_AIRPLANE_MODE_CHANGED);
         NonImplicitReceiver nonImplicitReceiver = new NonImplicitReceiver();
 
         ServiceFacade.getApplication().registerReceiver(nonImplicitReceiver, filter);

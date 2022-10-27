@@ -28,12 +28,15 @@ import android.content.Context
 import android.provider.Settings.Secure
 import com.snapyr.sdk.services.Logger
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
+import org.robolectric.annotation.LooperMode
+import org.robolectric.annotation.LooperMode.Mode.LEGACY
 
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE)
@@ -41,6 +44,7 @@ class GetAdvertisingIdTest {
 
     @Test
     @Throws(Exception::class)
+    @LooperMode(LEGACY)
     fun getAdvertisingId() {
         val latch = CountDownLatch(1)
         val traits: Traits = Traits.create()
@@ -49,12 +53,13 @@ class GetAdvertisingIdTest {
         val task =
             GetAdvertisingIdTask(context, latch, Logger.with(Snapyr.LogLevel.VERBOSE))
         task.execute(RuntimeEnvironment.application)
-        latch.await()
+        latch.await(1000, TimeUnit.MILLISECONDS)
         assertThat(context.device()).doesNotContainKey("advertisingId")
     }
 
     @Test
     @Throws(Exception::class)
+    @LooperMode(LEGACY)
     fun getAdvertisingIdAmazonFireOSLimitAdTracking1() {
         val context: Context = RuntimeEnvironment.application
         val contentResolver: ContentResolver = context.contentResolver
@@ -68,7 +73,7 @@ class GetAdvertisingIdTest {
         val task =
             GetAdvertisingIdTask(analyticsContext, latch, Logger.with(Snapyr.LogLevel.VERBOSE))
         task.execute(context)
-        latch.await()
+        latch.await(1000, TimeUnit.MILLISECONDS)
 
         assertThat(analyticsContext.device()).doesNotContainKey("advertisingId")
         assertThat(analyticsContext.device()).containsEntry("adTrackingEnabled", false)
@@ -76,6 +81,7 @@ class GetAdvertisingIdTest {
 
     @Test
     @Throws(Exception::class)
+    @LooperMode(LEGACY)
     fun getAdvertisingIdAmazonFireOSLimitAdTracking0() {
         val context: Context = RuntimeEnvironment.application
         val contentResolver: ContentResolver = context.contentResolver

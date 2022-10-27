@@ -40,4 +40,9 @@
     <string name="identify_user_id">Type in an ID to identify the user</string>
     <string name="id_required">User ID should not be blank or empty</string>
 
+    <string name="track_impression">Track Impression</string>
+    <string name="track_click">Track Click</string>
+    <string name="track_dismiss">Track Dismiss</string>
+    <string name="send_broadcast">Send Broadcast</string>
+
 </resources>

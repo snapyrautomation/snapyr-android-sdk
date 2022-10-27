@@ -26,6 +26,7 @@ package com.snapyr.sdk
 import android.util.Log
 import com.snapyr.sdk.services.Logger
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -35,6 +36,11 @@ import org.robolectric.shadows.ShadowLog
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE)
 class LoggerTest {
+
+    @Before
+    fun setUp() {
+        ShadowLog.clear()
+    }
 
     @Test
     fun verboseLevelLogsEverything() {

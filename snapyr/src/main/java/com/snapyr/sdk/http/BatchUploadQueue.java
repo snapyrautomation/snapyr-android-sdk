@@ -37,6 +37,7 @@ import com.snapyr.sdk.internal.BasePayload;
 import com.snapyr.sdk.internal.Private;
 import com.snapyr.sdk.internal.SnapyrAction;
 import com.snapyr.sdk.internal.Utils;
+import com.snapyr.sdk.services.Crypto;
 import com.snapyr.sdk.services.ServiceFacade;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -188,7 +189,8 @@ public class BatchUploadQueue {
 
         try {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            OutputStream cos = ServiceFacade.getCrypto().encrypt(bos);
+            Crypto crypto = ServiceFacade.getCrypto();
+            OutputStream cos = crypto.encrypt(bos);
             ServiceFacade.getCartographer().toJson(payload, new OutputStreamWriter(cos));
             cos.close();
             byte[] bytes = bos.toByteArray();

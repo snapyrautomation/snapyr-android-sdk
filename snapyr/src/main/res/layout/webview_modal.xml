@@ -13,6 +13,7 @@
         android:layout_marginBottom="-24dp"
         android:background="@drawable/ic_snapyr_close"
         android:elevation="2dp"
+        android:contentDescription="@android:string/cancel"
         app:layout_constraintBottom_toTopOf="@+id/webview"
         app:layout_constraintEnd_toEndOf="parent"
         tools:ignore="SpeakableTextPresentCheck" />

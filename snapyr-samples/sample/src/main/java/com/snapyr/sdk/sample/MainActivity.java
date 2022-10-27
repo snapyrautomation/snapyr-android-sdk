@@ -31,25 +31,20 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.Toast;
-
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.Traits;
 import com.snapyr.sdk.inapp.InAppMessage;
-
 import io.github.inflationx.viewpump.ViewPumpContextWrapper;
-
 import java.text.MessageFormat;
 import java.util.List;
 
@@ -81,24 +76,29 @@ public class MainActivity extends Activity {
 
     // Our handler for received Intents. This will be called whenever an Intent
     // with an action named "custom-event-name" is broadcasted.
-    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            // Get extra data included in the Intent
-            String message = intent.getStringExtra("message");
-            InAppMessage inAppMessage = (InAppMessage) intent.getParcelableExtra("inAppMessage");
-            Log.d("YYY", MessageFormat.format("Got message: {0} inAppMessage: {1}", message, inAppMessage));
-            currentActionToken = inAppMessage.ActionToken;
-        }
-    };
+    private BroadcastReceiver mMessageReceiver =
+            new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    // Get extra data included in the Intent
+                    String message = intent.getStringExtra("message");
+                    InAppMessage inAppMessage =
+                            (InAppMessage) intent.getParcelableExtra("inAppMessage");
+                    Log.d(
+                            "YYY",
+                            MessageFormat.format(
+                                    "Got message: {0} inAppMessage: {1}", message, inAppMessage));
+                    currentActionToken = inAppMessage.ActionToken;
+                }
+            };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.e("XXX", "MainActivity: onCreate");
         super.onCreate(savedInstanceState);
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
-                new IntentFilter("sample-intent-passer"));
+        LocalBroadcastManager.getInstance(this)
+                .registerReceiver(mMessageReceiver, new IntentFilter("sample-intent-passer"));
 
         //                Snapyr.Builder builder =
         //                        new Snapyr.Builder(this, ANALYTICS_WRITE_KEY)
@@ -191,23 +191,23 @@ public class MainActivity extends Activity {
     void onSendBroadcast() {
         Log.e("YYY", "Send broadcast 13");
 
-//        Intent intent = new Intent("com.snapyr.sdk.notifications.ACTION_DEEPLINK");
-//        sendBroadcast(intent);
-//        SystemClock.sleep(500);
-//        sendBroadcast(intent, "owner.custom.permission");
-//        Log.e("YYY", MessageFormat.format("BROADCAST SENT FROM ACTIVITY: {0}", intent));
+        //        Intent intent = new Intent("com.snapyr.sdk.notifications.ACTION_DEEPLINK");
+        //        sendBroadcast(intent);
+        //        SystemClock.sleep(500);
+        //        sendBroadcast(intent, "owner.custom.permission");
+        //        Log.e("YYY", MessageFormat.format("BROADCAST SENT FROM ACTIVITY: {0}", intent));
 
-//        Intent intent = new Intent("com.snapyr.sdk.ACTION_DEEPLINK");
-//        sendBroadcast(intent, "owner.custom.permission");
-//        Log.e("YYY", MessageFormat.format("BROADCAST SENT FROM ACTIVITY: {0}", intent));
-//
+        //        Intent intent = new Intent("com.snapyr.sdk.ACTION_DEEPLINK");
+        //        sendBroadcast(intent, "owner.custom.permission");
+        //        Log.e("YYY", MessageFormat.format("BROADCAST SENT FROM ACTIVITY: {0}", intent));
+        //
         Intent intent = new Intent("com.snapyr.sdk.sample.ACTION_DEEPLINK");
         sendBroadcast(intent);
-//        sendBroadcast(intent, "owner.custom.permission");
+        //        sendBroadcast(intent, "owner.custom.permission");
         Log.e("YYY", MessageFormat.format("BROADCAST SENT FROM ACTIVITY: {0}", intent));
 
-//        Intent intent = new Intent(this, )
-//        sendBroadcast(intent, "owner.custom.permission");
+        //        Intent intent = new Intent(this, )
+        //        sendBroadcast(intent, "owner.custom.permission");
     }
 
     @OnClick(R.id.track_impression)

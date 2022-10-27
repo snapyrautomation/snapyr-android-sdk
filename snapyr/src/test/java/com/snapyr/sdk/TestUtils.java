@@ -41,6 +41,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.AbstractExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.hamcrest.Description;
@@ -242,6 +244,13 @@ public final class TestUtils {
         public void execute(Runnable command) {
             command.run();
         }
+
+//        @Override
+//        public Future<?> submit(Runnable command) {
+//            FutureTask<Void> task = new FutureTask<>(command, null);
+//            command.run();
+//            return task;
+//        }
     }
 
     public abstract static class NoDescriptionMatcher<T> extends TypeSafeMatcher<T> {

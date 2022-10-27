@@ -27,6 +27,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.provider.Settings.Secure;
+import android.util.Log;
 import android.util.Pair;
 import com.snapyr.sdk.services.Logger;
 import java.util.concurrent.CountDownLatch;
@@ -42,6 +43,7 @@ class GetAdvertisingIdTask extends AsyncTask<Context, Void, Pair<String, Boolean
     private final Logger logger;
 
     GetAdvertisingIdTask(SnapyrContext snapyrContext, CountDownLatch latch, Logger logger) {
+        Log.e("Snapyr", "GetAdvertisingIdTask...");
         this.snapyrContext = snapyrContext;
         this.latch = latch;
         this.logger = logger;
@@ -49,6 +51,7 @@ class GetAdvertisingIdTask extends AsyncTask<Context, Void, Pair<String, Boolean
 
     private Pair<String, Boolean> getGooglePlayServicesAdvertisingID(Context context)
             throws Exception {
+        Log.e("Snapyr", "getGooglePlayServicesAdvertisingID...");
         Object advertisingInfo =
                 Class.forName("com.google.android.gms.ads.identifier.AdvertisingIdClient")
                         .getMethod("getAdvertisingIdInfo", Context.class)
@@ -72,6 +75,7 @@ class GetAdvertisingIdTask extends AsyncTask<Context, Void, Pair<String, Boolean
     }
 
     private Pair<String, Boolean> getAmazonFireAdvertisingID(Context context) throws Exception {
+        Log.e("Snapyr", "getAmazonFireAdvertisingID...");
         ContentResolver contentResolver = context.getContentResolver();
 
         // Ref: http://prateeks.link/2uGs6bf
@@ -90,6 +94,7 @@ class GetAdvertisingIdTask extends AsyncTask<Context, Void, Pair<String, Boolean
 
     @Override
     protected Pair<String, Boolean> doInBackground(Context... contexts) {
+        Log.e("Snapyr", "doInBackground...");
         final Context context = contexts[0];
         try {
             return getGooglePlayServicesAdvertisingID(context);
@@ -108,6 +113,7 @@ class GetAdvertisingIdTask extends AsyncTask<Context, Void, Pair<String, Boolean
 
     @Override
     protected void onPostExecute(Pair<String, Boolean> info) {
+        Log.e("Snapyr", "onPostExecute...");
         super.onPostExecute(info);
 
         try {

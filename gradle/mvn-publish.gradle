@@ -118,7 +118,7 @@ signing {
 }
 
 afterEvaluate {
-    androidJavadocs.classpath += project.android.libraryVariants.toList().first().javaCompile.classpath
+    androidJavadocs.classpath += project.android.libraryVariants.toList().first().getJavaCompileProvider().get().classpath
 }
 
 publish.dependsOn build

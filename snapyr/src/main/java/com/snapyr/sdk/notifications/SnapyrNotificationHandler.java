@@ -35,7 +35,6 @@ import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.TrafficStats;
 import android.net.Uri;
 import android.os.Build;
 import android.util.Log;
@@ -51,7 +50,6 @@ import com.snapyr.sdk.core.R;
 import com.snapyr.sdk.internal.ActionButton;
 import com.snapyr.sdk.internal.PushTemplate;
 import com.snapyr.sdk.internal.Utils;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -346,10 +344,10 @@ public class SnapyrNotificationHandler {
 
         Intent trackIntent = new Intent(this.context, SnapyrNotificationListener.class);
         trackIntent.setAction(NOTIFICATION_ACTION);
-//        trackIntent.putExtra(ACTION_ID_KEY, (String) data.get(ACTION_ID_KEY));
+        //        trackIntent.putExtra(ACTION_ID_KEY, (String) data.get(ACTION_ID_KEY));
         trackIntent.putExtra(ACTION_DEEP_LINK_KEY, sampleDeepLinkUrl);
         trackIntent.putExtra(NOTIFICATION_ID, notificationId);
-//        trackIntent.putExtra(NOTIF_TOKEN_KEY, (String) data.get(NOTIF_TOKEN_KEY));
+        //        trackIntent.putExtra(NOTIF_TOKEN_KEY, (String) data.get(NOTIF_TOKEN_KEY));
 
         // TODO: check about urls not configured as a scheme in manifest, e.g. app configured to
         // handle `snapyrtest://demo/asdf` but marketer passes deep link `http://www.disney.com`
@@ -373,8 +371,8 @@ public class SnapyrNotificationHandler {
         int flags = getDefaultIntentFlags();
         builder.setContentIntent(ts.getPendingIntent(0, flags));
 
-//        builder.setContentIntent(
-//                PendingIntent.getActivity(applicationContext, 0, getLaunchIntent(), 0));
+        //        builder.setContentIntent(
+        //                PendingIntent.getActivity(applicationContext, 0, getLaunchIntent(), 0));
         Notification notification = builder.build();
         notificationMgr.notify(nextMessageId++, notification);
     }

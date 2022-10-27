@@ -87,6 +87,7 @@ import org.mockito.hamcrest.MockitoHamcrest.argThat
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
+import org.mockito.MockitoAnnotations.
 
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE)
@@ -101,6 +102,10 @@ open class SnapyrTest {
             |  },
             | "plan": {
             |
+            |  },
+            |  "metadata": {
+            |   "pushTemplates": [
+            |   ]
             |  }
             |}
             """.trimMargin()
@@ -117,8 +122,7 @@ open class SnapyrTest {
     @Mock
     private lateinit var projectSettingsCache: ProjectSettings.Cache
 
-    @Mock
-    private lateinit var crpyto: Crypto
+    private var crypto = Crypto.none()
 
     @Mock
     private lateinit var connectionFactory: ConnectionFactory
@@ -131,7 +135,10 @@ open class SnapyrTest {
     private lateinit var traits: Traits
     private lateinit var snapyrContext: SnapyrContext
 
+//    fun makeAnalytics(crypto: Crypto = Crypto.none()): Snapyr {
     fun makeAnalytics(): Snapyr {
+    val s = Mockito.mock(Snapyr::class.java)
+
         val created = Snapyr(
             application,
             null,
@@ -153,7 +160,7 @@ open class SnapyrTest {
             false,
             true,
             optOut,
-            crpyto,
+            crypto,
             ValueMap(),
             lifecycle,
             false,
@@ -263,7 +270,7 @@ open class SnapyrTest {
     fun group() {
         makeAnalytics().group("snapyr", Traits().putEmployees(42), null)
 
-        verify(crpyto).encrypt(any(OutputStream::class.java))
+        verify(crypto).encrypt(any(OutputStream::class.java))
     }
 
     @Test
@@ -285,7 +292,7 @@ open class SnapyrTest {
         val ana = makeAnalytics()
         ana.track("wrote tests", Properties().putUrl("github.com"))
 
-        verify(crpyto).encrypt(any(OutputStream::class.java))
+        verify(crypto).encrypt(any(OutputStream::class.java))
     }
 
     @Test
@@ -310,14 +317,14 @@ open class SnapyrTest {
     fun screen() {
         makeAnalytics().screen("android", "saw tests", Properties().putUrl("github.com"))
 
-        verify(crpyto).encrypt(any(OutputStream::class.java))
+        verify(crypto).encrypt(any(OutputStream::class.java))
     }
 
     @Test
     fun optionsCustomContext() {
         makeAnalytics().track("foo", null, Options().putContext("from_tests", true))
 
-        verify(crpyto).encrypt(any(OutputStream::class.java))
+        verify(crypto).encrypt(any(OutputStream::class.java))
     }
 
     @Test
@@ -327,7 +334,7 @@ open class SnapyrTest {
         analytics.optOut(true)
         analytics.track("foo")
 
-        verifyNoMoreInteractions(crpyto)
+        verifyNoMoreInteractions(crypto)
     }
 
     @Test
@@ -344,6 +351,10 @@ open class SnapyrTest {
                                       |    }
                                       |  },
                                       |  "plan": {
+                                      |  },
+                                      |  "metadata": {
+                                      |  "pushTemplates": [
+            |   ]
                                       |  }
                                       |}
                                       """.trimMargin()
@@ -351,7 +362,7 @@ open class SnapyrTest {
         )
 
         analytics.track("foo")
-        verify(crpyto).encrypt(any(OutputStream::class.java))
+        verify(crypto).encrypt(any(OutputStream::class.java))
     }
 
     @Test
@@ -370,13 +381,17 @@ open class SnapyrTest {
                               |  "plan": {
                               |    "track": {
                               |    }
-                              |  }
+                              |  },
+                                      |  "metadata": {
+                                      |  "pushTemplates": [
+            |   ]
+                                      |  }
                               |}
                               """.trimMargin()
             )
         )
         analytics.track("foo")
-        verify(crpyto).encrypt(any(OutputStream::class.java))
+        verify(crypto).encrypt(any(OutputStream::class.java))
     }
 
     @Test
@@ -529,7 +544,7 @@ open class SnapyrTest {
             false,
             false,
             optOut,
-            crpyto,
+            crypto,
             ValueMap(),
             lifecycle,
             false,
@@ -540,9 +555,9 @@ open class SnapyrTest {
         )
 
         callback.get().onCreate(mockLifecycleOwner)
-        verify(crpyto).encrypt(any(OutputStream::class.java))
+        verify(crypto).encrypt(any(OutputStream::class.java))
         callback.get().onCreate(mockLifecycleOwner)
-        verifyNoMoreInteractions(crpyto) // Application Installed is not duplicated
+        verifyNoMoreInteractions(crypto) // Application Installed is not duplicated
     }
 
     @Test
@@ -585,7 +600,7 @@ open class SnapyrTest {
         val mockLifecycleOwner = Mockito.mock(LifecycleOwner::class.java)
         var analytics = makeAnalytics()
         callback.get().onCreate(mockLifecycleOwner)
-        verify(crpyto).encrypt(any(OutputStream::class.java))
+        verify(crypto).encrypt(any(OutputStream::class.java))
     }
 
     @Test
@@ -626,7 +641,7 @@ open class SnapyrTest {
             false,
             true,
             optOut,
-            crpyto,
+            crypto,
             ValueMap(),
             lifecycle,
             false,
@@ -654,7 +669,7 @@ open class SnapyrTest {
         callback.get().onActivityStarted(activity)
 
         analytics.screen("Foo")
-        verify(crpyto).encrypt(any(OutputStream::class.java))
+        verify(crypto).encrypt(any(OutputStream::class.java))
     }
 
     @Test
@@ -909,413 +924,420 @@ open class SnapyrTest {
         callback.get().onStart(mockLifecycleOwner)
         callback.get().onResume(mockLifecycleOwner)
         callback.get().onStop(mockLifecycleOwner)
+    }
 
-        @Test
-        @Throws(NameNotFoundException::class)
-        fun trackApplicationLifecycleEventsApplicationForegrounded() {
+    @Test
+    @Throws(NameNotFoundException::class)
+    fun trackApplicationLifecycleEventsApplicationForegrounded() {
 
-            val callback =
-                AtomicReference<DefaultLifecycleObserver>()
+        val callback =
+            AtomicReference<DefaultLifecycleObserver>()
 
-            doNothing()
-                .whenever(lifecycle)
-                .addObserver(
-                    argThat<LifecycleObserver>(
-                        object : NoDescriptionMatcher<LifecycleObserver>() {
-                            override fun matchesSafely(item: LifecycleObserver): Boolean {
-                                callback.set(item as DefaultLifecycleObserver)
-                                return true
-                            }
-                        })
-                )
-
-            val mockLifecycleOwner = Mockito.mock(LifecycleOwner::class.java)
-
-            var analytics = makeAnalytics()
-
-            callback.get().onCreate(mockLifecycleOwner)
-            callback.get().onStart(mockLifecycleOwner)
-            callback.get().onStop(mockLifecycleOwner)
-            callback.get().onStart(mockLifecycleOwner)
-        }
-
-        @Test
-        @Throws(NameNotFoundException::class)
-        fun unregisterActivityLifecycleCallbacks() {
-            val registeredActivityCallback = AtomicReference<ActivityLifecycleCallbacks>()
-            val unregisteredActivityCallback = AtomicReference<ActivityLifecycleCallbacks>()
-
-            doNothing()
-                .whenever(application)
-                .registerActivityLifecycleCallbacks(
-                    argThat<ActivityLifecycleCallbacks>(
-                        object : NoDescriptionMatcher<ActivityLifecycleCallbacks>() {
-                            override fun matchesSafely(item: ActivityLifecycleCallbacks): Boolean {
-                                if (item is SnapyrActivityLifecycleCallbacks) {
-                                    registeredActivityCallback.set(item)
-                                }
-                                return true
-                            }
-                        })
-                )
-            doNothing()
-                .whenever(application)
-                .unregisterActivityLifecycleCallbacks(
-                    argThat<ActivityLifecycleCallbacks>(
-                        object : NoDescriptionMatcher<ActivityLifecycleCallbacks>() {
-                            override fun matchesSafely(item: ActivityLifecycleCallbacks): Boolean {
-                                if (item is SnapyrActivityLifecycleCallbacks) {
-                                    unregisteredActivityCallback.set(item)
-                                }
-                                return true
-                            }
-                        })
-                )
-
-            var analytics = Snapyr(
-                application,
-                null,
-                networkExecutor,
-                traitsCache,
-                snapyrContext,
-                defaultOptions,
-                Logger.with(Snapyr.LogLevel.NONE),
-                "qaz",
-                Cartographer.INSTANCE,
-                projectSettingsCache,
-                "foo",
-                ConnectionFactory.Environment.DEV,
-                DEFAULT_FLUSH_QUEUE_SIZE,
-                DEFAULT_FLUSH_INTERVAL.toLong(),
-                analyticsExecutor,
-                true,
-                CountDownLatch(0),
-                false,
-                false,
-                optOut,
-                Crypto.none(),
-                ValueMap(),
-                lifecycle,
-                false,
-                true,
-                false,
-                null,
-                false
+        doNothing()
+            .whenever(lifecycle)
+            .addObserver(
+                argThat<LifecycleObserver>(
+                    object : NoDescriptionMatcher<LifecycleObserver>() {
+                        override fun matchesSafely(item: LifecycleObserver): Boolean {
+                            callback.set(item as DefaultLifecycleObserver)
+                            return true
+                        }
+                    })
             )
 
-            assertThat(analytics.shutdown).isFalse
-            analytics.shutdown()
+        val mockLifecycleOwner = Mockito.mock(LifecycleOwner::class.java)
 
-            // Same callback was registered and unregistered
-            assertThat(analytics.activityLifecycleCallback).isSameAs(registeredActivityCallback.get())
-            assertThat(analytics.activityLifecycleCallback).isSameAs(unregisteredActivityCallback.get())
-        }
+        var analytics = makeAnalytics()
 
-        @Test
-        @Throws(NameNotFoundException::class)
-        fun removeLifecycleObserver() {
+        callback.get().onCreate(mockLifecycleOwner)
+        callback.get().onStart(mockLifecycleOwner)
+        callback.get().onStop(mockLifecycleOwner)
+        callback.get().onStart(mockLifecycleOwner)
+    }
 
-            val registeredCallback = AtomicReference<DefaultLifecycleObserver>()
-            val unregisteredCallback = AtomicReference<DefaultLifecycleObserver>()
+    @Test
+    @Throws(NameNotFoundException::class)
+    fun unregisterActivityLifecycleCallbacks() {
+        val registeredActivityCallback = AtomicReference<ActivityLifecycleCallbacks>()
+        val unregisteredActivityCallback = AtomicReference<ActivityLifecycleCallbacks>()
 
-            doNothing()
-                .whenever(lifecycle)
-                .addObserver(
-                    argThat<LifecycleObserver>(
-                        object : NoDescriptionMatcher<LifecycleObserver>() {
-                            override fun matchesSafely(item: LifecycleObserver): Boolean {
-                                registeredCallback.set(item as DefaultLifecycleObserver)
-                                return true
+        doNothing()
+            .whenever(application)
+            .registerActivityLifecycleCallbacks(
+                argThat<ActivityLifecycleCallbacks>(
+                    object : NoDescriptionMatcher<ActivityLifecycleCallbacks>() {
+                        override fun matchesSafely(item: ActivityLifecycleCallbacks): Boolean {
+                            if (item is SnapyrActivityLifecycleCallbacks) {
+                                registeredActivityCallback.set(item)
                             }
-                        })
-                )
-            doNothing()
-                .whenever(lifecycle)
-                .removeObserver(
-                    argThat<LifecycleObserver>(
-                        object : NoDescriptionMatcher<LifecycleObserver>() {
-                            override fun matchesSafely(item: LifecycleObserver): Boolean {
-                                unregisteredCallback.set(item as DefaultLifecycleObserver)
-                                return true
+                            return true
+                        }
+                    })
+            )
+        doNothing()
+            .whenever(application)
+            .unregisterActivityLifecycleCallbacks(
+                argThat<ActivityLifecycleCallbacks>(
+                    object : NoDescriptionMatcher<ActivityLifecycleCallbacks>() {
+                        override fun matchesSafely(item: ActivityLifecycleCallbacks): Boolean {
+                            if (item is SnapyrActivityLifecycleCallbacks) {
+                                unregisteredActivityCallback.set(item)
                             }
-                        })
-                )
-            val mockLifecycleOwner = Mockito.mock(LifecycleOwner::class.java)
-
-            var analytics = Snapyr(
-                application,
-                null,
-                networkExecutor,
-                traitsCache,
-                snapyrContext,
-                defaultOptions,
-                Logger.with(Snapyr.LogLevel.NONE),
-                "qaz",
-                Cartographer.INSTANCE,
-                projectSettingsCache,
-                "foo",
-                ConnectionFactory.Environment.DEV,
-                DEFAULT_FLUSH_QUEUE_SIZE,
-                DEFAULT_FLUSH_INTERVAL.toLong(),
-                analyticsExecutor,
-                false,
-                CountDownLatch(0),
-                false,
-                false,
-                optOut,
-                Crypto.none(),
-                ValueMap(),
-                lifecycle,
-                false,
-                true,
-                false,
-                null,
-                false
+                            return true
+                        }
+                    })
             )
 
-            assertThat(analytics.shutdown).isFalse
-            analytics.shutdown()
-            val lifecycleObserverSpy = spy(analytics.activityLifecycleCallback)
-            // Same callback was registered and unregistered
-            assertThat(analytics.activityLifecycleCallback).isSameAs(registeredCallback.get())
-            assertThat(analytics.activityLifecycleCallback).isSameAs(unregisteredCallback.get())
+        var analytics = Snapyr(
+            application,
+            null,
+            networkExecutor,
+            traitsCache,
+            snapyrContext,
+            defaultOptions,
+            Logger.with(Snapyr.LogLevel.NONE),
+            "qaz",
+            Cartographer.INSTANCE,
+            projectSettingsCache,
+            "foo",
+            ConnectionFactory.Environment.DEV,
+            DEFAULT_FLUSH_QUEUE_SIZE,
+            DEFAULT_FLUSH_INTERVAL.toLong(),
+            analyticsExecutor,
+            true,
+            CountDownLatch(0),
+            false,
+            false,
+            optOut,
+            Crypto.none(),
+            ValueMap(),
+            lifecycle,
+            false,
+            true,
+            false,
+            null,
+            false
+        )
 
-            // Verify callbacks do not call through after shutdown
-            registeredCallback.get().onCreate(mockLifecycleOwner)
-            verify(lifecycleObserverSpy, never()).onCreate(mockLifecycleOwner)
+        assertThat(analytics.shutdown).isFalse
+        analytics.shutdown()
 
-            registeredCallback.get().onStop(mockLifecycleOwner)
-            verify(lifecycleObserverSpy, never()).onStop(mockLifecycleOwner)
+        // Same callback was registered and unregistered
+        assertThat(analytics.activityLifecycleCallback).isSameAs(registeredActivityCallback.get())
+        assertThat(analytics.activityLifecycleCallback).isSameAs(unregisteredActivityCallback.get())
+    }
 
-            registeredCallback.get().onStart(mockLifecycleOwner)
-            verify(lifecycleObserverSpy, never()).onStart(mockLifecycleOwner)
+    @Test
+    @Throws(NameNotFoundException::class)
+    fun removeLifecycleObserver() {
 
-            verifyNoMoreInteractions(lifecycleObserverSpy)
-        }
+        val registeredCallback = AtomicReference<DefaultLifecycleObserver>()
+        val unregisteredCallback = AtomicReference<DefaultLifecycleObserver>()
 
-        @Test
-        @Throws(IOException::class)
-        fun loadNonEmptyDefaultProjectSettingsOnNetworkError() {
-
-            // Make project download empty map and thus use default settings
-            whenever(projectSettingsCache.get()).thenReturn(null)
-            whenever(SettingsRequest.execute()).thenThrow(IOException::class.java) // Simulate network error
-
-            val defaultProjectSettings =
-                ValueMap()
-                    .putValue(
-                        "integrations",
-                        ValueMap()
-                            .putValue(
-                                "Adjust",
-                                ValueMap()
-                                    .putValue("appToken", "<>")
-                                    .putValue("trackAttributionData", true)
-                            )
-                    )
-
-            var analytics = Snapyr(
-                application,
-                null,
-                networkExecutor,
-                traitsCache,
-                snapyrContext,
-                defaultOptions,
-                Logger.with(Snapyr.LogLevel.NONE),
-                "qaz",
-                Cartographer.INSTANCE,
-                projectSettingsCache,
-                "foo",
-                ConnectionFactory.Environment.DEV,
-                DEFAULT_FLUSH_QUEUE_SIZE,
-                DEFAULT_FLUSH_INTERVAL.toLong(),
-                analyticsExecutor,
-                true,
-                CountDownLatch(0),
-                false,
-                false,
-                optOut,
-                Crypto.none(),
-                defaultProjectSettings,
-                lifecycle,
-                false,
-                true,
-                false,
-                null,
-                false
+        doNothing()
+            .whenever(lifecycle)
+            .addObserver(
+                argThat<LifecycleObserver>(
+                    object : NoDescriptionMatcher<LifecycleObserver>() {
+                        override fun matchesSafely(item: LifecycleObserver): Boolean {
+                            registeredCallback.set(item as DefaultLifecycleObserver)
+                            return true
+                        }
+                    })
             )
-
-            assertThat(analytics.projectSettings).hasSize(3)
-            assertThat(analytics.projectSettings.integrations()).containsKey("Snapyr")
-            assertThat(analytics.projectSettings.integrations()).containsKey("Adjust")
-        }
-
-        @Test
-        @Throws(IOException::class)
-        fun loadEmptyDefaultProjectSettingsOnNetworkError() {
-
-            // Make project download empty map and thus use default settings
-            whenever(projectSettingsCache.get()).thenReturn(null)
-            whenever(SettingsRequest.execute()).thenThrow(IOException::class.java) // Simulate network error
-
-            val defaultProjectSettings = ValueMap()
-            var analytics = Snapyr(
-                application,
-                null,
-                networkExecutor,
-                traitsCache,
-                snapyrContext,
-                defaultOptions,
-                Logger.with(Snapyr.LogLevel.NONE),
-                "qaz",
-                Cartographer.INSTANCE,
-                projectSettingsCache,
-                "foo",
-                ConnectionFactory.Environment.DEV,
-                DEFAULT_FLUSH_QUEUE_SIZE,
-                DEFAULT_FLUSH_INTERVAL.toLong(),
-                analyticsExecutor,
-                true,
-                CountDownLatch(0),
-                false,
-                false,
-                optOut,
-                Crypto.none(),
-                defaultProjectSettings,
-                lifecycle,
-                false,
-                true,
-                false,
-                null,
-                false
+        doNothing()
+            .whenever(lifecycle)
+            .removeObserver(
+                argThat<LifecycleObserver>(
+                    object : NoDescriptionMatcher<LifecycleObserver>() {
+                        override fun matchesSafely(item: LifecycleObserver): Boolean {
+                            unregisteredCallback.set(item as DefaultLifecycleObserver)
+                            return true
+                        }
+                    })
             )
+        val mockLifecycleOwner = Mockito.mock(LifecycleOwner::class.java)
 
-            assertThat(analytics.projectSettings).hasSize(3)
-            assertThat(analytics.projectSettings).containsKey("integrations")
-            assertThat(analytics.projectSettings.integrations()).hasSize(1)
-            assertThat(analytics.projectSettings.integrations()).containsKey("Snapyr")
-        }
+        var analytics = Snapyr(
+            application,
+            null,
+            networkExecutor,
+            traitsCache,
+            snapyrContext,
+            defaultOptions,
+            Logger.with(Snapyr.LogLevel.NONE),
+            "qaz",
+            Cartographer.INSTANCE,
+            projectSettingsCache,
+            "foo",
+            ConnectionFactory.Environment.DEV,
+            DEFAULT_FLUSH_QUEUE_SIZE,
+            DEFAULT_FLUSH_INTERVAL.toLong(),
+            analyticsExecutor,
+            false,
+            CountDownLatch(0),
+            false,
+            false,
+            optOut,
+            Crypto.none(),
+            ValueMap(),
+            lifecycle,
+            false,
+            true,
+            false,
+            null,
+            false
+        )
 
-        @Test
-        @Throws(IOException::class)
-        fun overwriteSnapyrIoIntegration() {
+        assertThat(analytics.shutdown).isFalse
+        analytics.shutdown()
+        val lifecycleObserverSpy = spy(analytics.activityLifecycleCallback)
+        // Same callback was registered and unregistered
+        assertThat(analytics.activityLifecycleCallback).isSameAs(registeredCallback.get())
+        assertThat(analytics.activityLifecycleCallback).isSameAs(unregisteredCallback.get())
 
-            // Make project download empty map and thus use default settings
-            whenever(projectSettingsCache.get()).thenReturn(null)
-            whenever(SettingsRequest.execute()).thenThrow(IOException::class.java) // Simulate network error
+        // Verify callbacks do not call through after shutdown
+        registeredCallback.get().onCreate(mockLifecycleOwner)
+        verify(lifecycleObserverSpy, never()).onCreate(mockLifecycleOwner)
 
-            val defaultProjectSettings = ValueMap()
+        registeredCallback.get().onStop(mockLifecycleOwner)
+        verify(lifecycleObserverSpy, never()).onStop(mockLifecycleOwner)
+
+        registeredCallback.get().onStart(mockLifecycleOwner)
+        verify(lifecycleObserverSpy, never()).onStart(mockLifecycleOwner)
+
+        verifyNoMoreInteractions(lifecycleObserverSpy)
+    }
+
+    @Test
+    @Throws(IOException::class)
+    fun loadNonEmptyDefaultProjectSettingsOnNetworkError() {
+
+        // Make project download empty map and thus use default settings
+        whenever(projectSettingsCache.get()).thenReturn(null)
+        whenever(SettingsRequest.execute()).thenThrow(IOException::class.java) // Simulate network error
+
+        val defaultProjectSettings =
+            ValueMap()
                 .putValue(
                     "integrations",
                     ValueMap()
                         .putValue(
-                            "Snapyr",
+                            "Adjust",
                             ValueMap()
                                 .putValue("appToken", "<>")
                                 .putValue("trackAttributionData", true)
                         )
                 )
-            var analytics = Snapyr(
-                application,
-                null,
-                networkExecutor,
-                traitsCache,
-                snapyrContext,
-                defaultOptions,
-                Logger.with(Snapyr.LogLevel.NONE),
-                "qaz",
-                Cartographer.INSTANCE,
-                projectSettingsCache,
-                "foo",
-                ConnectionFactory.Environment.DEV,
-                DEFAULT_FLUSH_QUEUE_SIZE,
-                DEFAULT_FLUSH_INTERVAL.toLong(),
-                analyticsExecutor,
-                true,
-                CountDownLatch(0),
-                false,
-                false,
-                optOut,
-                Crypto.none(),
-                defaultProjectSettings,
-                lifecycle,
-                false,
-                true,
-                false,
-                null,
-                false
+
+        var analytics = Snapyr(
+            application,
+            null,
+            networkExecutor,
+            traitsCache,
+            snapyrContext,
+            defaultOptions,
+            Logger.with(Snapyr.LogLevel.NONE),
+            "qaz",
+            Cartographer.INSTANCE,
+            projectSettingsCache,
+            "foo",
+            ConnectionFactory.Environment.DEV,
+            DEFAULT_FLUSH_QUEUE_SIZE,
+            DEFAULT_FLUSH_INTERVAL.toLong(),
+            analyticsExecutor,
+            true,
+            CountDownLatch(0),
+            false,
+            false,
+            optOut,
+            Crypto.none(),
+            defaultProjectSettings,
+            lifecycle,
+            false,
+            true,
+            false,
+            null,
+            false
+        )
+
+        assertThat(analytics.projectSettings).hasSize(3)
+        assertThat(analytics.projectSettings.integrations()).containsKey("Snapyr")
+        assertThat(analytics.projectSettings.integrations()).containsKey("Adjust")
+    }
+
+    @Test
+    @Throws(IOException::class)
+    fun loadEmptyDefaultProjectSettingsOnNetworkError() {
+
+        // Make project download empty map and thus use default settings
+        whenever(projectSettingsCache.get()).thenReturn(null)
+        whenever(SettingsRequest.execute()).thenThrow(IOException::class.java) // Simulate network error
+
+        val defaultProjectSettings = ValueMap()
+        var analytics = Snapyr(
+            application,
+            null,
+            networkExecutor,
+            traitsCache,
+            snapyrContext,
+            defaultOptions,
+            Logger.with(Snapyr.LogLevel.NONE),
+            "qaz",
+            Cartographer.INSTANCE,
+            projectSettingsCache,
+            "foo",
+            ConnectionFactory.Environment.DEV,
+            DEFAULT_FLUSH_QUEUE_SIZE,
+            DEFAULT_FLUSH_INTERVAL.toLong(),
+            analyticsExecutor,
+            true,
+            CountDownLatch(0),
+            false,
+            false,
+            optOut,
+            Crypto.none(),
+            defaultProjectSettings,
+            lifecycle,
+            false,
+            true,
+            false,
+            null,
+            false
+        )
+
+        assertThat(analytics.projectSettings).hasSize(3)
+        assertThat(analytics.projectSettings).containsKey("integrations")
+        assertThat(analytics.projectSettings.integrations()).hasSize(1)
+        assertThat(analytics.projectSettings.integrations()).containsKey("Snapyr")
+    }
+
+    @Test
+    @Throws(IOException::class)
+    fun overwriteSnapyrIoIntegration() {
+
+        // Make project download empty map and thus use default settings
+        whenever(projectSettingsCache.get()).thenReturn(null)
+        whenever(SettingsRequest.execute()).thenThrow(IOException::class.java) // Simulate network error
+
+        val defaultProjectSettings = ValueMap()
+            .putValue(
+                "integrations",
+                ValueMap()
+                    .putValue(
+                        "Snapyr",
+                        ValueMap()
+                            .putValue("appToken", "<>")
+                            .putValue("trackAttributionData", true)
+                    )
             )
+        var analytics = Snapyr(
+            application,
+            null,
+            networkExecutor,
+            traitsCache,
+            snapyrContext,
+            defaultOptions,
+            Logger.with(Snapyr.LogLevel.NONE),
+            "qaz",
+            Cartographer.INSTANCE,
+            projectSettingsCache,
+            "foo",
+            ConnectionFactory.Environment.DEV,
+            DEFAULT_FLUSH_QUEUE_SIZE,
+            DEFAULT_FLUSH_INTERVAL.toLong(),
+            analyticsExecutor,
+            true,
+            CountDownLatch(0),
+            false,
+            false,
+            optOut,
+            Crypto.none(),
+            defaultProjectSettings,
+            lifecycle,
+            false,
+            true,
+            false,
+            null,
+            false
+        )
 
-            assertThat(analytics.projectSettings).hasSize(3)
-            assertThat(analytics.projectSettings).containsKey("integrations")
-            assertThat(analytics.projectSettings.integrations()).containsKey("Snapyr")
-            assertThat(analytics.projectSettings.integrations()).hasSize(1)
-            assertThat(analytics.projectSettings.integrations().getValueMap("Snapyr"))
-                .hasSize(3)
-            assertThat(analytics.projectSettings.integrations().getValueMap("Snapyr"))
-                .containsKey("apiKey")
-            assertThat(analytics.projectSettings.integrations().getValueMap("Snapyr"))
-                .containsKey("appToken")
-            assertThat(analytics.projectSettings.integrations().getValueMap("Snapyr"))
-                .containsKey("trackAttributionData")
-        }
+        assertThat(analytics.projectSettings).hasSize(3)
+        assertThat(analytics.projectSettings).containsKey("integrations")
+        assertThat(analytics.projectSettings.integrations()).containsKey("Snapyr")
+        assertThat(analytics.projectSettings.integrations()).hasSize(1)
+        assertThat(analytics.projectSettings.integrations().getValueMap("Snapyr"))
+            .hasSize(3)
+        assertThat(analytics.projectSettings.integrations().getValueMap("Snapyr"))
+            .containsKey("apiKey")
+        assertThat(analytics.projectSettings.integrations().getValueMap("Snapyr"))
+            .containsKey("appToken")
+        assertThat(analytics.projectSettings.integrations().getValueMap("Snapyr"))
+            .containsKey("trackAttributionData")
+    }
 
-        @Test
-        fun overridingOptionsDoesNotModifyGlobalAnalytics() {
-            var analytics = makeAnalytics()
+    @Test
+    fun overridingOptionsDoesNotModifyGlobalAnalytics() {
+        var analytics = makeAnalytics()
 
-            analytics.track("event", null, Options().putContext("testProp", true))
-            val payload = ArgumentCaptor.forClass(TrackPayload::class.java)
-            assertThat(payload.value.context()).containsKey("testProp")
-            assertThat(payload.value.context()["testProp"]).isEqualTo(true)
-            assertThat(analytics.snapyrContext).doesNotContainKey("testProp")
-        }
+        analytics.track("event", null, Options().putContext("testProp", true))
+        val payload = ArgumentCaptor.forClass(TrackPayload::class.java)
+        assertThat(payload.value.context()).containsKey("testProp")
+        assertThat(payload.value.context()["testProp"]).isEqualTo(true)
+        assertThat(analytics.snapyrContext).doesNotContainKey("testProp")
+    }
 
-        @Test
-        fun enableExperimentalNanosecondResolutionTimestamps() {
-            var analytics = Snapyr(
-                application,
-                null,
-                networkExecutor,
-                traitsCache,
-                snapyrContext,
-                defaultOptions,
-                Logger.with(Snapyr.LogLevel.NONE),
-                "qaz",
-                Cartographer.INSTANCE,
-                projectSettingsCache,
-                "foo",
-                ConnectionFactory.Environment.DEV,
-                DEFAULT_FLUSH_QUEUE_SIZE,
-                DEFAULT_FLUSH_INTERVAL.toLong(),
-                analyticsExecutor,
-                true,
-                CountDownLatch(0),
-                false,
-                false,
-                optOut,
-                Crypto.none(),
-                ValueMap(),
-                lifecycle,
-                true,
-                true,
-                false,
-                null,
-                false
-            )
+    @Test
+    fun enableExperimentalNanosecondResolutionTimestamps() {
+        var analytics = Snapyr(
+            application,
+            null,
+            networkExecutor,
+            traitsCache,
+            snapyrContext,
+            defaultOptions,
+            Logger.with(Snapyr.LogLevel.NONE),
+            "qaz",
+            Cartographer.INSTANCE,
+            projectSettingsCache,
+            "foo",
+            ConnectionFactory.Environment.DEV,
+            DEFAULT_FLUSH_QUEUE_SIZE,
+            DEFAULT_FLUSH_INTERVAL.toLong(),
+            analyticsExecutor,
+            true,
+            CountDownLatch(0),
+            false,
+            false,
+            optOut,
+            Crypto.none(),
+            ValueMap(),
+            lifecycle,
+            true,
+            true,
+            false,
+            null,
+            false
+        )
 
-            analytics.track("event")
-            val payload = ArgumentCaptor.forClass(TrackPayload::class.java)
-            val timestamp = payload.value["timestamp"] as String
-            assertThat(timestamp).matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.\\d{9}Z")
-        }
+        analytics.track("event")
+        val payload = ArgumentCaptor.forClass(TrackPayload::class.java)
+        val timestamp = payload.value["timestamp"] as String
+        assertThat(timestamp).matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.\\d{9}Z")
+    }
 
-        @Test
-        fun disableExperimentalNanosecondResolutionTimestamps() {
-            makeAnalytics().track("event")
-            val payload = ArgumentCaptor.forClass(TrackPayload::class.java)
-            val timestamp = payload.value["timestamp"] as String
-            assertThat(timestamp).matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.\\d{3}Z")
-        }
+//    @LooperMode(LEGACY)
+    @Test
+    fun disableExperimentalNanosecondResolutionTimestamps() {
+        var s = makeAnalytics()
+//    Mockito.mock(s)
+        s.track("event")
+        val payload = ArgumentCaptor.forClass(TrackPayload.Builder::class.java)
+    verify(s).fillAndEnqueue(payload.capture(), null)
+//        verify(actionHandler).onTrack(payload.capture())
+    var x = payload.value
+    val timestamp = x.build()["timestamp"] as String
+//        val timestamp = payload.value["timestamp"] as String
+        assertThat(timestamp).matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.\\d{3}Z")
     }
 }

@@ -86,9 +86,15 @@ public class PushTemplate {
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public static Map<String, PushTemplate> ParseTemplate(ValueMap metadata) {
+        HashMap<String, PushTemplate> parsed = new HashMap<String, PushTemplate>();
+        if (metadata == null) {
+            return parsed;
+        }
         ArrayList<Map<String, Object>> templates =
                 (ArrayList<Map<String, Object>>) metadata.get("pushTemplates");
-        HashMap<String, PushTemplate> parsed = new HashMap<String, PushTemplate>();
+        if (templates == null) {
+            return parsed;
+        }
 
         for (Map<String, Object> v : templates) {
             PushTemplate t = new PushTemplate(v);

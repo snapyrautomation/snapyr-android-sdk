@@ -9,7 +9,12 @@ android {
 		consumerProguardFiles 'proguard-rules-lib.txt'
 		buildConfigField 'String', 'VERSION_NAME', "\"$VERSION_NAME\""
 	}
-    namespace 'com.snapyr.sdk.core'
+	testOptions {
+		unitTests {
+			includeAndroidResources = true
+		}
+	}
+	namespace 'com.snapyr.sdk.core'
 }
 
 dependencies {
@@ -24,13 +29,13 @@ dependencies {
 	implementation platform('com.google.firebase:firebase-bom:27.1.0')
 	implementation 'com.google.firebase:firebase-messaging'
 
-	testImplementation 'junit:junit:4.12'
-	testImplementation('org.robolectric:robolectric:3.5') {
+	testImplementation 'junit:junit:4.13.2'
+	testImplementation('org.robolectric:robolectric:4.5.1') {
 		exclude group: 'commons-logging', module: 'commons-logging'
 		exclude group: 'org.apache.httpcomponents', module: 'httpclient'
 	}
 	testImplementation 'com.squareup.assertj:assertj-android:1.1.1'
-	testImplementation 'com.squareup.okio:okio:1.14.0'
+	testImplementation 'com.squareup.okio:okio:1.17.2'
 	testImplementation 'com.squareup.okhttp:mockwebserver:2.7.4'
 	testImplementation 'com.squareup.burst:burst-junit4:1.1.1'
 
@@ -41,7 +46,8 @@ dependencies {
 	testImplementation group: 'net.bytebuddy', name: 'byte-buddy', version: '1.9.0'
 	testImplementation group: 'net.bytebuddy', name: 'byte-buddy-agent', version: '1.9.0'
 	testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0"
-	implementation "androidx.core:core-ktx:1.3.1"
+	testImplementation 'androidx.test:core:1.0.0'
+	implementation "androidx.core:core-ktx:1.6.0"
 	implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }
 

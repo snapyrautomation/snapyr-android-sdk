@@ -397,10 +397,10 @@ public class Snapyr {
      */
     public static Snapyr with(Context context) {
         if (singleton == null) {
-            Log.e("Snapyr", "WARNING WARNING WARNING WARNING!!!");
-            Log.e("Snapyr", "WARNING WARNING WARNING WARNING!!!");
-            Log.e("Snapyr", "WARNING WARNING WARNING WARNING!!!");
-            Log.e("Snapyr", "WARNING WARNING WARNING WARNING!!!");
+            //            Log.e("Snapyr", "WARNING WARNING WARNING WARNING!!!");
+            //            Log.e("Snapyr", "WARNING WARNING WARNING WARNING!!!");
+            //            Log.e("Snapyr", "WARNING WARNING WARNING WARNING!!!");
+            //            Log.e("Snapyr", "WARNING WARNING WARNING WARNING!!!");
             if (context == null) {
                 throw new IllegalArgumentException("Context must not be null.");
             }

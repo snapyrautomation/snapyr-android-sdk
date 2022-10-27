@@ -93,19 +93,19 @@
             android:id="@+id/track_impression"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Track Impression" />
+            android:text="@string/track_impression" />
 
         <Button
             android:id="@+id/track_click"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Track Click" />
+            android:text="@string/track_click" />
 
         <Button
             android:id="@+id/track_dismiss"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Track Dismiss" />
+            android:text="@string/track_click" />
 
         <View
             android:layout_width="match_parent"
@@ -115,7 +115,7 @@
             android:id="@+id/send_broadcast"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Send Broadcast" />
+            android:text="@string/send_broadcast" />
 
     </LinearLayout>
 

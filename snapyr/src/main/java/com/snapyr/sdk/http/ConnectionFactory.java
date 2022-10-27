@@ -82,7 +82,7 @@ public class ConnectionFactory {
      */
     public WriteConnection postBatch() throws IOException {
         return new WriteConnection(engineRequest("v1/batch", "POST"));
-//        return new WriteConnection(engineRequest("v1/batch?deets=true", "POST"));
+        //        return new WriteConnection(engineRequest("v1/batch?deets=true", "POST"));
     }
 
     public HttpURLConnection engineRequest(String path, String method) throws IOException {
