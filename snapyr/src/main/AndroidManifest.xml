@@ -24,10 +24,38 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.snapyr.sdk.core">
+    package="com.snapyr.sdk">
     <!-- Required for internet. -->
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- Required to allow notification taps to dismiss the notification drawer -->
     <uses-permission android:name="android.permission.BROADCAST_CLOSE_SYSTEM_DIALOGS"
         tools:ignore="ProtectedPermissions" />
+
+    <application>
+        <receiver android:name=".notifications.SnapyrNotifBroadcastReceiver" android:exported="true">
+            <intent-filter>
+                <action android:name="com.snapyr.sdk.notifications.ACTION_DEEPLINK" />
+                <action android:name="com.snapyr.sdk.ACTION_DEEPLINK" />
+            </intent-filter>
+        </receiver>
+<!--        <receiver android:name=".SnapyrTopBroadcastReceiver" android:exported="true">-->
+<!--            <intent-filter>-->
+<!--                <action android:name="com.snapyr.sdk.notifications.ACTION_DEEPLINK" />-->
+<!--                <action android:name="com.snapyr.sdk.ACTION_DEEPLINK" />-->
+<!--            </intent-filter>-->
+<!--        </receiver>-->
+<!--        <receiver android:name="com.snapyr.sdk.notifications.SnapyrNotifBroadcastReceiver" android:exported="true">-->
+<!--            <intent-filter>-->
+<!--                <action android:name="com.snapyr.sdk.notifications.ACTION_DEEPLINK" />-->
+<!--                <action android:name="com.snapyr.sdk.ACTION_DEEPLINK" />-->
+<!--            </intent-filter>-->
+<!--        </receiver>-->
+        <receiver android:name="com.snapyr.sdk.SnapyrTopBroadcastReceiver" android:exported="true">
+            <intent-filter>
+                <action android:name="com.snapyr.sdk.notifications.ACTION_DEEPLINK" />
+                <action android:name="com.snapyr.sdk.ACTION_DEEPLINK" />
+            </intent-filter>
+        </receiver>
+    </application>
+
 </manifest>

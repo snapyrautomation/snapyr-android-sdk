@@ -23,20 +23,24 @@
  */
 package com.snapyr.sdk.notifications;
 
+import static com.snapyr.sdk.notifications.SnapyrNotificationHandler.DEEPLINK_ACTION;
+
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
-import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import androidx.core.app.NotificationManagerCompat;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-
 import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.internal.TrackerUtil;
 import com.snapyr.sdk.internal.Utils;
 import java.text.MessageFormat;
+import java.util.List;
 
 /**
  * SnapyrNotificationListener Activity that triggers and fires off a track event with the payload
@@ -58,6 +62,7 @@ public class SnapyrNotificationListener extends Activity {
         super.finalize();
     }
 
+    @SuppressLint("NewApi")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,36 +82,80 @@ public class SnapyrNotificationListener extends Activity {
                     "Notification interaction listener couldn't initialize Snapyr. Make sure you've initialized Snapyr from within your main application prior to receiving notifications.");
         }
 
+        PackageManager packageManager = this.getApplicationContext().getPackageManager();
+
         // Dismiss source notification
-        NotificationManagerCompat.from(this.getApplicationContext()).cancel(notificationId);
+        Log.e("XXX", "SnapyrNotificationListener: NOT cancelling notification...");
+//        NotificationManagerCompat.from(this.getApplicationContext()).cancel(notificationId);
 
-        if (!Utils.isNullOrEmpty(deepLink)) { // deeplink provided, respect it and advance
-            Intent deepLinkIntent = new Intent();
-            deepLinkIntent.setAction("com.snapyr.sdk.notifications.ACTION_DEEPLINK");
-            deepLinkIntent.setData(Uri.parse(deepLink));
-            deepLinkIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        Intent deepLinkIntent = new Intent(DEEPLINK_ACTION);
+        //        deepLinkIntent.setAction(DEEPLINK_ACTION);
+        deepLinkIntent.setPackage(
+                this.getPackageName()); // makes this intent "explicit" which allows it to reach
+        // a manifest-defined receiver
+        deepLinkIntent.putExtras(intent); // forward all extras, i.e. Snapyr-defined data
 
-            //            getPackageManager().resolveActivity(deepLinkIntent)
-            ComponentName componentName = deepLinkIntent.resolveActivity(getPackageManager());
+//                if (!Utils.isNullOrEmpty(deepLink)) {
+//                    deepLinkIntent.setData(Uri.parse(deepLink));
+//                }
 
+        List<ResolveInfo> receivers = packageManager.queryBroadcastReceivers(deepLinkIntent, 0);
+
+        for (ResolveInfo receiver : receivers) {
             Log.e(
                     "YYY",
                     MessageFormat.format(
-                            "SnapyrNotificationListener: intent component: {0}", componentName));
+                            "Receiver: {0} Packagename: {1} ServiceInfo: {2} ActivityInfo: {3} ProviderInfo: {4} isDefault: {5}",
+                            receiver,
+                            receiver.resolvePackageName,
+                            receiver.serviceInfo,
+                            receiver.activityInfo,
+                            receiver.providerInfo,
+                            receiver.isDefault));
+        }
+
+        this.sendBroadcast(deepLinkIntent);
+
+        Intent nextActivityIntent = this.getLaunchIntent();
+
+        if (!Utils.isNullOrEmpty(deepLink)) {
+            nextActivityIntent.setData(Uri.parse(deepLink));
+            nextActivityIntent.putExtras(intent);
+        }
+
+        this.startActivity(nextActivityIntent);
+
+        if (!Utils.isNullOrEmpty(deepLink)) { // deeplink provided, respect it and advance
+
+            //            getPackageManager().resolveActivity(deepLinkIntent)
+
+            //            ComponentName componentName =
+            // deepLinkIntent.resolveActivity(getPackageManager());
+            //
+            //            Log.e(
+            //                    "YYY",
+            //                    MessageFormat.format(
+            //                            "SnapyrNotificationListener: intent component: {0}",
+            // componentName));
 
             try {
-//                this.startActivity(deepLinkIntent);
-//                LocalBroadcastManager.getInstance(this).sendBroadcast(deepLinkIntent);
-//                sendBroadcast(deepLinkIntent);
+                //                this.startActivity(deepLinkIntent);
+                //
+                // LocalBroadcastManager.getInstance(this).sendBroadcast(deepLinkIntent);
+                //                sendBroadcast(deepLinkIntent);
 
-//                sendBroadcast(deepLinkIntent, "owner.custom.permission");
-//                Log.e("YYY", MessageFormat.format("BROADCAST SENT FROM SnapyrNotificationListener: {0}", deepLinkIntent));
-//                Log.e("YYY", "Broadcast sent without error!");
-                Intent intent2 = new Intent("com.snapyr.sdk.notifications.ACTION_DEEPLINK"); // notifications scope
-//                Intent intent2 = new Intent("com.snapyr.sdk.sample.ACTION_DEEPLINK");  // sample scope
-                sendBroadcast(intent2);
-//                sendBroadcast(intent2, "owner.custom.permission");
-                Log.e("YYY", MessageFormat.format("BROADCAST SENT FROM SnapyrNotificationListener: {0}", intent2));
+                //                sendBroadcast(deepLinkIntent, "owner.custom.permission");
+                //                Log.e("YYY", MessageFormat.format("BROADCAST SENT FROM
+                // SnapyrNotificationListener: {0}", deepLinkIntent));
+                //                Log.e("YYY", "Broadcast sent without error!");
+                //                Intent intent2 = new Intent(DEEPLINK_ACTION); // notifications
+                // scope
+                //                Intent intent2 = new
+                // Intent("com.snapyr.sdk.sample.ACTION_DEEPLINK");  // sample scope
+                //                sendBroadcast(intent2);
+                //                sendBroadcast(intent2, "owner.custom.permission");
+                //                Log.e("YYY", MessageFormat.format("BROADCAST SENT FROM
+                // SnapyrNotificationListener: {0}", intent2));
             } catch (ActivityNotFoundException e) {
                 Log.e("YYY", "RUH ROH! ACTIVITY NOT FOUND!");
             } catch (Exception e) {
@@ -114,7 +163,48 @@ public class SnapyrNotificationListener extends Activity {
             }
         }
 
+//        this.startActivityIfNeeded()
+
         this.finish(); // Nothing to do, go back in the stack
+    }
+
+    public Intent getLaunchIntent() {
+        Context applicationContext = this.getApplicationContext();
+        try {
+            PackageManager pm = applicationContext.getPackageManager();
+            Intent launchIntent = pm.getLaunchIntentForPackage(applicationContext.getPackageName());
+            if (launchIntent == null) {
+                // No launch intent specified / found for this app. Default to ACTION_MAIN
+                launchIntent = new Intent(Intent.ACTION_MAIN);
+
+
+                launchIntent.addFlags(
+                        Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                launchIntent.setPackage(applicationContext.getPackageName());
+                Log.i("XXX", "Listener: getLaunchIntent: defaulting to ACTION_MAIN...");
+            } else {
+//                launchIntent.setFlags(0);
+                launchIntent.setPackage(null); // helps make existing activity resume (if any)
+                launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                        | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+//                        | Intent.FLAG_ACTIVITY_SINGLE_TOP
+                );
+
+//                launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                Log.i("XXX", "Listener: getLaunchIntent: `getLaunchIntentForPackage`");
+            }
+            String x = launchIntent.getDataString();
+            Log.i(
+                    "XXX",
+                    "Listener: getLaunchIntent: "
+                            + x
+                            + " - "
+                            + launchIntent.toString());
+            return launchIntent;
+        } catch (Exception e) {
+            Log.e("Snapyr", "Could not get launch intent", e);
+            return new Intent(Intent.ACTION_MAIN);
+        }
     }
 
     @Override

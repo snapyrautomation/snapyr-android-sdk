@@ -36,9 +36,9 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import com.snapyr.sdk.Properties;
+import com.snapyr.sdk.R;
 import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.ValueMap;
-import com.snapyr.sdk.core.R;
 import com.snapyr.sdk.services.ServiceFacade;
 
 public class WebviewModalView extends FrameLayout {

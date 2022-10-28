@@ -23,34 +23,43 @@
  */
 package com.snapyr.sdk.sample;
 
+import static com.snapyr.sdk.notifications.SnapyrNotificationHandler.showFlags;
+
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.SystemClock;
+import android.text.Editable;
+import android.text.Html;
+import android.text.Spanned;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.Traits;
 import com.snapyr.sdk.inapp.InAppMessage;
-
 import io.github.inflationx.viewpump.ViewPumpContextWrapper;
-
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 public class MainActivity extends Activity {
@@ -81,24 +90,42 @@ public class MainActivity extends Activity {
 
     // Our handler for received Intents. This will be called whenever an Intent
     // with an action named "custom-event-name" is broadcasted.
-    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            // Get extra data included in the Intent
-            String message = intent.getStringExtra("message");
-            InAppMessage inAppMessage = (InAppMessage) intent.getParcelableExtra("inAppMessage");
-            Log.d("YYY", MessageFormat.format("Got message: {0} inAppMessage: {1}", message, inAppMessage));
-            currentActionToken = inAppMessage.ActionToken;
-        }
-    };
+    private BroadcastReceiver mMessageReceiver =
+            new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    // Get extra data included in the Intent
+                    String message = intent.getStringExtra("message");
+                    InAppMessage inAppMessage =
+                            (InAppMessage) intent.getParcelableExtra("inAppMessage");
+                    Log.d(
+                            "YYY",
+                            MessageFormat.format(
+                                    "Got message: {0} inAppMessage: {1}", message, inAppMessage));
+                    currentActionToken = inAppMessage.ActionToken;
+                }
+            };
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        Log.e("YYY", MessageFormat.format("onSaveInstanceState: {0}", outState));
+        outState.putString("paul", "test123");
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        Log.e("YYY", MessageFormat.format("onRestoreInstanceState: {0}", savedInstanceState));
+        super.onRestoreInstanceState(savedInstanceState);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.e("XXX", "MainActivity: onCreate");
+        Log.e("XXX", MessageFormat.format("MainActivity: onCreate, instancestate: {0}", savedInstanceState));
         super.onCreate(savedInstanceState);
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
-                new IntentFilter("sample-intent-passer"));
+        LocalBroadcastManager.getInstance(this)
+                .registerReceiver(mMessageReceiver, new IntentFilter("sample-intent-passer"));
 
         //                Snapyr.Builder builder =
         //                        new Snapyr.Builder(this, ANALYTICS_WRITE_KEY)
@@ -132,10 +159,7 @@ public class MainActivity extends Activity {
         //                // Set the initialized instance as a globally accessible instance.
         //                Snapyr.setSingletonInstance(builder.build());
 
-        Intent intent = getIntent();
-        if (intent != null) {
-            handleOpenIntent(intent);
-        }
+
 
         // For debugging - destroys the FB token so a new one will be created. Probably does some
         // other stuff too
@@ -143,12 +167,31 @@ public class MainActivity extends Activity {
 
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+
+        Intent intent = getIntent();
+        if (intent != null) {
+            showFlags(intent);
+            handleOpenIntent(intent);
+        }
+
+        addLog("onCreate", "activity created");
+
         Log.e("XXX", "MainActivity: onCreate DONE");
     }
 
     @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        Log.e("XXX", MessageFormat.format("MainActivity: onNewIntent: {0} data: {1} extras: {2}", intent, intent.getData(), intent.getExtras()));
+        addLog("onNewIntent", MessageFormat.format("received intent: {0}", intent));
+        showFlags(intent);
+        handleOpenIntent(intent);
+    }
+
+    @Override
     protected void onStart() {
-        Log.e("XXX", "MainActivity: onStart");
+        Log.e("XXX", MessageFormat.format("MainActivity: onStart. intent: {0} extras: {1}", this.getIntent(), this.getIntent().getExtras()));
+        showFlags(this.getIntent());
         super.onStart();
     }
 
@@ -175,8 +218,10 @@ public class MainActivity extends Activity {
         Uri data = intent.getData();
         if (data == null) {
             Toast.makeText(this, "No deep link info provided", Toast.LENGTH_LONG).show();
+            addLog("handleOpenIntent", "No deep link info provided");
             return;
         }
+        addLog("handleOpenIntent", "deep link Uri: " + data);
         List<String> paths = data.getPathSegments();
         if (paths.size() > 1) {
             String response = paths.get(0);
@@ -187,27 +232,66 @@ public class MainActivity extends Activity {
         }
     }
 
-    @OnClick(R.id.send_broadcast)
+    @OnClick(R.id.send_sample_broadcast)
     void onSendBroadcast() {
-        Log.e("YYY", "Send broadcast 13");
+        sendBroadcast("com.snapyr.sdk.sample.ACTION_DEEPLINK");
+    }
 
-//        Intent intent = new Intent("com.snapyr.sdk.notifications.ACTION_DEEPLINK");
-//        sendBroadcast(intent);
-//        SystemClock.sleep(500);
-//        sendBroadcast(intent, "owner.custom.permission");
-//        Log.e("YYY", MessageFormat.format("BROADCAST SENT FROM ACTIVITY: {0}", intent));
+    @OnClick(R.id.send_sdk_broadcast)
+    void onSendSdkBroadcast() {
+        sendBroadcast("com.snapyr.sdk.ACTION_DEEPLINK");
+    }
 
-//        Intent intent = new Intent("com.snapyr.sdk.ACTION_DEEPLINK");
-//        sendBroadcast(intent, "owner.custom.permission");
-//        Log.e("YYY", MessageFormat.format("BROADCAST SENT FROM ACTIVITY: {0}", intent));
-//
-        Intent intent = new Intent("com.snapyr.sdk.sample.ACTION_DEEPLINK");
+    @OnClick(R.id.send_notif_broadcast)
+    void onSendNotifBroadcast() {
+        sendBroadcast("com.snapyr.sdk.notifications.ACTION_DEEPLINK");
+    }
+
+
+
+    @SuppressLint("NewApi")
+    private void sendBroadcast(String action) {
+        Log.e("YYY", "Send SDK broadcast 13");
+        Intent intent = new Intent(action);
+
+        PackageManager packageManager = this.getApplicationContext().getPackageManager();
+        List<ResolveInfo> receivers = packageManager.queryBroadcastReceivers(intent, 0);
+
+        for (ResolveInfo receiver : receivers) {
+            Log.e(
+                    "YYY",
+                    MessageFormat.format(
+                            "Receiver: {0} Packagename: {1} ServiceInfo: {2} ActivityInfo: {3} ProviderInfo: {4} isDefault: {5}",
+                            receiver,
+                            receiver.resolvePackageName,
+                            receiver.serviceInfo,
+                            receiver.activityInfo,
+                            receiver.providerInfo,
+                            receiver.isDefault));
+        }
+
+        intent.setPackage(this.getApplicationContext().getPackageName());
         sendBroadcast(intent);
-//        sendBroadcast(intent, "owner.custom.permission");
         Log.e("YYY", MessageFormat.format("BROADCAST SENT FROM ACTIVITY: {0}", intent));
+        addLog("broadcast", MessageFormat.format("broadcast sent from activity: {0}", intent));
+    }
 
-//        Intent intent = new Intent(this, )
-//        sendBroadcast(intent, "owner.custom.permission");
+    private void addLog(String name, String description) {
+        TextView logView = (TextView) this.findViewById(R.id.event_log);
+        SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss.SSS");
+        Date date = new Date();
+        Spanned newEntry = Html.fromHtml(String.format("%s: <b>%s</b>: %s<br />", formatter.format(date), name, description));
+        if (logView == null) {
+            Log.e("Snapyr.sample", "addLog: could not find view. Log: " + newEntry);
+            return;
+        }
+
+//        logView.p
+//        logView.setText(String.format("%s<br />%s", newEntry, logView.getText()));
+        Editable editableText = logView.getEditableText();
+        editableText.insert(0, newEntry);
+        logView.setText(editableText);
+//        logView.append(newEntry);
     }
 
     @OnClick(R.id.track_impression)
@@ -230,19 +314,22 @@ public class MainActivity extends Activity {
 
     @OnClick(R.id.action_track_a)
     void onButtonAClicked() {
-        Snapyr.with(this).track("customJson");
+        Snapyr.with(this).track("pushTest");
         Snapyr.with(this).flush();
+        addLog("track", "pushTest");
     }
 
     @OnClick(R.id.action_track_b)
     void onButtonBClicked() {
         Snapyr.with(this).track("pushTestAll");
         Snapyr.with(this).flush();
+        addLog("track", "pushTestAll");
     }
 
     @OnClick(R.id.action_show_notification)
     void onShowNotifyClicked() {
         Snapyr.with(this).getNotificationHandler().showSampleNotification();
+        addLog("notification", "triggered sample notification");
     }
 
     @OnClick(R.id.action_identify)
@@ -254,12 +341,14 @@ public class MainActivity extends Activity {
             Traits traits = new Traits().putValue("testAmount", 100);
             Snapyr.with(this).identify(id, traits, null);
             Snapyr.with(this).flush();
+            addLog("identify", "identified user id: " + id);
         }
     }
 
     @OnClick(R.id.action_flush)
     void onFlushButtonClicked() {
         Snapyr.with(this).flush();
+        addLog("flush", "");
     }
 
     @Override

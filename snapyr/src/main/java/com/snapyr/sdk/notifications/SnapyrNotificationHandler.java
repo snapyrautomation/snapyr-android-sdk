@@ -35,7 +35,6 @@ import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.TrafficStats;
 import android.net.Uri;
 import android.os.Build;
 import android.util.Log;
@@ -46,15 +45,16 @@ import androidx.core.app.NotificationManagerCompat;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.snapyr.sdk.R;
 import com.snapyr.sdk.Snapyr;
-import com.snapyr.sdk.core.R;
 import com.snapyr.sdk.internal.ActionButton;
 import com.snapyr.sdk.internal.PushTemplate;
 import com.snapyr.sdk.internal.Utils;
-
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -91,8 +91,9 @@ public class SnapyrNotificationHandler {
     public String defaultChannelDescription =
             "Displays all Snapyr-managed notifications by default";
     public int defaultChannelImportance = NotificationManagerCompat.IMPORTANCE_HIGH;
-    private int nextMessageId = 0;
-    private int nextActionButtonCode = 0;
+    private int nextMessageId = (int) (Math.random()*100000);
+    private int nextActionButtonCode = (int) (Math.random()*100000);
+    private int nextIntentRequestCode = (int) (Math.random()*100000);
 
     public SnapyrNotificationHandler(Context ctx) {
         Log.e("XXX", "SnapyrNotificationHandler: constructor - ATTACH DEBUGGER!!!");
@@ -169,19 +170,19 @@ public class SnapyrNotificationHandler {
                     "App reports it cannot resolve activity `com.snapyr.sdk.notifications.SnapyrNotificationListener`. Make sure it's configured in your manifest. Falling back to default launch intent for this notification.");
         }
 
-        Intent launchIntent = getLaunchIntent();
-        String deepLinkUrl = (String) data.get(NOTIF_DEEP_LINK_KEY);
-        if (deepLinkUrl != null) {
-            launchIntent.setData(Uri.parse(deepLinkUrl));
-            if (launchIntent.resolveActivity(applicationContext.getPackageManager()) == null) {
-                Log.e("Snapyr", "App reports the other thing isnt gonna work blah blah blah");
-            }
-        }
-        ts.addNextIntent(launchIntent);
+//        Intent launchIntent = getLaunchIntent();
+//        String deepLinkUrl = (String) data.get(NOTIF_DEEP_LINK_KEY);
+//        if (deepLinkUrl != null) {
+//            launchIntent.setData(Uri.parse(deepLinkUrl));
+//            if (launchIntent.resolveActivity(applicationContext.getPackageManager()) == null) {
+//                Log.e("Snapyr", "App reports the other thing isnt gonna work blah blah blah");
+//            }
+//        }
+//        ts.addNextIntent(launchIntent);
         ts.addNextIntent(trackIntent);
 
         int flags = getDefaultIntentFlags();
-        builder.setContentIntent(ts.getPendingIntent(0, flags));
+        builder.setContentIntent(ts.getPendingIntent(++nextIntentRequestCode, flags));
 
         PushTemplate pushTemplate = (PushTemplate) data.get(ACTION_BUTTONS_KEY);
         if (pushTemplate != null) {
@@ -256,16 +257,32 @@ public class SnapyrNotificationHandler {
         return result;
     }
 
-    private Intent getLaunchIntent() {
+    public Intent getLaunchIntent() {
         try {
             PackageManager pm = applicationContext.getPackageManager();
             Intent launchIntent = pm.getLaunchIntentForPackage(applicationContext.getPackageName());
             if (launchIntent == null) {
                 // No launch intent specified / found for this app. Default to ACTION_MAIN
                 launchIntent = new Intent(Intent.ACTION_MAIN);
+
+
                 launchIntent.addFlags(
                         Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 launchIntent.setPackage(applicationContext.getPackageName());
+                Log.i("XXX", "SnapyrNotificationHandler: getLaunchIntent: defaulting to ACTION_MAIN...");
+            } else {
+//                launchIntent.setFlags(0);
+                launchIntent.setPackage(null); // helps make existing activity resume (if any)
+                launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                        | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+//                        | Intent.FLAG_ACTIVITY_SINGLE_TOP
+//                        | Intent.FLAG_ACTIVITY_CLEAR_TASK
+//                        | Intent.FLAG_ACTIVITY_TASK_ON_HOME
+//                        | Intent.FLAG_ACTIVITY_SINGLE_TOP
+                );
+
+//                launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                Log.i("XXX", "SnapyrNotificationHandler: getLaunchIntent: `getLaunchIntentForPackage`");
             }
             String x = launchIntent.getDataString();
             Log.i(
@@ -326,30 +343,31 @@ public class SnapyrNotificationHandler {
                 .setAutoCancel(true);
         int notificationId = ++nextMessageId;
 
-        createActionButton(
-                builder,
-                notificationId,
-                new ActionButton(
-                        "button_one", "button_one", "button_one", "snapyrsample://firsttest"),
-                "");
-
-        createActionButton(
-                builder,
-                notificationId,
-                new ActionButton(
-                        "button_two", "button_two", "button_two", "snapyrsample://secondtest"),
-                "");
+//        createActionButton(
+//                builder,
+//                notificationId,
+//                new ActionButton(
+//                        "button_one", "button_one", "button_one", "snapyrsample://firsttest"),
+//                "");
+//
+//        createActionButton(
+//                builder,
+//                notificationId,
+//                new ActionButton(
+//                        "button_two", "button_two", "button_two", "snapyrsample://secondtest"),
+//                "");
 
         TaskStackBuilder ts = TaskStackBuilder.create(this.context);
 
-        String sampleDeepLinkUrl = "https://www.disney.com";
+//        String sampleDeepLinkUrl = "snapyrsample://test/asdf/jkl";
+        String sampleDeepLinkUrl = "http://www.disney.com";
 
         Intent trackIntent = new Intent(this.context, SnapyrNotificationListener.class);
         trackIntent.setAction(NOTIFICATION_ACTION);
-//        trackIntent.putExtra(ACTION_ID_KEY, (String) data.get(ACTION_ID_KEY));
+        //        trackIntent.putExtra(ACTION_ID_KEY, (String) data.get(ACTION_ID_KEY));
         trackIntent.putExtra(ACTION_DEEP_LINK_KEY, sampleDeepLinkUrl);
         trackIntent.putExtra(NOTIFICATION_ID, notificationId);
-//        trackIntent.putExtra(NOTIF_TOKEN_KEY, (String) data.get(NOTIF_TOKEN_KEY));
+        //        trackIntent.putExtra(NOTIF_TOKEN_KEY, (String) data.get(NOTIF_TOKEN_KEY));
 
         // TODO: check about urls not configured as a scheme in manifest, e.g. app configured to
         // handle `snapyrtest://demo/asdf` but marketer passes deep link `http://www.disney.com`
@@ -361,20 +379,26 @@ public class SnapyrNotificationHandler {
 
         Intent launchIntent = getLaunchIntent();
         String deepLinkUrl = sampleDeepLinkUrl;
+//        String deepLinkUrl = null;
         if (deepLinkUrl != null) {
             launchIntent.setData(Uri.parse(deepLinkUrl));
+//            launchIntent.putExtra("deepLink", deepLinkUrl);
             if (launchIntent.resolveActivity(applicationContext.getPackageManager()) == null) {
                 Log.e("Snapyr", "App reports the other thing isnt gonna work blah blah blah");
             }
         }
-        ts.addNextIntent(launchIntent);
+        showFlags(launchIntent);
+
+//        ts.addNextIntent(launchIntent);
         ts.addNextIntent(trackIntent);
 
         int flags = getDefaultIntentFlags();
-        builder.setContentIntent(ts.getPendingIntent(0, flags));
+        Log.w("XXX", "nextIntentRequestCode: " + nextIntentRequestCode);
+//        builder.setContentIntent(ts.getPendingIntent(++nextIntentRequestCode, flags));
+        builder.setContentIntent(PendingIntent.getActivity(applicationContext, ++nextIntentRequestCode, launchIntent, flags));
 
-//        builder.setContentIntent(
-//                PendingIntent.getActivity(applicationContext, 0, getLaunchIntent(), 0));
+        //        builder.setContentIntent(
+        //                PendingIntent.getActivity(applicationContext, ++nextIntentRequestCode, getLaunchIntent(), 0));
         Notification notification = builder.build();
         notificationMgr.notify(nextMessageId++, notification);
     }
@@ -398,5 +422,28 @@ public class SnapyrNotificationHandler {
                                 snapyrInstance.setPushNotificationToken(token);
                             }
                         });
+    }
+
+    public static void showFlags(Intent intent) {
+        Log.d("ZZZ", MessageFormat.format("Flags for intent: {0}", intent));
+        Field[] declaredFields = Intent.class.getDeclaredFields();
+        for (Field field : declaredFields) {
+            if (field.getName().startsWith("FLAG_")) {
+
+                try {
+                    int flag = field.getInt(null);
+
+                    if ((intent.getFlags() & flag) != 0) {
+                        Log.d("ZZZ", field.getName());
+                    }
+
+                } catch (IllegalArgumentException e) {
+                    e.printStackTrace();
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }
     }
 }

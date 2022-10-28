@@ -25,7 +25,7 @@ package com.snapyr.sdk.http;
 
 import android.net.TrafficStats;
 import android.util.Base64;
-import com.snapyr.sdk.core.BuildConfig;
+import com.snapyr.sdk.BuildConfig;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -82,7 +82,7 @@ public class ConnectionFactory {
      */
     public WriteConnection postBatch() throws IOException {
         return new WriteConnection(engineRequest("v1/batch", "POST"));
-//        return new WriteConnection(engineRequest("v1/batch?deets=true", "POST"));
+        //        return new WriteConnection(engineRequest("v1/batch?deets=true", "POST"));
     }
 
     public HttpURLConnection engineRequest(String path, String method) throws IOException {

@@ -29,7 +29,6 @@ import android.net.ConnectivityManager
 import com.google.common.collect.ImmutableMap
 import com.nhaarman.mockitokotlin2.whenever
 import com.snapyr.sdk.Utils.createContext
-import com.snapyr.sdk.core.BuildConfig
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.assertj.core.data.MapEntry

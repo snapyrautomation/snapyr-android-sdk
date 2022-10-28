@@ -30,6 +30,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
+import android.util.Log;
 import androidx.annotation.Nullable;
 import com.snapyr.sdk.ValueMap;
 import com.snapyr.sdk.inapp.InAppFacade;
@@ -290,6 +291,8 @@ public class BatchUploadQueue {
                 responseBody = Utils.readFully(inputStream);
                 handleActionsIfAny(responseBody);
             }
+
+            Log.e("Snapyr.HTTP", "Received response from server:\n" + responseBody);
 
             Utils.closeQuietly(inputStream);
             connection.close();

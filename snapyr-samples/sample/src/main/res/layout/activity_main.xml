@@ -112,10 +112,30 @@
             android:layout_height="16dp" />
 
         <Button
-            android:id="@+id/send_broadcast"
+            android:id="@+id/send_sample_broadcast"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Send Broadcast" />
+            android:text="Send &quot;sample&quot; Broadcast" />
+        <Button
+            android:id="@+id/send_sdk_broadcast"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Send &quot;sdk&quot; Broadcast" />
+        <Button
+            android:id="@+id/send_notif_broadcast"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Send &quot;notifications&quot; Broadcast" />
+
+        <TextView
+            android:id="@+id/event_log"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:paddingLeft="8dp"
+            android:textSize="16dp"
+            android:bufferType="editable"
+            android:lineSpacingExtra="8dp" />
 
     </LinearLayout>
 

@@ -31,7 +31,6 @@ import android.content.res.Resources
 import com.nhaarman.mockitokotlin2.whenever
 import com.snapyr.sdk.Snapyr.Builder
 import com.snapyr.sdk.Snapyr.WRITE_KEY_RESOURCE_IDENTIFIER
-import com.snapyr.sdk.core.BuildConfig
 import java.util.concurrent.TimeUnit
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
