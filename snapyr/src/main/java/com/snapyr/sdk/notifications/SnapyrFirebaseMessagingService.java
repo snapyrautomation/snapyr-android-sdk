@@ -110,7 +110,8 @@ public class SnapyrFirebaseMessagingService extends FirebaseMessagingService {
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     private PushTemplate processPushTemplate(@NonNull ValueMap templateObject, Snapyr sdkInstance) {
-        String templateRaw = templateObject.get("pushTemplate").toString();
+        String templateRaw =
+                templateObject.get(SnapyrNotificationHandler.NOTIF_TEMPLATE_KEY).toString();
         String templateId = null;
         Date modified = null;
         try {
