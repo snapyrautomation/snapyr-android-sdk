@@ -112,6 +112,7 @@ public class WebviewJavascriptAPI {
                 // Do tracking and maybe other stuff? We could possibly trigger a user-configured
                 // callback
                 String clickId = data.getString("id");
+                String url = data.getString("url");
                 ValueMap parameters = null;
                 try {
                     // All `data-x` attributes on the element that was clicked (may be empty object)
@@ -124,7 +125,7 @@ public class WebviewJavascriptAPI {
                         String.format(
                                 "In-App click received! \nid: %s \nparameters: %s",
                                 clickId, parameters));
-                callbackHandler.onClick(clickId, parameters);
+                callbackHandler.onClick(clickId, url, parameters);
                 break;
             case close:
                 // Do tracking and maybe other stuff? We could possibly trigger a user-configured
@@ -142,7 +143,7 @@ public class WebviewJavascriptAPI {
     public interface SnapyrWebviewInterfaceCallback {
         void onClose();
 
-        void onClick(String id, ValueMap parameters);
+        void onClick(String id, String url, ValueMap parameters);
 
         void onLoad(float clientHeight);
     }

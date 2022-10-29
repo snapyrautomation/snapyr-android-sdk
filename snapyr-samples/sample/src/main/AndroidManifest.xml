@@ -74,7 +74,11 @@
             </intent-filter>
         </activity>
 
-        <activity android:name="com.snapyr.sdk.notifications.SnapyrNotificationListener">
+        <activity android:name="com.snapyr.sdk.notifications.SnapyrNotificationListener"
+            android:noHistory="true"
+            android:excludeFromRecents="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"
+            android:taskAffinity="">
             <intent-filter>
                 <action android:name="com.snapyr.sdk.notifications.TRACK_BROADCAST" />
                 <category android:name="android.intent.category.DEFAULT" />

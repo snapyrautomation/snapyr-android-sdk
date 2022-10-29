@@ -25,8 +25,10 @@ package com.snapyr.sdk.inapp.webview;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.util.Base64;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
@@ -39,7 +41,11 @@ import com.snapyr.sdk.Properties;
 import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.ValueMap;
 import com.snapyr.sdk.core.R;
+import com.snapyr.sdk.notifications.SnapyrNotificationHandler;
+import com.snapyr.sdk.notifications.SnapyrNotificationListener;
 import com.snapyr.sdk.services.ServiceFacade;
+
+import java.text.MessageFormat;
 
 public class WebviewModalView extends FrameLayout {
     static PopupWindow popupWindow = null;
@@ -66,6 +72,26 @@ public class WebviewModalView extends FrameLayout {
             WebviewModalView.popupWindow.dismiss();
             return;
         }
+    }
+
+    private void handleClick(String id, String url, ValueMap parameters) {
+        Log.e("Snapyr.InApp", MessageFormat.format("In-app click: id: {0} url: {1}\nparams: {2}", id, url, parameters));
+        Intent trackIntent = new Intent(this.getContext(), SnapyrNotificationListener.class);
+        trackIntent.setAction(SnapyrNotificationHandler.NOTIFICATION_ACTION);
+        trackIntent.putExtra(SnapyrNotificationHandler.ACTION_ID_KEY, url);
+        trackIntent.putExtra(SnapyrNotificationHandler.ACTION_DEEP_LINK_KEY, url);
+        trackIntent.putExtra(SnapyrNotificationHandler.NOTIFICATION_ID, url);
+        trackIntent.putExtra(SnapyrNotificationHandler.NOTIF_TOKEN_KEY, url);
+//        trackIntent.addFlags(
+//                Intent.FLAG_ACTIVITY_SINGLE_TOP |
+//                Intent.FLAG_ACTIVITY_CLEAR_TOP |
+//                        Intent.FLAG_ACTIVITY_NO_ANIMATION
+//        );
+//        trackIntent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        // Intent intent;
+        dismissPopup();
+        Log.e("Snapyr.InApp", "WebviewModal taskId: " + ServiceFacade.getCurrentActivity().getTaskId());
+        this.getContext().startActivity(trackIntent);
     }
 
     public WebviewModalView(Context context, String html, String token) {
@@ -102,7 +128,8 @@ public class WebviewModalView extends FrameLayout {
                     }
                 });
         popupWindow.showAtLocation(contents, Gravity.CENTER, 0, 0);
-        view.setVisibility(INVISIBLE);
+        this.setVisibility(INVISIBLE);
+//        view.setVisibility(INVISIBLE);
 
         WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
     }
@@ -111,8 +138,9 @@ public class WebviewModalView extends FrameLayout {
         return new InAppWebviewClient() {
             @Override
             public void onPageCommitVisible(WebView view, String url) {
+                Log.e("Snapyr.InApp", "web view onPageCommitVisibile");
                 super.onPageCommitVisible(view, url);
-                view.setVisibility(VISIBLE);
+                WebviewModalView.this.setVisibility(VISIBLE);
             }
         };
     }
@@ -155,16 +183,18 @@ public class WebviewModalView extends FrameLayout {
                             }
 
                             @Override
-                            public void onClick(String id, ValueMap parameters) {
+                            public void onClick(String id, String url, ValueMap parameters) {
                                 wasInteractedWith = true;
                                 Properties props = new Properties(parameters);
                                 snapyr.trackInAppMessageClick(actionToken, props);
+                                handleClick(id, url, parameters);
                                 // TODO: should we dismiss on click?
-                                dismissPopup();
+//                                dismissPopup();
                             }
 
                             @Override
                             public void onLoad(float clientHeight) {
+                                Log.e("Snapyr.InApp", "web view onLoad, height: " + clientHeight);
                                 snapyr.trackInAppMessageImpression(actionToken);
                             }
                         }),

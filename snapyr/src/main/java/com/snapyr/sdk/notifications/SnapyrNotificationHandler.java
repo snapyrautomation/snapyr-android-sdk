@@ -302,8 +302,23 @@ public class SnapyrNotificationHandler {
                         "button_two", "button_two", "button_two", "snapyrsample://secondtest"),
                 "");
 
+        String url = "snapyrsample://test/hello+world/more+stuff";
+        Intent trackIntent = new Intent(applicationContext, SnapyrNotificationListener.class);
+        trackIntent.setAction(SnapyrNotificationHandler.NOTIFICATION_ACTION);
+        trackIntent.putExtra(SnapyrNotificationHandler.ACTION_ID_KEY, url);
+        trackIntent.putExtra(SnapyrNotificationHandler.ACTION_DEEP_LINK_KEY, url);
+        trackIntent.putExtra(SnapyrNotificationHandler.NOTIFICATION_ID, url);
+        trackIntent.putExtra(SnapyrNotificationHandler.NOTIF_TOKEN_KEY, url);
+
+//        trackIntent.addFlags(
+//                Intent.FLAG_ACTIVITY_SINGLE_TOP |
+//                        Intent.FLAG_ACTIVITY_CLEAR_TOP |
+//                        Intent.FLAG_ACTIVITY_NO_ANIMATION
+//        );
+
         builder.setContentIntent(
-                PendingIntent.getActivity(applicationContext, 0, getLaunchIntent(), 0));
+                PendingIntent.getActivity(applicationContext, (int) Math.random() * 100000,
+                        trackIntent, getDefaultIntentFlags()));
         Notification notification = builder.build();
         notificationMgr.notify(nextMessageId++, notification);
     }

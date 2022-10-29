@@ -24,6 +24,9 @@
 package com.snapyr.sdk.notifications;
 
 import android.app.Activity;
+import android.app.ActivityManager;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -32,6 +35,10 @@ import androidx.core.app.NotificationManagerCompat;
 import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.internal.TrackerUtil;
 import com.snapyr.sdk.internal.Utils;
+import com.snapyr.sdk.services.ServiceFacade;
+
+import java.text.MessageFormat;
+import java.util.List;
 
 /**
  * SnapyrNotificationListener Activity that triggers and fires off a track event with the payload
@@ -63,11 +70,41 @@ public class SnapyrNotificationListener extends Activity {
         NotificationManagerCompat.from(this.getApplicationContext()).cancel(notificationId);
 
         if (!Utils.isNullOrEmpty(deepLink)) { // deeplink provided, respect it and advance
+            Uri deepLinkUri = Uri.parse(deepLink);
             Intent deepLinkIntent = new Intent();
             deepLinkIntent.setAction("com.snapyr.sdk.notifications.ACTION_DEEPLINK");
-            deepLinkIntent.setData(Uri.parse(deepLink));
-            deepLinkIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            this.startActivity(deepLinkIntent);
+            deepLinkIntent.setData(deepLinkUri);
+            deepLinkIntent.setFlags(0
+                    | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+                    | Intent.FLAG_ACTIVITY_NEW_TASK
+                    | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+//                    | Intent.FLAG_ACTIVITY_SINGLE_TOP
+//                    | Intent.FLAG_ACTIVITY_MULTIPLE_TASK
+//                    | Intent.FLAG_ACTIVITY_NO_ANIMATION
+            );
+            ComponentName componentName = deepLinkIntent.resolveActivity(this.getPackageManager());
+            if (componentName != null) {
+                this.startActivity(deepLinkIntent);
+            } else {
+                String scheme = deepLinkUri.getScheme();
+                if (scheme.equalsIgnoreCase("http") || scheme.equalsIgnoreCase("https")) {
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, deepLinkUri);
+                    this.startActivity(browserIntent);
+                } else {
+                    Log.e("Snapyr", "Could not launch intent for deepLinkUrl: " + deepLinkUri);
+                }
+            }
+        }
+
+        ActivityManager am = (ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            List<ActivityManager.AppTask> appTasks = am.getAppTasks();
+            ActivityManager.AppTask appTask = appTasks.get(0);
+
+            Log.e("Snapyr.InApp", "NotificationListener taskId: " + this.getTaskId());
+            Log.e("Snapyr.InApp", MessageFormat.format("Task: {0}", appTask));
+            this.getTaskId();
+//            am.moveTaskToFront();
         }
 
         this.finish(); // Nothing to do, go back in the stack

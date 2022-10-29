@@ -28,6 +28,8 @@ import android.app.Application;
 import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.SnapyrContext;
 import com.snapyr.sdk.http.ConnectionFactory;
+
+import java.lang.ref.WeakReference;
 import java.util.concurrent.ExecutorService;
 
 public class ServiceFacade {
@@ -39,7 +41,7 @@ public class ServiceFacade {
     Crypto crypto;
     ConnectionFactory connectionFactory;
     SnapyrContext snapyrContext;
-    Activity currentActivity;
+    WeakReference<Activity> currentActivity;
 
     public static ServiceFacade getInstance() {
         if (ServiceFacade.instance == null) {
@@ -105,11 +107,11 @@ public class ServiceFacade {
     }
 
     public static Activity getCurrentActivity() {
-        return getInstance().currentActivity;
+        return getInstance().currentActivity.get();
     }
 
     public void setCurrentActivity(Activity currentActivity) {
-        this.currentActivity = currentActivity;
+        this.currentActivity = new WeakReference<>(currentActivity);
     }
 
     public static ExecutorService getNetworkExecutor() {

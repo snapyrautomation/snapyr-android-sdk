@@ -42,6 +42,8 @@ import com.google.firebase.installations.FirebaseInstallations;
 import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.Traits;
 import io.github.inflationx.viewpump.ViewPumpContextWrapper;
+
+import java.text.MessageFormat;
 import java.util.List;
 
 public class MainActivity extends Activity {
@@ -55,6 +57,7 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.e("Snapyr.Sample", "onCreate");
         super.onCreate(savedInstanceState);
 
         Intent intent = getIntent();
@@ -66,6 +69,19 @@ public class MainActivity extends Activity {
 
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.e("Snapyr.Sample", "onStart: taskId: " + getTaskId());
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        Log.e("Snapyr.Sample", MessageFormat.format("onNewIntent called! {0}", intent));
+        handleOpenIntent(intent);
+        super.onNewIntent(intent);
     }
 
     public void handleOpenIntent(Intent intent) {
@@ -80,13 +96,13 @@ public class MainActivity extends Activity {
             String response = paths.get(0);
             String text = paths.get(1);
             Toast.makeText(this, text, Toast.LENGTH_LONG).show();
-            Log.e("Snapyr", "Sample app open intent data: " + data);
+            Log.e("Snapyr.Sample", "Sample app open intent data: " + data);
         }
     }
 
     @OnClick(R.id.action_track_a)
     void onButtonAClicked() {
-        Snapyr.with(this).track("Button A Clicked");
+        Snapyr.with(this).track("deepLinkTest");
     }
 
     @OnClick(R.id.action_track_b)

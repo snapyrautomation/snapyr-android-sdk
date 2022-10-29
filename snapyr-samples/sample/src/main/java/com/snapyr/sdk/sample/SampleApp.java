@@ -42,7 +42,7 @@ public class SampleApp extends Application {
 
     // https://segment.com/segment-engineering/sources/android-test/settings/keys
     //    private static final String ANALYTICS_WRITE_KEY = "HO63Z36e0Ufa8AAgbjDomDuKxFuUICqI";
-    private static final String ANALYTICS_WRITE_KEY = "cTcjOQYhhxOTXF6eHFflOCyYPO6pfAOV";
+    private static final String ANALYTICS_WRITE_KEY = "MsZEepxHLRM9d7CU0ClTC84T0E9w9H8w";
 
     @RequiresApi(api = Build.VERSION_CODES.P)
     @Override
@@ -55,15 +55,18 @@ public class SampleApp extends Application {
                         .detectLeakedRegistrationObjects()
                         // .penaltyDeath()
                         .penaltyListener(
-                                Executors.newSingleThreadExecutor(),
-                                (Violation var1) -> {
-                                    // This catches leaks in our code that would have propagated to
-                                    // client code in the wild. If you want to be really careful
-                                    // uncomment the penaltyDeath line above --BS
-                                    Log.e(
-                                            var1.getLocalizedMessage(),
-                                            String.valueOf(var1.getCause().getStackTrace()));
-                                })
+                                Executors.newSingleThreadExecutor(), new StrictMode.OnVmViolationListener() {
+                                    @Override
+                                    public void onVmViolation(Violation v) {
+                                        // This catches leaks in our code that would have propagated to
+                                        // client code in the wild. If you want to be really careful
+                                        // uncomment the penaltyDeath line above --BS
+                                        Log.e(
+                                                v.getLocalizedMessage(),
+                                                String.valueOf(v.getCause().getStackTrace()));
+                                    }
+                                }
+                        )
                         .build());
 
         ViewPump.init(
