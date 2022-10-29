@@ -46,12 +46,14 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.snapyr.sdk.Snapyr;
+import com.snapyr.sdk.ValueMap;
 import com.snapyr.sdk.core.R;
 import com.snapyr.sdk.internal.ActionButton;
 import com.snapyr.sdk.internal.PushTemplate;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -70,6 +72,7 @@ public class SnapyrNotificationHandler {
             "categoryName"; // TODO (@paulwsmith): get from config?
     public static final String NOTIF_CHANNEL_DESCRIPTION_KEY =
             "categoryDescription"; // TODO (@paulwsmith): get from config?
+    public static final String NOTIF_TEMPLATE_KEY = "pushTemplate";
 
     public static final String ACTION_BUTTONS_KEY = "actionButtons";
     public static final String ACTION_ID_KEY = "actionId";
@@ -278,34 +281,54 @@ public class SnapyrNotificationHandler {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     public void showSampleNotification() {
-        NotificationCompat.Builder builder =
-                new NotificationCompat.Builder(this.context, this.defaultChannelId);
-        builder.setSmallIcon(getNotificationIcon())
-                .setContentTitle("Snapyr: Title")
-                .setSubText("Snapyr: Subtext")
-                .setContentText("Snapyr: Content text")
-                .setAutoCancel(true);
-        int notificationId = ++nextMessageId;
+        ArrayList<ValueMap> actionButtons = new ArrayList<>();
+        actionButtons.add(
+                new ValueMap()
+                        .putValue("id", "button_one")
+                        .putValue("actionId", "button_one")
+                        .putValue("title", "button_one")
+                        .putValue("deepLinkUrl", "snapyrsample://firsttest"));
+        actionButtons.add(
+                new ValueMap()
+                        .putValue("id", "button_two")
+                        .putValue("actionId", "button_two")
+                        .putValue("title", "button_two")
+                        .putValue("deepLinkUrl", "snapyrsample://secondtest"));
 
-        createActionButton(
-                builder,
-                notificationId,
-                new ActionButton(
-                        "button_one", "button_one", "button_one", "snapyrsample://firsttest"),
-                "");
+        ValueMap pushTemplateRaw =
+                new ValueMap()
+                        .putValue("id", "abcdef01-2345-6789-0123-abcdef012345")
+                        .putValue("modified", "2022-01-01T00:00:00Z")
+                        .putValue("actions", actionButtons);
 
-        createActionButton(
-                builder,
-                notificationId,
-                new ActionButton(
-                        "button_two", "button_two", "button_two", "snapyrsample://secondtest"),
-                "");
+        PushTemplate pushTemplate = new PushTemplate(pushTemplateRaw);
 
-        builder.setContentIntent(
-                PendingIntent.getActivity(applicationContext, 0, getLaunchIntent(), 0));
-        Notification notification = builder.build();
-        notificationMgr.notify(nextMessageId++, notification);
+        ValueMap samplePushData =
+                new ValueMap()
+                        .putValue(NOTIF_TITLE_KEY, "Snapyr: Title")
+                        .putValue(NOTIF_SUBTITLE_KEY, "Snapyr: Subtext")
+                        .putValue(NOTIF_CONTENT_KEY, "Snapyr: Content text")
+                        .putValue(
+                                NOTIF_DEEP_LINK_KEY,
+                                "snapyrsample://test/encoded&20message/more%20stuff")
+                        .putValue(
+                                NOTIF_IMAGE_URL_KEY,
+                                "https://images-na.ssl-images-amazon.com/images/S/pv-target-images/fb1fd46fbac48892ef9ba8c78f1eb6fa7d005de030b2a3d17b50581b2935832f._RI_.jpg")
+                        .putValue(
+                                NOTIF_TEMPLATE_KEY,
+                                "{\"modified\":\"2022-01-01T00:00:00Z\",\"id\":\"abcdef01-2345-6789-0123-abcdef012345\"}")
+                        .putValue(NOTIF_TOKEN_KEY, "abc123")
+                        .putValue(ACTION_BUTTONS_KEY, pushTemplate);
+
+        // Execute in one-off thread to ensure image fetch / notify doesn't run in UI thread
+        new Thread() {
+            @Override
+            public void run() {
+                showRemoteNotification(samplePushData);
+            }
+        }.start();
     }
 
     public void autoRegisterFirebaseToken(Snapyr snapyrInstance) {
