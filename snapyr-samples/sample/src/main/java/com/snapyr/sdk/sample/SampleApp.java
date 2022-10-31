@@ -61,9 +61,9 @@ public class SampleApp extends Application {
                                     public void onVmViolation(Violation v) {
                                         // This catches leaks in our code that would have propagated
                                         // to
-                                    // client code in the wild. If you want to be really careful
-                                    // uncomment the penaltyDeath line above --BS
-                                    Log.e(
+                                        // client code in the wild. If you want to be really careful
+                                        // uncomment the penaltyDeath line above --BS
+                                        Log.e(
                                                 v.getLocalizedMessage(),
                                                 String.valueOf(v.getCause().getStackTrace()));
                                     }
