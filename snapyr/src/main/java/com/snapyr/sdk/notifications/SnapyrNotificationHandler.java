@@ -28,7 +28,6 @@ import static com.snapyr.sdk.internal.Utils.isNullOrEmpty;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.PendingIntent;
-import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -92,7 +91,7 @@ public class SnapyrNotificationHandler {
             "Displays all Snapyr-managed notifications by default";
     public int defaultChannelImportance = NotificationManagerCompat.IMPORTANCE_HIGH;
     private int nextMessageId = 0;
-    private int nextActionButtonCode = 0;
+    private int nextIntentRequestCode = 0;
 
     public SnapyrNotificationHandler(Context ctx) {
         context = ctx;
@@ -103,7 +102,6 @@ public class SnapyrNotificationHandler {
                 defaultChannelName,
                 defaultChannelDescription,
                 defaultChannelImportance);
-        getLaunchIntent();
     }
 
     public void registerChannel(String channelId, String name, String description, int importance) {
@@ -142,20 +140,23 @@ public class SnapyrNotificationHandler {
                 .setColor(Color.BLUE) // TODO (@paulwsmith): make configurable
                 .setAutoCancel(true); // true means notification auto dismissed after tapping. TODO
 
-        TaskStackBuilder ts = TaskStackBuilder.create(this.context);
-
-        Intent trackIntent = new Intent(this.context, SnapyrNotificationListener.class);
-        trackIntent.setAction(NOTIFICATION_ACTION);
+        Intent trackIntent = new Intent(applicationContext, SnapyrNotificationListener.class);
         trackIntent.putExtra(ACTION_ID_KEY, (String) data.get(ACTION_ID_KEY));
         trackIntent.putExtra(ACTION_DEEP_LINK_KEY, (String) data.get(NOTIF_DEEP_LINK_KEY));
         trackIntent.putExtra(NOTIFICATION_ID, notificationId);
         trackIntent.putExtra(NOTIF_TOKEN_KEY, (String) data.get(NOTIF_TOKEN_KEY));
 
-        ts.addNextIntent(getLaunchIntent());
-        ts.addNextIntent(trackIntent);
+        trackIntent.addFlags(
+                0
+                        | Intent.FLAG_ACTIVITY_SINGLE_TOP
+                        | Intent.FLAG_ACTIVITY_CLEAR_TOP
+                        | Intent.FLAG_ACTIVITY_NO_HISTORY
+                        | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
 
-        int flags = getDefaultIntentFlags();
-        builder.setContentIntent(ts.getPendingIntent(0, flags));
+        int flags = getDefaultPendingIntentFlags();
+        builder.setContentIntent(
+                PendingIntent.getActivity(
+                        this.context, ++nextIntentRequestCode, trackIntent, flags));
 
         PushTemplate pushTemplate = (PushTemplate) data.get(ACTION_BUTTONS_KEY);
         if (pushTemplate != null) {
@@ -228,24 +229,6 @@ public class SnapyrNotificationHandler {
         return result;
     }
 
-    private Intent getLaunchIntent() {
-        try {
-            PackageManager pm = applicationContext.getPackageManager();
-            Intent launchIntent = pm.getLaunchIntentForPackage(applicationContext.getPackageName());
-            if (launchIntent == null) {
-                // No launch intent specified / found for this app. Default to ACTION_MAIN
-                launchIntent = new Intent(Intent.ACTION_MAIN);
-                launchIntent.addFlags(
-                        Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                launchIntent.setPackage(applicationContext.getPackageName());
-            }
-            return launchIntent;
-        } catch (Exception e) {
-            Log.e("Snapyr", "Could not get launch intent", e);
-            return new Intent(Intent.ACTION_MAIN);
-        }
-    }
-
     private void createActionButton(
             NotificationCompat.Builder builder,
             int notificationId,
@@ -258,19 +241,15 @@ public class SnapyrNotificationHandler {
         trackIntent.putExtra(NOTIFICATION_ID, notificationId);
         trackIntent.putExtra(NOTIF_TOKEN_KEY, actionToken);
 
-        TaskStackBuilder ts = TaskStackBuilder.create(this.context);
-        ts.addNextIntent(getLaunchIntent());
-        ts.addNextIntent(trackIntent);
+        int flags = getDefaultPendingIntentFlags();
+        PendingIntent pendingIntent =
+                PendingIntent.getActivity(
+                        this.context, ++nextIntentRequestCode, trackIntent, flags);
 
-        int flags = getDefaultIntentFlags();
-
-        builder.addAction(
-                R.drawable.ic_snapyr_logo_only,
-                template.title,
-                ts.getPendingIntent(++nextActionButtonCode, flags));
+        builder.addAction(R.drawable.ic_snapyr_logo_only, template.title, pendingIntent);
     }
 
-    private int getDefaultIntentFlags() {
+    private int getDefaultPendingIntentFlags() {
         // Newer versions of Android require one of FLAG_MUTABLE or FLAG_IMMUTABLE to
         // be included. FLAG_IMMUTABLE is the default as we don't currently support
         // notifications with mutable content, such as inline-reply notifications
