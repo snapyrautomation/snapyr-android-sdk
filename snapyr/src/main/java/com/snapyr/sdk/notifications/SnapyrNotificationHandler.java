@@ -30,11 +30,9 @@ import android.app.NotificationChannel;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.os.Build;
 import android.util.Log;
 import androidx.annotation.NonNull;
@@ -137,7 +135,6 @@ public class SnapyrNotificationHandler {
                 .setContentTitle((String) data.get(NOTIF_TITLE_KEY))
                 .setContentText((String) data.get(NOTIF_CONTENT_KEY))
                 .setSubText((String) data.get(NOTIF_SUBTITLE_KEY))
-                .setColor(Color.BLUE) // TODO (@paulwsmith): make configurable
                 .setAutoCancel(true); // true means notification auto dismissed after tapping. TODO
 
         Intent trackIntent = new Intent(applicationContext, SnapyrNotificationListener.class);
