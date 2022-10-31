@@ -56,13 +56,17 @@ public class SampleApp extends Application {
                         // .penaltyDeath()
                         .penaltyListener(
                                 Executors.newSingleThreadExecutor(),
-                                (Violation var1) -> {
-                                    // This catches leaks in our code that would have propagated to
+                                new StrictMode.OnVmViolationListener() {
+                                    @Override
+                                    public void onVmViolation(Violation v) {
+                                        // This catches leaks in our code that would have propagated
+                                        // to
                                     // client code in the wild. If you want to be really careful
                                     // uncomment the penaltyDeath line above --BS
                                     Log.e(
-                                            var1.getLocalizedMessage(),
-                                            String.valueOf(var1.getCause().getStackTrace()));
+                                                v.getLocalizedMessage(),
+                                                String.valueOf(v.getCause().getStackTrace()));
+                                    }
                                 })
                         .build());
 
