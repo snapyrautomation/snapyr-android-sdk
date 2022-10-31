@@ -28,20 +28,28 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.Html;
+import android.text.Spanned;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
+import androidx.annotation.RequiresApi;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import com.google.firebase.installations.FirebaseInstallations;
 import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.Traits;
 import io.github.inflationx.viewpump.ViewPumpContextWrapper;
+import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 public class MainActivity extends Activity {
@@ -57,15 +65,35 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Intent intent = getIntent();
-        if (intent != null) {
-            handleOpenIntent(intent);
-        }
-
-        FirebaseInstallations.getInstance().delete();
+        // For debugging - destroys the FB token so a new one will be created. Probably does some
+        // other stuff too
+        //        FirebaseInstallations.getInstance().delete();
 
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+
+        Intent intent = getIntent();
+        this.addLog("onCreate", MessageFormat.format("intent: {0}", intent));
+        if (intent != null) {
+            handleOpenIntent(intent);
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.i("Snapyr.Sample", "onStart: taskId: " + getTaskId());
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        addLog("onNewIntent", MessageFormat.format("intent: {0}", intent));
+        handleOpenIntent(intent);
+        // `onNewIntent` doesn't automatically update the intent on the activity. Do that explicitly
+        // so any later activity calls to `getIntent()` get this new version
+        this.setIntent(intent);
+
+        super.onNewIntent(intent);
     }
 
     public void handleOpenIntent(Intent intent) {
@@ -86,7 +114,7 @@ public class MainActivity extends Activity {
 
     @OnClick(R.id.action_track_a)
     void onButtonAClicked() {
-        Snapyr.with(this).track("Button A Clicked");
+        Snapyr.with(this).track("pushTest");
     }
 
     @OnClick(R.id.action_track_b)
@@ -94,6 +122,7 @@ public class MainActivity extends Activity {
         Snapyr.with(this).track("Button B Clicked");
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @OnClick(R.id.action_show_notification)
     void onShowNotifyClicked() {
         Snapyr.with(this).getNotificationHandler().showSampleNotification();
@@ -139,5 +168,37 @@ public class MainActivity extends Activity {
     @Override
     protected void attachBaseContext(Context newBase) {
         super.attachBaseContext(ViewPumpContextWrapper.wrap(newBase));
+    }
+
+    private void addLog(String name) {
+        SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss.SSS");
+        Date date = new Date();
+        Spanned newEntry =
+                Html.fromHtml(String.format("<p>%s: <b>%s</b></p>", formatter.format(date), name));
+        prependLogEntry(newEntry);
+    }
+
+    private void addLog(String name, String description) {
+        SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss.SSS");
+        Date date = new Date();
+        Spanned newEntry =
+                Html.fromHtml(
+                        String.format(
+                                "<p>%s: <b>%s</b>: %s</p>",
+                                formatter.format(date), name, description));
+        prependLogEntry(newEntry);
+    }
+
+    private void prependLogEntry(Spanned newEntry) {
+        TextView logView = this.findViewById(R.id.event_log);
+        Log.i("Snapyr.Sample", String.valueOf(newEntry));
+        if (logView == null) {
+            Log.e("Snapyr.sample", "addLog: could not find event_log view");
+            return;
+        }
+        // Prepend so the latest entry shows up on top
+        Editable editableText = logView.getEditableText();
+        editableText.insert(0, newEntry);
+        logView.setText(editableText);
     }
 }
