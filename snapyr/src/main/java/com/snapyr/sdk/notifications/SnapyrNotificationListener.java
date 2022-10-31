@@ -24,7 +24,9 @@
 package com.snapyr.sdk.notifications;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -46,8 +48,10 @@ public class SnapyrNotificationListener extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Intent intent = this.getIntent();
-        String deepLink = intent.getStringExtra(SnapyrNotificationHandler.ACTION_DEEP_LINK_KEY);
+
         int notificationId = intent.getIntExtra(SnapyrNotificationHandler.NOTIFICATION_ID, -1);
+        // Dismiss source notification
+        NotificationManagerCompat.from(this.getApplicationContext()).cancel(notificationId);
 
         try {
             Snapyr snapyrInst = SnapyrNotificationUtils.getSnapyrInstance(this);
@@ -59,17 +63,59 @@ public class SnapyrNotificationListener extends Activity {
                     "Notification interaction listener couldn't initialize Snapyr. Make sure you've initialized Snapyr from within your main application prior to receiving notifications.");
         }
 
-        // Dismiss source notification
-        NotificationManagerCompat.from(this.getApplicationContext()).cancel(notificationId);
-
-        if (!Utils.isNullOrEmpty(deepLink)) { // deeplink provided, respect it and advance
-            Intent deepLinkIntent = new Intent();
-            deepLinkIntent.setAction("com.snapyr.sdk.notifications.ACTION_DEEPLINK");
-            deepLinkIntent.setData(Uri.parse(deepLink));
-            deepLinkIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            this.startActivity(deepLinkIntent);
-        }
+        launchActualActivity();
 
         this.finish(); // Nothing to do, go back in the stack
+    }
+
+    private void launchActualActivity() {
+        Intent listenerIntent = getIntent();
+        String deepLink =
+                listenerIntent.getStringExtra(SnapyrNotificationHandler.ACTION_DEEP_LINK_KEY);
+        Intent launchActivityIntent = getLaunchIntent();
+
+        Uri deepLinkUri = null;
+        if (!Utils.isNullOrEmpty(deepLink)) { // deeplink provided, respect it and advance
+            deepLinkUri = Uri.parse(deepLink);
+            launchActivityIntent.setData(deepLinkUri);
+        }
+        launchActivityIntent.putExtras(
+                listenerIntent); // forward all extras, i.e. Snapyr-defined data
+
+        ComponentName componentName =
+                launchActivityIntent.resolveActivity(this.getPackageManager());
+        if (componentName != null) {
+            this.startActivity(launchActivityIntent);
+            return;
+        }
+
+        if (deepLinkUri != null) {
+            String scheme = deepLinkUri.getScheme();
+            if (scheme.equalsIgnoreCase("http") || scheme.equalsIgnoreCase("https")) {
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, deepLinkUri);
+                this.startActivity(browserIntent);
+                return;
+            }
+        }
+
+        Log.e("Snapyr", "Could not launch intent for deepLinkUrl: " + deepLinkUri);
+    }
+
+    private Intent getLaunchIntent() {
+        try {
+            PackageManager pm = this.getPackageManager();
+            Intent launchIntent = pm.getLaunchIntentForPackage(this.getPackageName());
+            if (launchIntent == null) {
+                // No launch intent specified / found for this app. Default to ACTION_MAIN
+                launchIntent = new Intent(Intent.ACTION_MAIN);
+                launchIntent.setPackage(this.getPackageName());
+            }
+            launchIntent.setFlags(
+                    Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+            return launchIntent;
+        } catch (Exception e) {
+            Log.e("Snapyr", "Could not get launch intent", e);
+            return new Intent(Intent.ACTION_MAIN);
+        }
     }
 }
