@@ -1,17 +1,25 @@
+// See snapyrRootProject in snapyr/build.gradle for more info
+ext {
+    snapyrRootProject = project.findProject(":snapyr-root")
+    if (snapyrRootProject == null) {
+        snapyrRootProject = rootProject
+    }
+}
+
 apply plugin: 'com.diffplug.gradle.spotless'
 
 android {
-    compileSdkVersion rootProject.ext.compileSdkVersion
+    compileSdkVersion snapyrRootProject.ext.compileSdkVersion
 
     defaultConfig {
-        minSdkVersion rootProject.ext.minSdkVersion
-        targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode rootProject.ext.versionCode
-        versionName rootProject.ext.versionName
+        minSdkVersion snapyrRootProject.ext.minSdkVersion
+        targetSdkVersion snapyrRootProject.ext.targetSdkVersion
+        versionCode snapyrRootProject.ext.versionCode
+        versionName snapyrRootProject.ext.versionName
     }
 
     dexOptions {
-        preDexLibraries rootProject.ext.preDexLibraries
+        preDexLibraries snapyrRootProject.ext.preDexLibraries
     }
 
     packagingOptions {
@@ -25,8 +33,8 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility rootProject.ext.sourceCompatibilityVersion
-        targetCompatibility rootProject.ext.targetCompatibilityVersion
+        sourceCompatibility snapyrRootProject.ext.sourceCompatibilityVersion
+        targetCompatibility snapyrRootProject.ext.targetCompatibilityVersion
     }
 
     lintOptions {
@@ -63,7 +71,7 @@ spotless {
 }
 
 def getLicenseText() {
-    def rawTextLines = rootProject.file('LICENSE.md').text.split('\n')
+    def rawTextLines = snapyrRootProject.file('LICENSE.md').text.split('\n')
     def text = ""
     for (def line : rawTextLines) {
         if (line.trim().length() == 0) {

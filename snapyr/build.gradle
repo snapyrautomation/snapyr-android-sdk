@@ -1,8 +1,30 @@
+ext {
+	// Allows this project (snapyr/build.gradle) to reference the root project (top-level
+	// build.gradle in this repo), when being included in another project. This allows for an easier
+	// dev flow, e.g. when working on React Native code that uses the Android SDK.
+	// To use, the consuming project must add the following to its `settings.gradle`:
+	// ```
+	// include ':snapyr-root'
+	// project(':snapyr-root').projectDir = new File('../path/to/snapyr-android-sdk')
+	// include ':snapyr-root:snapyr'
+	// ```
+	// then, in the consuming project's `build.gradle`:
+	// ```
+	// implementation project(':snapyr-root:snapyr')
+	// ```
+	//
+	// When working directly in this rep as usual, simply reference the real `rootProject` as before
+	snapyrRootProject = project.findProject(":snapyr-root")
+	if (snapyrRootProject == null) {
+		snapyrRootProject = rootProject
+	}
+}
+
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'com.getkeepsafe.dexcount'
 
-apply from: rootProject.file('gradle/android.gradle')
+apply from: snapyrRootProject.file('gradle/android.gradle')
 
 android {
 	defaultConfig {
@@ -12,7 +34,7 @@ android {
 }
 
 dependencies {
-	api rootProject.ext.deps.supportAnnotations
+	api snapyrRootProject.ext.deps.supportAnnotations
 	implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
 
 	testImplementation fileTree(dir: 'libs', include: ['*.jar'])
@@ -44,7 +66,11 @@ dependencies {
 	implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }
 
-apply from: rootProject.file('gradle/mvn-publish.gradle')
+if (snapyrRootProject == rootProject) {
+	apply from: snapyrRootProject.file('gradle/mvn-publish.gradle')
+} else {
+	logger.warn("Snapyr: Skipping mvn-publish.gradle (building from outside of Snapyr directory)")
+}
 
 repositories {
 	mavenCentral()
