@@ -9,8 +9,7 @@ on:
 jobs:
   build:
 
-    runs-on: self-hosted
-
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - name: set up JDK 1.8
@@ -23,3 +22,9 @@ jobs:
         run: chmod +x gradlew
       - name: Build and run tests
         run: ./gradlew check build assembleAndroidTest
+      - uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_DEV_S3_SAMPLE_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_DEV_S3_SAMPLE_ACCESS_KEY }}
+          aws-region: us-east-1
+      - run: aws s3 cp snapyr/build/outputs/aar s3://sample-apps.snapyrdev.com/android/  --recursive --acl public-read
