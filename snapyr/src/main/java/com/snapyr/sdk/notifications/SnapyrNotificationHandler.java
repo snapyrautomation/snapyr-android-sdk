@@ -78,16 +78,17 @@ public class SnapyrNotificationHandler {
     public static final String NOTIFICATION_ID = "notification_id";
     // 'DEEPLINK_ACTION' is used by manifest, don't delete
     public static final String DEEPLINK_ACTION = "com.snapyr.sdk.notifications.ACTION_DEEPLINK";
+    public static final String NOTIFICATION_RECEIVED_ACTION ="com.snapyr.sdk.notifications.ACTION_NOTIFICATION_RECEIVED";
     public static final String NOTIFICATION_ACTION = "com.snapyr.sdk.notifications.TRACK_BROADCAST";
 
     private final Context context;
     private final Context applicationContext;
     private final NotificationManagerCompat notificationMgr;
-    public String defaultChannelId = "channel1";
-    public String defaultChannelName = "General Notifications";
-    public String defaultChannelDescription =
+    public static String CHANNEL_DEFAULT_ID = "channel1";
+    public static String CHANNEL_DEFAULT_NAME = "General Notifications";
+    public static String CHANNEL_DEFAULT_DESCRIPTION =
             "Displays all Snapyr-managed notifications by default";
-    public int defaultChannelImportance = NotificationManagerCompat.IMPORTANCE_HIGH;
+    public int CHANNEL_DEFAULT_IMPORTANCE = NotificationManagerCompat.IMPORTANCE_HIGH;
     private int nextMessageId = 0;
     private int nextIntentRequestCode = 0;
 
@@ -96,10 +97,10 @@ public class SnapyrNotificationHandler {
         applicationContext = context.getApplicationContext();
         notificationMgr = NotificationManagerCompat.from(applicationContext);
         registerChannel(
-                defaultChannelId,
-                defaultChannelName,
-                defaultChannelDescription,
-                defaultChannelImportance);
+                CHANNEL_DEFAULT_ID,
+                CHANNEL_DEFAULT_NAME,
+                CHANNEL_DEFAULT_DESCRIPTION,
+                CHANNEL_DEFAULT_IMPORTANCE);
     }
 
     public void registerChannel(String channelId, String name, String description, int importance) {
@@ -119,29 +120,30 @@ public class SnapyrNotificationHandler {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
-    public void showRemoteNotification(Map<String, Object> data) {
-        String channelId = getOrDefault(data, NOTIF_CHANNEL_ID_KEY, defaultChannelId);
-        String channelName = getOrDefault(data, NOTIF_CHANNEL_NAME_KEY, defaultChannelName);
-        String channelDescription =
-                getOrDefault(data, NOTIF_CHANNEL_DESCRIPTION_KEY, defaultChannelDescription);
-        registerChannel(channelId, channelName, channelDescription, defaultChannelImportance);
+    public void showRemoteNotification(SnapyrNotification snapyrNotification) {
+//        String channelId = getOrDefault(data, NOTIF_CHANNEL_ID_KEY, CHANNEL_DEFAULT_ID);
+//        String channelName = getOrDefault(data, NOTIF_CHANNEL_NAME_KEY, CHANNEL_DEFAULT_NAME);
+//        String channelDescription =
+//                getOrDefault(data, NOTIF_CHANNEL_DESCRIPTION_KEY, CHANNEL_DEFAULT_DESCRIPTION);
+        registerChannel(snapyrNotification.channelId, snapyrNotification.channelName, snapyrNotification.channelDescription, CHANNEL_DEFAULT_IMPORTANCE);
 
         int notificationId = ++nextMessageId;
         Random r = new Random();
 
         NotificationCompat.Builder builder =
-                new NotificationCompat.Builder(this.context, channelId);
+                new NotificationCompat.Builder(this.context, snapyrNotification.channelId);
         builder.setSmallIcon(getNotificationIcon())
-                .setContentTitle((String) data.get(NOTIF_TITLE_KEY))
-                .setContentText((String) data.get(NOTIF_CONTENT_KEY))
-                .setSubText((String) data.get(NOTIF_SUBTITLE_KEY))
+                .setContentTitle(snapyrNotification.titleText)
+                .setContentText(snapyrNotification.contentText)
+                .setSubText(snapyrNotification.subtitleText)
                 .setAutoCancel(true); // true means notification auto dismissed after tapping. TODO
 
         Intent trackIntent = new Intent(applicationContext, SnapyrNotificationListener.class);
-        trackIntent.putExtra(ACTION_ID_KEY, (String) data.get(ACTION_ID_KEY));
-        trackIntent.putExtra(ACTION_DEEP_LINK_KEY, (String) data.get(NOTIF_DEEP_LINK_KEY));
-        trackIntent.putExtra(NOTIFICATION_ID, notificationId);
-        trackIntent.putExtra(NOTIF_TOKEN_KEY, (String) data.get(NOTIF_TOKEN_KEY));
+
+//        trackIntent.putExtra(ACTION_ID_KEY, (String) data.get(ACTION_ID_KEY));
+//        trackIntent.putExtra(ACTION_DEEP_LINK_KEY, (String) data.get(NOTIF_DEEP_LINK_KEY));
+//        trackIntent.putExtra(NOTIFICATION_ID, notificationId);
+//        trackIntent.putExtra(NOTIF_TOKEN_KEY, (String) data.get(NOTIF_TOKEN_KEY));
 
         trackIntent.addFlags(
                 0
@@ -155,27 +157,28 @@ public class SnapyrNotificationHandler {
                 PendingIntent.getActivity(
                         this.context, ++nextIntentRequestCode, trackIntent, flags));
 
-        PushTemplate pushTemplate = (PushTemplate) data.get(ACTION_BUTTONS_KEY);
+        PushTemplate pushTemplate = snapyrNotification.getPushTemplate();
         if (pushTemplate != null) {
-            String token = (String) data.get(NOTIF_TOKEN_KEY);
+//            String token = (String) data.get(NOTIF_TOKEN_KEY);
             List<ActionButton> actionButtons = pushTemplate.getButtons();
             for (ActionButton button : actionButtons) {
-                createActionButton(builder, notificationId, button, token);
+                createActionButton(builder, notificationId, button, snapyrNotification.actionToken);
             }
         }
 
         // Image handling - fetch from URL
         // TODO (@paulwsmith): move off-thread? (maybe not necessary; not part of main thread
         // anyway)
-        String imageUrl = (String) data.get(NOTIF_IMAGE_URL_KEY);
-        if (!isNullOrEmpty(imageUrl)) {
+//        new URL(snapyrNotification.imageUrl);
+//        String imageUrl = (String) data.get(NOTIF_IMAGE_URL_KEY);
+        if (!isNullOrEmpty(snapyrNotification.imageUrl)) {
             InputStream inputStream = null;
             Bitmap image = null;
             try {
-                inputStream = new URL(imageUrl).openStream();
+                inputStream = new URL(snapyrNotification.imageUrl).openStream();
                 image = BitmapFactory.decodeStream(inputStream);
                 builder.setStyle(new NotificationCompat.BigPictureStyle().bigPicture(image));
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }

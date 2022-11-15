@@ -23,6 +23,7 @@
  */
 package com.snapyr.sdk.notifications;
 
+import android.content.Intent;
 import android.os.Build;
 import android.util.Log;
 import androidx.annotation.NonNull;
@@ -62,38 +63,46 @@ public class SnapyrFirebaseMessagingService extends FirebaseMessagingService {
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
-        Map<String, String> rawData = remoteMessage.getData();
-
-        String snapyrDataJson = rawData.get("snapyr");
-        if (snapyrDataJson == null) {
-            Log.i(
-                    "Snapyr",
-                    "onMessageReceived: No 'snapyr' data found on notification payload (not a Snapyr notification); skipping.");
-            return;
-        }
-
-        JSONObject jsonData = null;
+        SnapyrNotification snapyrNotification;
         try {
-            jsonData = new JSONObject(snapyrDataJson);
+            snapyrNotification = new SnapyrNotification(remoteMessage);
         } catch (Exception e) {
-            Log.e(
-                    "Snapyr",
-                    "onMessageReceived: Invalid message - encountered JSON error trying to parse payload JSON; returning.",
-                    e);
+            Log.e("Snapyr", "Error parsing Snapyr notification; returning.", e);
             return;
         }
 
-        ValueMap data = new ValueMap();
-
-        for (Iterator<String> it = jsonData.keys(); it.hasNext(); ) {
-            String key = it.next();
-            String value = null;
-            try {
-                value = jsonData.getString(key);
-            } catch (JSONException ignored) {
-            }
-            data.put(key, value);
-        }
+//        Map<String, String> rawData = remoteMessage.getData();
+//
+//        String snapyrDataJson = rawData.get("snapyr");
+//        if (snapyrDataJson == null) {
+//            Log.i(
+//                    "Snapyr",
+//                    "onMessageReceived: No 'snapyr' data found on notification payload (not a Snapyr notification); skipping.");
+//            return;
+//        }
+//
+//        JSONObject jsonData = null;
+//        try {
+//            jsonData = new JSONObject(snapyrDataJson);
+//        } catch (Exception e) {
+//            Log.e(
+//                    "Snapyr",
+//                    "onMessageReceived: Invalid message - encountered JSON error trying to parse payload JSON; returning.",
+//                    e);
+//            return;
+//        }
+//
+//        ValueMap data = new ValueMap();
+//
+//        for (Iterator<String> it = jsonData.keys(); it.hasNext(); ) {
+//            String key = it.next();
+//            String value = null;
+//            try {
+//                value = jsonData.getString(key);
+//            } catch (JSONException ignored) {
+//            }
+//            data.put(key, value);
+//        }
 
         Snapyr snapyrInstance = SnapyrNotificationUtils.getSnapyrInstance(this);
         if (snapyrInstance == null) {
@@ -103,44 +112,46 @@ public class SnapyrFirebaseMessagingService extends FirebaseMessagingService {
             return;
         }
 
-        PushTemplate template = processPushTemplate(data, snapyrInstance);
+        PushTemplate template = processPushTemplate(snapyrNotification, snapyrInstance);
         if (template != null) {
             // rich push, inject the template data into the context data we're passing down
-            data.put(SnapyrNotificationHandler.ACTION_BUTTONS_KEY, template);
+            snapyrNotification.setPushTemplate(template);
+//            data.put(SnapyrNotificationHandler.ACTION_BUTTONS_KEY, template);
         }
 
-        com.snapyr.sdk.Properties properties = new com.snapyr.sdk.Properties();
-        properties.putAll(data);
+        com.snapyr.sdk.Properties properties = new com.snapyr.sdk.Properties().putValue(SnapyrNotificationHandler.NOTIF_TOKEN_KEY, snapyrNotification.actionToken).putValue(SnapyrNotificationHandler.ACTION_DEEP_LINK_KEY, snapyrNotification.deepLinkUrl.toString());
+//        properties.putAll(data);
         snapyrInstance.pushNotificationReceived(properties);
-        snapyrInstance.getNotificationHandler().showRemoteNotification(data);
+
+        snapyrInstance.getNotificationHandler().showRemoteNotification(snapyrNotification);
+        sendPushReceivedBroadcast(snapyrNotification, remoteMessage);
         snapyrInstance.flush();
     }
 
+    private void sendPushReceivedBroadcast(SnapyrNotification snapyrNotification, RemoteMessage remoteMessage) {
+        Log.e("XXX", "SnapyrFirebaseMessagingService: sendPushReceivedBroadcast");
+//        Intent listenerIntent = getIntent();
+//        Uri inputData = listenerIntent.getData();
+
+        Intent pushReceivedIntent = remoteMessage.toIntent();
+        pushReceivedIntent.setAction(SnapyrNotificationHandler.NOTIFICATION_RECEIVED_ACTION);
+//        deepLinkIntent.setData(listenerIntent.getData());
+        pushReceivedIntent.setPackage(
+                this.getPackageName()); // makes this intent "explicit" which allows it to reach
+        // a manifest-defined receiver
+//        deepLinkIntent.putExtras(listenerIntent); // forward all extras, i.e. Snapyr-defined data
+        this.sendBroadcast(pushReceivedIntent);
+        Log.e("XXX", "SnapyrFirebaseMessagingService: BROADCAST SENT");
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.O)
-    private PushTemplate processPushTemplate(@NonNull ValueMap templateObject, Snapyr sdkInstance) {
-        String templateRaw =
-                templateObject.get(SnapyrNotificationHandler.NOTIF_TEMPLATE_KEY).toString();
-        String templateId = null;
-        Date modified = null;
-        try {
-            JSONObject jsonData = new JSONObject(templateRaw);
-            templateId = jsonData.getString("id");
-            String modifiedStr = jsonData.getString("modified");
-            TemporalAccessor ta = DateTimeFormatter.ISO_INSTANT.parse(modifiedStr);
-            modified = Date.from(Instant.from(ta));
-            // modified =  LocalDateTime.parse(modifiedDate);
-        } catch (JSONException e) {
-            Log.e(
-                    "Snapyr",
-                    "processPushTemplate: invalid template data found on object; returning.");
-            return null;
-        }
-        if (templateId == null) {
+    private PushTemplate processPushTemplate(@NonNull SnapyrNotification snapyrNotification, Snapyr sdkInstance) {
+        if (snapyrNotification.templateId == null || snapyrNotification.templateModified == null) {
             return null;
         }
 
-        PushTemplate template = sdkInstance.getPushTemplates().get(templateId);
-        if ((template != null) && (!template.getModified().before(modified))) {
+        PushTemplate template = sdkInstance.getPushTemplates().get(snapyrNotification.templateId);
+        if ((template != null) && (!template.getModified().before(snapyrNotification.templateModified))) {
             // if the modified date in the push payload is equal to or older than the cached
             // templates we're good to go and can just used the cached template value
             return template;
@@ -149,6 +160,6 @@ public class SnapyrFirebaseMessagingService extends FirebaseMessagingService {
         // either missing template or it's older than the timestamp in the push notification
         // re-fetch the sdk config and retry
         sdkInstance.RefreshConfiguration(true);
-        return sdkInstance.getPushTemplates().get(templateId);
+        return sdkInstance.getPushTemplates().get(snapyrNotification.templateId);
     }
 }
