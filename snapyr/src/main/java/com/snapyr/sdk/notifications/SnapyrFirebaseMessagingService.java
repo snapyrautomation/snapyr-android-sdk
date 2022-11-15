@@ -65,13 +65,21 @@ public class SnapyrFirebaseMessagingService extends FirebaseMessagingService {
         Map<String, String> rawData = remoteMessage.getData();
 
         String snapyrDataJson = rawData.get("snapyr");
+        if (snapyrDataJson == null) {
+            Log.i(
+                    "Snapyr",
+                    "onMessageReceived: No 'snapyr' data found on notification payload (not a Snapyr notification); skipping.");
+            return;
+        }
+
         JSONObject jsonData = null;
         try {
             jsonData = new JSONObject(snapyrDataJson);
-        } catch (JSONException e) {
+        } catch (Exception e) {
             Log.e(
                     "Snapyr",
-                    "onMessageReceived: No 'snapyr' data found on notification payload (not a Snapyr notification?); returning.");
+                    "onMessageReceived: Invalid message - encountered JSON error trying to parse payload JSON; returning.",
+                    e);
             return;
         }
 
