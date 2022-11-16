@@ -133,8 +133,10 @@ public class SnapyrFirebaseMessagingService extends FirebaseMessagingService {
 //        Intent listenerIntent = getIntent();
 //        Uri inputData = listenerIntent.getData();
 
-        Intent pushReceivedIntent = remoteMessage.toIntent();
-        pushReceivedIntent.setAction(SnapyrNotificationHandler.NOTIFICATION_RECEIVED_ACTION);
+//        Intent pushReceivedIntent = remoteMessage.toIntent();
+        Intent pushReceivedIntent = new Intent(SnapyrNotificationHandler.NOTIFICATION_RECEIVED_ACTION);
+        pushReceivedIntent.putExtra("snapyrNotification", snapyrNotification);
+//        pushReceivedIntent.setAction(SnapyrNotificationHandler.NOTIFICATION_RECEIVED_ACTION);
 //        deepLinkIntent.setData(listenerIntent.getData());
         pushReceivedIntent.setPackage(
                 this.getPackageName()); // makes this intent "explicit" which allows it to reach

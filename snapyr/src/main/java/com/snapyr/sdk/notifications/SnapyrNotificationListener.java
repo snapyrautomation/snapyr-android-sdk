@@ -44,10 +44,23 @@ import com.snapyr.sdk.internal.Utils;
 public class SnapyrNotificationListener extends Activity {
     private static final String TAG = "SnapyrNotificationListener";
 
+    public SnapyrNotificationListener() {
+        super();
+        Log.e("XXX", "SnapyrNotificationListener: CONSTRUCTOR 3");
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        Log.e("XXX", "SnapyrNotificationListener: FINALIZE");
+        super.finalize();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Intent intent = this.getIntent();
+
+        SnapyrNotification snapyrNotification = intent.getParcelableExtra("snapyrNotification");
 
         int notificationId = intent.getIntExtra(SnapyrNotificationHandler.NOTIFICATION_ID, -1);
         // Dismiss source notification
@@ -55,7 +68,7 @@ public class SnapyrNotificationListener extends Activity {
 
         try {
             Snapyr snapyrInst = SnapyrNotificationUtils.getSnapyrInstance(this);
-            TrackerUtil.trackNotificationInteraction(snapyrInst, intent);
+            TrackerUtil.trackNotificationInteraction(snapyrInst, snapyrNotification);
             snapyrInst.flush();
         } catch (Exception e) {
             Log.e(
@@ -63,42 +76,66 @@ public class SnapyrNotificationListener extends Activity {
                     "Notification interaction listener couldn't initialize Snapyr. Make sure you've initialized Snapyr from within your main application prior to receiving notifications.");
         }
 
-        launchActualActivity();
+        sendDeepLinkBroadcast(snapyrNotification);
+        launchActualActivity(snapyrNotification);
 
         this.finish(); // Nothing to do, go back in the stack
     }
 
-    private void launchActualActivity() {
-        Intent listenerIntent = getIntent();
-        String deepLink =
-                listenerIntent.getStringExtra(SnapyrNotificationHandler.ACTION_DEEP_LINK_KEY);
+    private void sendDeepLinkBroadcast(SnapyrNotification snapyrNotification) {
+        Log.e("XXX", "SnapyrNotificationListener: sendDeepLinkBroadcast");
+//        Intent listenerIntent = getIntent();
+//        Uri inputData = listenerIntent.getData();
+
+        Intent deepLinkIntent = new Intent(SnapyrNotificationHandler.DEEPLINK_ACTION);
+//        deepLinkIntent.setData(snapyrNotification.deepLinkUrl);
+        deepLinkIntent.setPackage(
+                this.getPackageName()); // makes this intent "explicit" which allows it to reach
+        // a manifest-defined receiver in the current app
+        deepLinkIntent.putExtra("snapyrNotification", snapyrNotification);
+//        deepLinkIntent.putExtras(listenerIntent); // forward all extras, i.e. Snapyr-defined data
+        this.sendBroadcast(deepLinkIntent);
+        Log.e("XXX", "SnapyrNotificationListener: BROADCAST SENT");
+    }
+
+    private void launchActualActivity(SnapyrNotification snapyrNotification) {
+        Log.e("XXX", "SnapyrNotificationListener: launchActualActivity");
+//        Intent listenerIntent = getIntent();
+//        String deepLink =
+//                listenerIntent.getStringExtra(SnapyrNotificationHandler.ACTION_DEEP_LINK_KEY);
         Intent launchActivityIntent = getLaunchIntent();
 
-        Uri deepLinkUri = null;
-        if (!Utils.isNullOrEmpty(deepLink)) { // deeplink provided, respect it and advance
-            deepLinkUri = Uri.parse(deepLink);
-            launchActivityIntent.setData(deepLinkUri);
+        if (snapyrNotification.deepLinkUrl != null) {
+            launchActivityIntent.setData(snapyrNotification.deepLinkUrl);
         }
-        launchActivityIntent.putExtras(
-                listenerIntent); // forward all extras, i.e. Snapyr-defined data
+        launchActivityIntent.putExtra("snapyrNotification", snapyrNotification);
+//        Uri deepLinkUri = null;
+//        if (!Utils.isNullOrEmpty(deepLink)) { // deeplink provided, respect it and advance
+//            deepLinkUri = Uri.parse(deepLink);
+//            launchActivityIntent.setData(deepLinkUri);
+//        }
+//        launchActivityIntent.putExtras(
+//                listenerIntent); // forward all extras, i.e. Snapyr-defined data
 
         ComponentName componentName =
                 launchActivityIntent.resolveActivity(this.getPackageManager());
         if (componentName != null) {
             this.startActivity(launchActivityIntent);
+            Log.e("XXX", "SnapyrNotificationListener: launchActualActivity: Started regular activity");
             return;
         }
 
-        if (deepLinkUri != null) {
-            String scheme = deepLinkUri.getScheme();
+        if (snapyrNotification.deepLinkUrl != null) {
+            String scheme = snapyrNotification.deepLinkUrl.getScheme();
             if (scheme.equalsIgnoreCase("http") || scheme.equalsIgnoreCase("https")) {
-                Intent browserIntent = new Intent(Intent.ACTION_VIEW, deepLinkUri);
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, snapyrNotification.deepLinkUrl);
                 this.startActivity(browserIntent);
+                Log.e("XXX", "SnapyrNotificationListener: launchActualActivity: FALLBACK browser activity");
                 return;
             }
         }
 
-        Log.e("Snapyr", "Could not launch intent for deepLinkUrl: " + deepLinkUri);
+        Log.e("Snapyr", "Could not launch intent for deepLinkUrl: " + snapyrNotification.deepLinkUrl);
     }
 
     private Intent getLaunchIntent() {

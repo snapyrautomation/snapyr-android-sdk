@@ -29,6 +29,7 @@ import android.net.Uri;
 import androidx.core.app.NotificationManagerCompat;
 import com.snapyr.sdk.Properties;
 import com.snapyr.sdk.Snapyr;
+import com.snapyr.sdk.notifications.SnapyrNotification;
 import com.snapyr.sdk.notifications.SnapyrNotificationHandler;
 import com.snapyr.sdk.services.ServiceFacade;
 
@@ -51,29 +52,29 @@ public class TrackerUtil {
         Snapyr.with(context).track("Deep Link Opened", properties);
     }
 
-    public static void trackNotificationInteraction(Snapyr snapyrInst, Intent intent) {
+    public static void trackNotificationInteraction(Snapyr snapyrInst, SnapyrNotification snapyrNotification) {
         Context applicationContext = ServiceFacade.getApplication().getApplicationContext();
 
-        String deepLinkUrl = intent.getStringExtra(SnapyrNotificationHandler.NOTIF_DEEP_LINK_KEY);
-        String actionId = intent.getStringExtra(SnapyrNotificationHandler.ACTION_ID_KEY);
-        int notificationId = intent.getIntExtra("notificationId", 0);
+//        String deepLinkUrl = intent.getStringExtra(SnapyrNotificationHandler.NOTIF_DEEP_LINK_KEY);
+//        String actionId = intent.getStringExtra(SnapyrNotificationHandler.ACTION_ID_KEY);
+//        int notificationId = intent.getIntExtra("notificationId", 0);
 
         String token;
 
         Properties props =
                 new Properties()
-                        .putValue("deepLinkUrl", deepLinkUrl)
-                        .putValue("actionId", actionId);
+                        .putValue("deepLinkUrl", snapyrNotification.deepLinkUrl.toString())
+                        .putValue("actionId", snapyrNotification.actionId);
 
-        token = intent.getStringExtra(SnapyrNotificationHandler.NOTIF_TOKEN_KEY);
-        props.putValue(SnapyrNotificationHandler.NOTIF_TOKEN_KEY, token)
+//        token = intent.getStringExtra(SnapyrNotificationHandler.NOTIF_TOKEN_KEY);
+        props.putValue(SnapyrNotificationHandler.NOTIF_TOKEN_KEY, snapyrNotification.actionToken)
                 .putValue("interactionType", "notificationPressed");
 
         // if autocancel = true....
         // Dismiss source notification
-        if (applicationContext != null) {
-            NotificationManagerCompat.from(applicationContext).cancel(notificationId);
-        }
+//        if (applicationContext != null) {
+//            NotificationManagerCompat.from(applicationContext).cancel(notificationId);
+//        }
         // Close notification drawer (so newly opened activity isn't behind anything)
         // NOTE (BS): I don't think we need this anymore & it was causing permission errors b/c it
         // can be called from other activities. I'll leave it commented out for now
