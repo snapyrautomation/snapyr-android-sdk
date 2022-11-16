@@ -3,10 +3,12 @@ package com.snapyr.sdk.notifications;
 import static com.snapyr.sdk.internal.Utils.isNullOrEmpty;
 
 import android.net.Uri;
+import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
 
 import com.google.firebase.messaging.RemoteMessage;
+import com.snapyr.sdk.ValueMap;
 import com.snapyr.sdk.internal.Utils;
 import com.snapyr.sdk.internal.PushTemplate;
 
@@ -16,7 +18,7 @@ import java.net.URL;
 import java.util.Date;
 import java.util.Map;
 
-public class SnapyrNotification {
+public class SnapyrNotification implements Parcelable {
     public final String titleText;
     public final String contentText;
     public final String subtitleText;
@@ -93,6 +95,34 @@ public class SnapyrNotification {
         this.imageUrl = getOrDefault(jsonData, SnapyrNotificationHandler.NOTIF_IMAGE_URL_KEY, null);
     }
 
+    protected SnapyrNotification(Parcel in) {
+        titleText = in.readString();
+        contentText = in.readString();
+        subtitleText = in.readString();
+        templateId = in.readString();
+        long templateModifiedRaw = in.readLong();
+        templateModified = (templateModifiedRaw != -1) ? new Date(templateModifiedRaw) : null;
+        deepLinkUrl = in.readParcelable(Uri.class.getClassLoader());
+        imageUrl = in.readString();
+        actionId = in.readString();
+        actionToken = in.readString();
+        channelId = in.readString();
+        channelName = in.readString();
+        channelDescription = in.readString();
+    }
+
+    public static final Creator<SnapyrNotification> CREATOR = new Creator<SnapyrNotification>() {
+        @Override
+        public SnapyrNotification createFromParcel(Parcel in) {
+            return new SnapyrNotification(in);
+        }
+
+        @Override
+        public SnapyrNotification[] newArray(int size) {
+            return new SnapyrNotification[size];
+        }
+    };
+
     private String getOrDefault(JSONObject data, String key, String defaultVal) {
         String val = null;
         try {
@@ -111,5 +141,44 @@ public class SnapyrNotification {
 
     public PushTemplate getPushTemplate() {
         return this.pushTemplate;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(titleText);
+        dest.writeString(contentText);
+        dest.writeString(subtitleText);
+        dest.writeString(templateId);
+//        long modifiedDateLong = (templateModified != null) ? templateModified.getTime() : -1;
+        dest.writeLong((templateModified != null) ? templateModified.getTime() : -1);
+        dest.writeParcelable(deepLinkUrl, flags);
+        dest.writeString(imageUrl);
+        dest.writeString(actionId);
+        dest.writeString(actionToken);
+        dest.writeString(channelId);
+        dest.writeString(channelName);
+        dest.writeString(channelDescription);
+    }
+
+    public ValueMap asValueMap() {
+        return new ValueMap()
+            .putValue("titleText", titleText)
+            .putValue("contentText", contentText)
+            .putValue("subtitleText", subtitleText)
+//            .putValue("templateId", templateId)
+//            .putValue("(", (templateModified != null) ? templateModified.getTime() : -1)
+            .putValue("deepLinkUrl", deepLinkUrl.toString())
+            .putValue("imageUrl", imageUrl)
+//            .putValue("actionId", actionId)
+//            .putValue("actionToken", actionToken)
+//            .putValue("channelId", channelId)
+//            .putValue("channelName", channelName)
+//            .putValue("channelDescription", channelDescription)
+        ;
     }
 }

@@ -139,10 +139,11 @@ public class SnapyrNotificationHandler {
                 .setAutoCancel(true); // true means notification auto dismissed after tapping. TODO
 
         Intent trackIntent = new Intent(applicationContext, SnapyrNotificationListener.class);
+        trackIntent.putExtra("snapyrNotification", snapyrNotification);
 
 //        trackIntent.putExtra(ACTION_ID_KEY, (String) data.get(ACTION_ID_KEY));
 //        trackIntent.putExtra(ACTION_DEEP_LINK_KEY, (String) data.get(NOTIF_DEEP_LINK_KEY));
-//        trackIntent.putExtra(NOTIFICATION_ID, notificationId);
+        trackIntent.putExtra(NOTIFICATION_ID, notificationId);
 //        trackIntent.putExtra(NOTIF_TOKEN_KEY, (String) data.get(NOTIF_TOKEN_KEY));
 
         trackIntent.addFlags(
@@ -302,12 +303,12 @@ public class SnapyrNotificationHandler {
                         .putValue(ACTION_BUTTONS_KEY, pushTemplate);
 
         // Execute in one-off thread to ensure image fetch / notify doesn't run in UI thread
-        new Thread() {
-            @Override
-            public void run() {
-                showRemoteNotification(samplePushData);
-            }
-        }.start();
+//        new Thread() {
+//            @Override
+//            public void run() {
+//                showRemoteNotification(samplePushData);
+//            }
+//        }.start();
     }
 
     public void autoRegisterFirebaseToken(Snapyr snapyrInstance) {
