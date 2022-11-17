@@ -694,9 +694,6 @@ public class Snapyr {
     /** @see #track(String, Properties, Options) */
     public void track(@NonNull String event, @Nullable Properties properties) {
         track(event, properties, null);
-        if (event.startsWith("snapyr.")) {
-            track("test.".concat(event), properties, null);
-        }
     }
 
     /**

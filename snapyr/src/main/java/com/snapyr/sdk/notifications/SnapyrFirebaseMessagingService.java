@@ -66,43 +66,14 @@ public class SnapyrFirebaseMessagingService extends FirebaseMessagingService {
         SnapyrNotification snapyrNotification;
         try {
             snapyrNotification = new SnapyrNotification(remoteMessage);
+        } catch (SnapyrNotification.NonSnapyrMessageException e) {
+            // Non-Snapyr notification - (probably) not a real error, but nothing further for us to do
+            Log.i("Snapyr", e.getMessage());
+            return;
         } catch (Exception e) {
             Log.e("Snapyr", "Error parsing Snapyr notification; returning.", e);
             return;
         }
-
-//        Map<String, String> rawData = remoteMessage.getData();
-//
-//        String snapyrDataJson = rawData.get("snapyr");
-//        if (snapyrDataJson == null) {
-//            Log.i(
-//                    "Snapyr",
-//                    "onMessageReceived: No 'snapyr' data found on notification payload (not a Snapyr notification); skipping.");
-//            return;
-//        }
-//
-//        JSONObject jsonData = null;
-//        try {
-//            jsonData = new JSONObject(snapyrDataJson);
-//        } catch (Exception e) {
-//            Log.e(
-//                    "Snapyr",
-//                    "onMessageReceived: Invalid message - encountered JSON error trying to parse payload JSON; returning.",
-//                    e);
-//            return;
-//        }
-//
-//        ValueMap data = new ValueMap();
-//
-//        for (Iterator<String> it = jsonData.keys(); it.hasNext(); ) {
-//            String key = it.next();
-//            String value = null;
-//            try {
-//                value = jsonData.getString(key);
-//            } catch (JSONException ignored) {
-//            }
-//            data.put(key, value);
-//        }
 
         Snapyr snapyrInstance = SnapyrNotificationUtils.getSnapyrInstance(this);
         if (snapyrInstance == null) {
@@ -124,11 +95,11 @@ public class SnapyrFirebaseMessagingService extends FirebaseMessagingService {
         snapyrInstance.pushNotificationReceived(properties);
 
         snapyrInstance.getNotificationHandler().showRemoteNotification(snapyrNotification);
-        sendPushReceivedBroadcast(snapyrNotification, remoteMessage);
+        sendPushReceivedBroadcast(snapyrNotification);
         snapyrInstance.flush();
     }
 
-    private void sendPushReceivedBroadcast(SnapyrNotification snapyrNotification, RemoteMessage remoteMessage) {
+    private void sendPushReceivedBroadcast(SnapyrNotification snapyrNotification) {
         Log.e("XXX", "SnapyrFirebaseMessagingService: sendPushReceivedBroadcast");
 //        Intent listenerIntent = getIntent();
 //        Uri inputData = listenerIntent.getData();
