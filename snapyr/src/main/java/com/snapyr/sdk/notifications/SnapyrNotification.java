@@ -41,14 +41,11 @@ public class SnapyrNotification implements Parcelable {
     public final String channelName;
     public final String channelDescription;
 
-    public SnapyrNotification(RemoteMessage remoteMessage) throws RuntimeException {
+    public SnapyrNotification(RemoteMessage remoteMessage) throws IllegalArgumentException, NonSnapyrMessageException {
         Map<String, String> rawData = remoteMessage.getData();
         String snapyrDataJson = rawData.get("snapyr");
         if (snapyrDataJson == null) {
-            Log.i(
-                    "Snapyr",
-                    "onMessageReceived: No 'snapyr' data found on notification payload (not a Snapyr notification); skipping.");
-            throw new RuntimeException("No 'snapyr' data found on notification payload (not a Snapyr notification)");
+            throw new NonSnapyrMessageException("No 'snapyr' data found on notification payload (not a Snapyr notification)");
         }
 
         JSONObject jsonData = null;
@@ -59,13 +56,13 @@ public class SnapyrNotification implements Parcelable {
                     "Snapyr",
                     "onMessageReceived: Invalid message - encountered JSON error trying to parse payload JSON; returning.",
                     e);
-            throw new RuntimeException("Invalid message - encountered JSON error trying to parse payload JSON");
+            throw new IllegalArgumentException("Invalid message - encountered JSON error trying to parse payload JSON");
         }
 
         this.titleText = getOrDefault(jsonData, SnapyrNotificationHandler.NOTIF_TITLE_KEY, null);
         this.contentText = getOrDefault(jsonData, SnapyrNotificationHandler.NOTIF_CONTENT_KEY, null);
         if (titleText == null || contentText == null) {
-            throw new RuntimeException("Invalid message - missing required data");
+            throw new IllegalArgumentException("Invalid message - missing required data");
         }
         this.subtitleText = getOrDefault(jsonData, SnapyrNotificationHandler.NOTIF_SUBTITLE_KEY, null);
 
@@ -94,8 +91,6 @@ public class SnapyrNotification implements Parcelable {
         String deepLinkUrl = getOrDefault(jsonData, SnapyrNotificationHandler.ACTION_DEEP_LINK_KEY, null);
         this.deepLinkUrl = (deepLinkUrl != null) ? Uri.parse(deepLinkUrl) : null;
 
-//        String imageUrl = getOrDefault(jsonData, SnapyrNotificationHandler.NOTIF_IMAGE_URL_KEY, null);
-//        this.imageUrl = (imageUrl != null) ? Uri.parse(imageUrl) : null;
         this.imageUrl = getOrDefault(jsonData, SnapyrNotificationHandler.NOTIF_IMAGE_URL_KEY, null);
     }
 
@@ -158,7 +153,6 @@ public class SnapyrNotification implements Parcelable {
         dest.writeString(contentText);
         dest.writeString(subtitleText);
         dest.writeString(templateId);
-//        long modifiedDateLong = (templateModified != null) ? templateModified.getTime() : -1;
         dest.writeLong((templateModified != null) ? templateModified.getTime() : -1);
         dest.writeParcelable(deepLinkUrl, flags);
         dest.writeString(imageUrl);
@@ -175,15 +169,13 @@ public class SnapyrNotification implements Parcelable {
             .putValue("titleText", titleText)
             .putValue("contentText", contentText)
             .putValue("subtitleText", subtitleText)
-//            .putValue("templateId", templateId)
-//            .putValue("(", (templateModified != null) ? templateModified.getTime() : -1)
             .putValue("deepLinkUrl", deepLinkUrl.toString())
-            .putValue("imageUrl", imageUrl)
-//            .putValue("actionId", actionId)
-//            .putValue("actionToken", actionToken)
-//            .putValue("channelId", channelId)
-//            .putValue("channelName", channelName)
-//            .putValue("channelDescription", channelDescription)
-        ;
+            .putValue("imageUrl", imageUrl);
+    }
+
+    public static class NonSnapyrMessageException extends Exception {
+        public NonSnapyrMessageException(String error) {
+            super(error);
+        }
     }
 }
