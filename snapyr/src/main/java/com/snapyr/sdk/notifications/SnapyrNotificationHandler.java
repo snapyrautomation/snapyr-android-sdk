@@ -334,7 +334,7 @@ public class SnapyrNotificationHandler {
 
                                 // Get new Instance ID token
                                 String token = task.getResult();
-                                Log.e(
+                                Log.i(
                                         "Snapyr",
                                         "SnapyrFirebaseMessagingService: applying FB token: "
                                                 + token);
