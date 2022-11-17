@@ -30,6 +30,8 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
+import android.util.Log;
+
 import androidx.annotation.Nullable;
 import com.snapyr.sdk.ValueMap;
 import com.snapyr.sdk.inapp.InAppFacade;
@@ -289,6 +291,11 @@ public class BatchUploadQueue {
             } else if (inputStream != null) {
                 responseBody = Utils.readFully(inputStream);
                 handleActionsIfAny(responseBody);
+            }
+
+            if (BatchUploadRequest.DEBUG_MODE) {
+                Log.e("Snapyr", "Response from engine:");
+                BatchUploadRequest.largeLog("Snapyr", responseBody);
             }
 
             Utils.closeQuietly(inputStream);
