@@ -47,7 +47,7 @@ import com.snapyr.sdk.ValueMap;
 import com.snapyr.sdk.core.R;
 import com.snapyr.sdk.internal.ActionButton;
 import com.snapyr.sdk.internal.PushTemplate;
-import java.io.IOException;
+
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
@@ -56,6 +56,7 @@ import java.util.Map;
 import java.util.Random;
 
 public class SnapyrNotificationHandler {
+    private static final Random requestCodeGen = new Random(); // seeded with current System.nanotime() by default
     public static final String NOTIF_ICON_SNAPYR_DEFAULT = "ic_snapyr_notification_default";
     public static final String NOTIF_ICON_FALLBACK = "ic_notification";
     public static final String NOTIF_TITLE_KEY = "title";
@@ -78,7 +79,8 @@ public class SnapyrNotificationHandler {
     public static final String NOTIFICATION_ID = "notification_id";
     // 'DEEPLINK_ACTION' is used by manifest, don't delete
     public static final String DEEPLINK_ACTION = "com.snapyr.sdk.notifications.ACTION_DEEPLINK";
-    public static final String NOTIFICATION_RECEIVED_ACTION ="com.snapyr.sdk.notifications.ACTION_NOTIFICATION_RECEIVED";
+    public static final String NOTIFICATION_RECEIVED_ACTION = "com.snapyr.sdk.notifications.ACTION_NOTIFICATION_RECEIVED";
+    public static final String NOTIFICATION_TAPPED_ACTION = "com.snapyr.sdk.notifications.ACTION_NOTIFICATION_TAPPED";
     public static final String NOTIFICATION_ACTION = "com.snapyr.sdk.notifications.TRACK_BROADCAST";
 
     private final Context context;
@@ -89,8 +91,6 @@ public class SnapyrNotificationHandler {
     public static String CHANNEL_DEFAULT_DESCRIPTION =
             "Displays all Snapyr-managed notifications by default";
     public int CHANNEL_DEFAULT_IMPORTANCE = NotificationManagerCompat.IMPORTANCE_HIGH;
-    private int nextMessageId = 0;
-    private int nextIntentRequestCode = 0;
 
     public SnapyrNotificationHandler(Context ctx) {
         context = ctx;
@@ -127,9 +127,6 @@ public class SnapyrNotificationHandler {
 //                getOrDefault(data, NOTIF_CHANNEL_DESCRIPTION_KEY, CHANNEL_DEFAULT_DESCRIPTION);
         registerChannel(snapyrNotification.channelId, snapyrNotification.channelName, snapyrNotification.channelDescription, CHANNEL_DEFAULT_IMPORTANCE);
 
-        int notificationId = ++nextMessageId;
-        Random r = new Random();
-
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(this.context, snapyrNotification.channelId);
         builder.setSmallIcon(getNotificationIcon())
@@ -143,7 +140,7 @@ public class SnapyrNotificationHandler {
 
 //        trackIntent.putExtra(ACTION_ID_KEY, (String) data.get(ACTION_ID_KEY));
 //        trackIntent.putExtra(ACTION_DEEP_LINK_KEY, (String) data.get(NOTIF_DEEP_LINK_KEY));
-        trackIntent.putExtra(NOTIFICATION_ID, notificationId);
+        trackIntent.putExtra(NOTIFICATION_ID, snapyrNotification.notificationId);
 //        trackIntent.putExtra(NOTIF_TOKEN_KEY, (String) data.get(NOTIF_TOKEN_KEY));
 
         trackIntent.addFlags(
@@ -156,14 +153,14 @@ public class SnapyrNotificationHandler {
         int flags = getDefaultPendingIntentFlags();
         builder.setContentIntent(
                 PendingIntent.getActivity(
-                        this.context, ++nextIntentRequestCode, trackIntent, flags));
+                        this.context, requestCodeGen.nextInt(Integer.MAX_VALUE), trackIntent, flags));
 
         PushTemplate pushTemplate = snapyrNotification.getPushTemplate();
         if (pushTemplate != null) {
 //            String token = (String) data.get(NOTIF_TOKEN_KEY);
             List<ActionButton> actionButtons = pushTemplate.getButtons();
             for (ActionButton button : actionButtons) {
-                createActionButton(builder, notificationId, button, snapyrNotification.actionToken);
+                createActionButton(builder, snapyrNotification.notificationId, button, snapyrNotification.actionToken);
             }
         }
 
@@ -185,7 +182,7 @@ public class SnapyrNotificationHandler {
         }
 
         Notification notification = builder.build();
-        notificationMgr.notify(notificationId, notification);
+        notificationMgr.notify(snapyrNotification.notificationId, notification);
     }
 
     private int getNotificationIcon() {
@@ -245,7 +242,7 @@ public class SnapyrNotificationHandler {
         int flags = getDefaultPendingIntentFlags();
         PendingIntent pendingIntent =
                 PendingIntent.getActivity(
-                        this.context, ++nextIntentRequestCode, trackIntent, flags);
+                        this.context, requestCodeGen.nextInt(Integer.MAX_VALUE), trackIntent, flags);
 
         builder.addAction(R.drawable.ic_snapyr_logo_only, template.title, pendingIntent);
     }
