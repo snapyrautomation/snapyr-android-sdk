@@ -25,16 +25,13 @@ package com.snapyr.sdk.notifications;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
-import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import androidx.core.app.NotificationManagerCompat;
 import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.internal.TrackerUtil;
-import com.snapyr.sdk.internal.Utils;
 import com.snapyr.sdk.services.ServiceFacade;
 
 /**
@@ -87,11 +84,11 @@ public class SnapyrNotificationListener extends Activity {
     private void sendNotificationTappedBroadcast(SnapyrNotification snapyrNotification) {
         Intent deepLinkIntent = new Intent(SnapyrNotificationHandler.NOTIFICATION_TAPPED_ACTION);
         // makes intent "explicit", allowing it to reach manifest-defined receivers in current app
-        deepLinkIntent.setPackage(
-                this.getPackageName());
+        deepLinkIntent.setPackage(this.getPackageName());
         deepLinkIntent.putExtra("snapyrNotification", snapyrNotification);
         this.sendBroadcast(deepLinkIntent);
-        ServiceFacade.getLogger().info("SnapyrNotificationListener: notification-tapped broadcast sent");
+        ServiceFacade.getLogger()
+                .info("SnapyrNotificationListener: notification-tapped broadcast sent");
     }
 
     private void launchActualActivity(SnapyrNotification snapyrNotification) {
@@ -110,24 +107,32 @@ public class SnapyrNotificationListener extends Activity {
             this.startActivity(launchActivityIntent);
             return;
         } catch (ActivityNotFoundException e) {
-            ServiceFacade.getLogger().debug("SnapyrNotificationListener: failed to launch actual activity. Attempting fallback...", e);
+            ServiceFacade.getLogger()
+                    .debug(
+                            "SnapyrNotificationListener: failed to launch actual activity. Attempting fallback...",
+                            e);
         }
 
         if (snapyrNotification.deepLinkUrl != null) {
             String scheme = snapyrNotification.deepLinkUrl.getScheme();
             if (scheme.equalsIgnoreCase("http") || scheme.equalsIgnoreCase("https")) {
-                Intent browserIntent = new Intent(Intent.ACTION_VIEW, snapyrNotification.deepLinkUrl);
+                Intent browserIntent =
+                        new Intent(Intent.ACTION_VIEW, snapyrNotification.deepLinkUrl);
                 try {
                     this.startActivity(browserIntent);
-                    ServiceFacade.getLogger().debug("SnapyrNotificationListener: launched browser activity.");
+                    ServiceFacade.getLogger()
+                            .debug("SnapyrNotificationListener: launched browser activity.");
                     return;
                 } catch (ActivityNotFoundException e) {
-                    ServiceFacade.getLogger().error(e, "SnapyrNotificationListener: failed to launch fallback.");
+                    ServiceFacade.getLogger()
+                            .error(e, "SnapyrNotificationListener: failed to launch fallback.");
                 }
             }
         }
 
-        Log.e("Snapyr", "Could not launch intent for deepLinkUrl: " + snapyrNotification.deepLinkUrl);
+        Log.e(
+                "Snapyr",
+                "Could not launch intent for deepLinkUrl: " + snapyrNotification.deepLinkUrl);
     }
 
     private Intent getLaunchIntent() {

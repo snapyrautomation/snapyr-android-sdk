@@ -42,21 +42,22 @@ import androidx.core.app.NotificationManagerCompat;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.RemoteMessage;
 import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.ValueMap;
 import com.snapyr.sdk.core.R;
 import com.snapyr.sdk.internal.ActionButton;
 import com.snapyr.sdk.internal.PushTemplate;
-
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 public class SnapyrNotificationHandler {
-    private static final Random requestCodeGen = new Random(); // seeded with current System.nanotime() by default
+    private static final Random requestCodeGen =
+            new Random(); // seeded with current System.nanotime() by default
     public static final String NOTIF_ICON_SNAPYR_DEFAULT = "ic_snapyr_notification_default";
     public static final String NOTIF_ICON_FALLBACK = "ic_notification";
     public static final String NOTIF_TITLE_KEY = "title";
@@ -79,8 +80,10 @@ public class SnapyrNotificationHandler {
     public static final String NOTIFICATION_ID = "notification_id";
     // 'DEEPLINK_ACTION' is used by manifest, don't delete
     public static final String DEEPLINK_ACTION = "com.snapyr.sdk.notifications.ACTION_DEEPLINK";
-    public static final String NOTIFICATION_RECEIVED_ACTION = "com.snapyr.sdk.notifications.ACTION_NOTIFICATION_RECEIVED";
-    public static final String NOTIFICATION_TAPPED_ACTION = "com.snapyr.sdk.notifications.ACTION_NOTIFICATION_TAPPED";
+    public static final String NOTIFICATION_RECEIVED_ACTION =
+            "com.snapyr.sdk.notifications.ACTION_NOTIFICATION_RECEIVED";
+    public static final String NOTIFICATION_TAPPED_ACTION =
+            "com.snapyr.sdk.notifications.ACTION_NOTIFICATION_TAPPED";
     public static final String NOTIFICATION_ACTION = "com.snapyr.sdk.notifications.TRACK_BROADCAST";
 
     private final Context context;
@@ -111,21 +114,13 @@ public class SnapyrNotificationHandler {
         }
     }
 
-    public String getOrDefault(Map<String, Object> data, String key, String defaultVal) {
-        String val = (String) data.get(key);
-        if (val == null) {
-            return defaultVal;
-        }
-        return val;
-    }
-
     @RequiresApi(api = Build.VERSION_CODES.N)
     public void showRemoteNotification(SnapyrNotification snapyrNotification) {
-//        String channelId = getOrDefault(data, NOTIF_CHANNEL_ID_KEY, CHANNEL_DEFAULT_ID);
-//        String channelName = getOrDefault(data, NOTIF_CHANNEL_NAME_KEY, CHANNEL_DEFAULT_NAME);
-//        String channelDescription =
-//                getOrDefault(data, NOTIF_CHANNEL_DESCRIPTION_KEY, CHANNEL_DEFAULT_DESCRIPTION);
-        registerChannel(snapyrNotification.channelId, snapyrNotification.channelName, snapyrNotification.channelDescription, CHANNEL_DEFAULT_IMPORTANCE);
+        registerChannel(
+                snapyrNotification.channelId,
+                snapyrNotification.channelName,
+                snapyrNotification.channelDescription,
+                CHANNEL_DEFAULT_IMPORTANCE);
 
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(this.context, snapyrNotification.channelId);
@@ -137,11 +132,7 @@ public class SnapyrNotificationHandler {
 
         Intent trackIntent = new Intent(applicationContext, SnapyrNotificationListener.class);
         trackIntent.putExtra("snapyrNotification", snapyrNotification);
-
-//        trackIntent.putExtra(ACTION_ID_KEY, (String) data.get(ACTION_ID_KEY));
-//        trackIntent.putExtra(ACTION_DEEP_LINK_KEY, (String) data.get(NOTIF_DEEP_LINK_KEY));
         trackIntent.putExtra(NOTIFICATION_ID, snapyrNotification.notificationId);
-//        trackIntent.putExtra(NOTIF_TOKEN_KEY, (String) data.get(NOTIF_TOKEN_KEY));
 
         trackIntent.addFlags(
                 0
@@ -153,22 +144,26 @@ public class SnapyrNotificationHandler {
         int flags = getDefaultPendingIntentFlags();
         builder.setContentIntent(
                 PendingIntent.getActivity(
-                        this.context, requestCodeGen.nextInt(Integer.MAX_VALUE), trackIntent, flags));
+                        this.context,
+                        requestCodeGen.nextInt(Integer.MAX_VALUE),
+                        trackIntent,
+                        flags));
 
         PushTemplate pushTemplate = snapyrNotification.getPushTemplate();
         if (pushTemplate != null) {
-//            String token = (String) data.get(NOTIF_TOKEN_KEY);
             List<ActionButton> actionButtons = pushTemplate.getButtons();
             for (ActionButton button : actionButtons) {
-                createActionButton(builder, snapyrNotification.notificationId, button, snapyrNotification.actionToken);
+                createActionButton(
+                        builder,
+                        snapyrNotification.notificationId,
+                        button,
+                        snapyrNotification.actionToken);
             }
         }
 
         // Image handling - fetch from URL
         // TODO (@paulwsmith): move off-thread? (maybe not necessary; not part of main thread
         // anyway)
-//        new URL(snapyrNotification.imageUrl);
-//        String imageUrl = (String) data.get(NOTIF_IMAGE_URL_KEY);
         if (!isNullOrEmpty(snapyrNotification.imageUrl)) {
             InputStream inputStream = null;
             Bitmap image = null;
@@ -177,7 +172,10 @@ public class SnapyrNotificationHandler {
                 image = BitmapFactory.decodeStream(inputStream);
                 builder.setStyle(new NotificationCompat.BigPictureStyle().bigPicture(image));
             } catch (Exception e) {
-                e.printStackTrace();
+                Log.e(
+                        "Snapyr",
+                        "SnapyrNotificationHandler: found imageUrl but unable to fetch or apply image",
+                        e);
             }
         }
 
@@ -242,7 +240,10 @@ public class SnapyrNotificationHandler {
         int flags = getDefaultPendingIntentFlags();
         PendingIntent pendingIntent =
                 PendingIntent.getActivity(
-                        this.context, requestCodeGen.nextInt(Integer.MAX_VALUE), trackIntent, flags);
+                        this.context,
+                        requestCodeGen.nextInt(Integer.MAX_VALUE),
+                        trackIntent,
+                        flags);
 
         builder.addAction(R.drawable.ic_snapyr_logo_only, template.title, pendingIntent);
     }
@@ -296,16 +297,28 @@ public class SnapyrNotificationHandler {
                         .putValue(
                                 NOTIF_TEMPLATE_KEY,
                                 "{\"modified\":\"2022-01-01T00:00:00Z\",\"id\":\"abcdef01-2345-6789-0123-abcdef012345\"}")
-                        .putValue(NOTIF_TOKEN_KEY, "abc123")
-                        .putValue(ACTION_BUTTONS_KEY, pushTemplate);
+                        .putValue(NOTIF_TOKEN_KEY, "abc123");
+
+        HashMap<String, String> messageData = new HashMap<>();
+        messageData.put("snapyr", samplePushData.toJsonObject().toString());
+        RemoteMessage testMessage =
+                new RemoteMessage.Builder("somefirebasetoken").setData(messageData).build();
+        SnapyrNotification testSnapyrNotification;
+        try {
+            testSnapyrNotification = new SnapyrNotification(testMessage);
+            testSnapyrNotification.setPushTemplate(pushTemplate);
+        } catch (Exception e) {
+            Log.e("Snapyr", "Error setting up sample notification", e);
+            return;
+        }
 
         // Execute in one-off thread to ensure image fetch / notify doesn't run in UI thread
-//        new Thread() {
-//            @Override
-//            public void run() {
-//                showRemoteNotification(samplePushData);
-//            }
-//        }.start();
+        new Thread() {
+            @Override
+            public void run() {
+                showRemoteNotification(testSnapyrNotification);
+            }
+        }.start();
     }
 
     public void autoRegisterFirebaseToken(Snapyr snapyrInstance) {

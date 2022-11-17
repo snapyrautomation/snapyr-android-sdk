@@ -52,7 +52,8 @@ public class TrackerUtil {
         Snapyr.with(context).track("Deep Link Opened", properties);
     }
 
-    public static void trackNotificationInteraction(Snapyr snapyrInst, SnapyrNotification snapyrNotification) {
+    public static void trackNotificationInteraction(
+            Snapyr snapyrInst, SnapyrNotification snapyrNotification) {
         Context applicationContext = ServiceFacade.getApplication().getApplicationContext();
 
         Properties props =
@@ -66,7 +67,8 @@ public class TrackerUtil {
         // if autocancel = true....
         // Dismiss source notification
         if (applicationContext != null) {
-            NotificationManagerCompat.from(applicationContext).cancel(snapyrNotification.notificationId);
+            NotificationManagerCompat.from(applicationContext)
+                    .cancel(snapyrNotification.notificationId);
         }
         // Close notification drawer (so newly opened activity isn't behind anything)
         // NOTE (BS): I don't think we need this anymore & it was causing permission errors b/c it

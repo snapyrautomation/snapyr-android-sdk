@@ -31,16 +31,7 @@ import androidx.annotation.RequiresApi;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.snapyr.sdk.Snapyr;
-import com.snapyr.sdk.ValueMap;
 import com.snapyr.sdk.internal.PushTemplate;
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAccessor;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.Map;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class SnapyrFirebaseMessagingService extends FirebaseMessagingService {
     private SnapyrNotificationListener activityHandler;
@@ -67,7 +58,7 @@ public class SnapyrFirebaseMessagingService extends FirebaseMessagingService {
         try {
             snapyrNotification = new SnapyrNotification(remoteMessage);
         } catch (SnapyrNotification.NonSnapyrMessageException e) {
-            // Non-Snapyr notification - (probably) not a real error, but nothing further for us to do
+            // Non-Snapyr notification - probably not really an error, but nothing for us to do
             Log.i("Snapyr", e.getMessage());
             return;
         } catch (Exception e) {
@@ -87,11 +78,17 @@ public class SnapyrFirebaseMessagingService extends FirebaseMessagingService {
         if (template != null) {
             // rich push, inject the template data into the context data we're passing down
             snapyrNotification.setPushTemplate(template);
-//            data.put(SnapyrNotificationHandler.ACTION_BUTTONS_KEY, template);
         }
 
-        com.snapyr.sdk.Properties properties = new com.snapyr.sdk.Properties().putValue(SnapyrNotificationHandler.NOTIF_TOKEN_KEY, snapyrNotification.actionToken).putValue(SnapyrNotificationHandler.ACTION_DEEP_LINK_KEY, snapyrNotification.deepLinkUrl.toString());
-//        properties.putAll(data);
+        com.snapyr.sdk.Properties properties =
+                new com.snapyr.sdk.Properties()
+                        .putValue(
+                                SnapyrNotificationHandler.NOTIF_TOKEN_KEY,
+                                snapyrNotification.actionToken)
+                        .putValue(
+                                SnapyrNotificationHandler.ACTION_DEEP_LINK_KEY,
+                                snapyrNotification.deepLinkUrl.toString());
+
         snapyrInstance.pushNotificationReceived(properties);
 
         snapyrInstance.getNotificationHandler().showRemoteNotification(snapyrNotification);
@@ -100,31 +97,24 @@ public class SnapyrFirebaseMessagingService extends FirebaseMessagingService {
     }
 
     private void sendPushReceivedBroadcast(SnapyrNotification snapyrNotification) {
-        Log.e("XXX", "SnapyrFirebaseMessagingService: sendPushReceivedBroadcast");
-//        Intent listenerIntent = getIntent();
-//        Uri inputData = listenerIntent.getData();
-
-//        Intent pushReceivedIntent = remoteMessage.toIntent();
-        Intent pushReceivedIntent = new Intent(SnapyrNotificationHandler.NOTIFICATION_RECEIVED_ACTION);
+        Intent pushReceivedIntent =
+                new Intent(SnapyrNotificationHandler.NOTIFICATION_RECEIVED_ACTION);
         pushReceivedIntent.putExtra("snapyrNotification", snapyrNotification);
-//        pushReceivedIntent.setAction(SnapyrNotificationHandler.NOTIFICATION_RECEIVED_ACTION);
-//        deepLinkIntent.setData(listenerIntent.getData());
-        pushReceivedIntent.setPackage(
-                this.getPackageName()); // makes this intent "explicit" which allows it to reach
-        // a manifest-defined receiver
-//        deepLinkIntent.putExtras(listenerIntent); // forward all extras, i.e. Snapyr-defined data
+        // make this intent "explicit" which allows it to reach a manifest-defined receiver
+        pushReceivedIntent.setPackage(this.getPackageName());
         this.sendBroadcast(pushReceivedIntent);
-        Log.e("XXX", "SnapyrFirebaseMessagingService: BROADCAST SENT");
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    private PushTemplate processPushTemplate(@NonNull SnapyrNotification snapyrNotification, Snapyr sdkInstance) {
+    private PushTemplate processPushTemplate(
+            @NonNull SnapyrNotification snapyrNotification, Snapyr sdkInstance) {
         if (snapyrNotification.templateId == null || snapyrNotification.templateModified == null) {
             return null;
         }
 
         PushTemplate template = sdkInstance.getPushTemplates().get(snapyrNotification.templateId);
-        if ((template != null) && (!template.getModified().before(snapyrNotification.templateModified))) {
+        if ((template != null)
+                && (!template.getModified().before(snapyrNotification.templateModified))) {
             // if the modified date in the push payload is equal to or older than the cached
             // templates we're good to go and can just used the cached template value
             return template;
