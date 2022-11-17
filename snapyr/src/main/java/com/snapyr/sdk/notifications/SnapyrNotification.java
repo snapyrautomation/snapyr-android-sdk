@@ -17,8 +17,12 @@ import org.json.JSONObject;
 import java.net.URL;
 import java.util.Date;
 import java.util.Map;
+import java.util.Random;
 
 public class SnapyrNotification implements Parcelable {
+    private static final Random random = new Random(); // seeded with current System.nanotime() by default
+
+    public final int notificationId = random.nextInt(Integer.MAX_VALUE); // MAX_VALUE ensures non-negative
     public final String titleText;
     public final String contentText;
     public final String subtitleText;
@@ -167,6 +171,7 @@ public class SnapyrNotification implements Parcelable {
 
     public ValueMap asValueMap() {
         return new ValueMap()
+            .putValue("notificationId", notificationId)
             .putValue("titleText", titleText)
             .putValue("contentText", contentText)
             .putValue("subtitleText", subtitleText)
