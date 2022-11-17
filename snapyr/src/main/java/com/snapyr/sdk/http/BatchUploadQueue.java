@@ -31,7 +31,6 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
-
 import androidx.annotation.Nullable;
 import com.snapyr.sdk.ValueMap;
 import com.snapyr.sdk.inapp.InAppFacade;

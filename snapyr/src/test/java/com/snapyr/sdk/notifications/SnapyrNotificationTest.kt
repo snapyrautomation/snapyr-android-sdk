@@ -25,38 +25,30 @@ package com.snapyr.sdk.notifications
 
 import android.os.Bundle
 import com.google.firebase.messaging.RemoteMessage
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.whenever
-import com.snapyr.sdk.TestUtils
-import com.snapyr.sdk.ValueMap
-import com.snapyr.sdk.http.ConnectionFactory
-import com.snapyr.sdk.internal.SnapyrAction
 import com.snapyr.sdk.notifications.SnapyrNotification.NonSnapyrMessageException
-import com.snapyr.sdk.services.Cartographer
-import com.snapyr.sdk.services.ServiceFacade
 import java.io.IOException
-import java.net.HttpURLConnection
-import java.util.concurrent.Semaphore
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.ArgumentCaptor
-import org.mockito.Mockito
-import org.mockito.Mockito.verify
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE)
 class SnapyrNotificationTest {
-    private val TEST_ACTION_TOKEN = "Zjk1OTkxZGEtZWE5Yy00ZTQ0LTk5OGQtNWZmNWY0Y2EwNGQzOmIyOWY5MDE4LWVhMjUtNGJmNS04YTliLWQ4ZDZhOGJjMjlhMTpmYmYxMTljMS1lMjNlLTQxZDEtODkyMi05MjE5M2RlNGRkODk6NGZjOGE5NGQtNGU0Zi00NTQ4LWE3NjYtMzM1NDY2YmViMzBjOnB1Ymxpc2g6NGY5YTA0NzMtYWY4OS00M2QyLWEyZTMtZmFiN2FkNmU0MzUyOnBhdWwxMTExYTp0YmQ6MTY2ODY0ODQzOTphY3Rpb25Ub2tlbi00ZjlhMDQ3My1hZjg5LTQzZDItYTJlMy1mYWI3YWQ2ZTQzNTIucGF1bDExMTFhLjE2Njg2NDg0Mzk="
+    // stupid spotless
+    private val TEST_ACTION_TOKEN = "Zjk1OTkxZGEtZWE5Yy00ZTQ0LTk5OGQtNWZmNWY0Y2EwNGQzOmIyOWY5MDE4LWVhMjUtNGJmNS04YTl" +
+        "iLWQ4ZDZhOGJjMjlhMTpmYmYxMTljMS1lMjNlLTQxZDEtODkyMi05MjE5M2RlNGRkODk6NGZjOGE5NGQtNGU0Zi00NTQ4LWE3NjYtMz" +
+        "M1NDY2YmViMzBjOnB1Ymxpc2g6NGY5YTA0NzMtYWY4OS00M2QyLWEyZTMtZmFiN2FkNmU0MzUyOnBhdWwxMTExYTp0YmQ6MTY2ODY0O" +
+        "DQzOTphY3Rpb25Ub2tlbi00ZjlhMDQ3My1hZjg5LTQzZDItYTJlMy1mYWI3YWQ2ZTQzNTIucGF1bDExMTFhLjE2Njg2NDg0Mzk="
 
     @Test
     @Throws(IOException::class)
     fun testGoodNotification() {
-        val dataMap = HashMap<String, String>();
-        dataMap.set("snapyr", """
+        val dataMap = HashMap<String, String>()
+        dataMap.set(
+            "snapyr",
+            """
             {
                 "title": "Tap this",
                 "subtitle": "Please",
@@ -69,7 +61,8 @@ class SnapyrNotificationTest {
                 },
                 "actionToken": "Zjk1OTkxZGEtZWE5Yy00ZTQ0LTk5OGQtNWZmNWY0Y2EwNGQzOmIyOWY5MDE4LWVhMjUtNGJmNS04YTliLWQ4ZDZhOGJjMjlhMTpmYmYxMTljMS1lMjNlLTQxZDEtODkyMi05MjE5M2RlNGRkODk6NGZjOGE5NGQtNGU0Zi00NTQ4LWE3NjYtMzM1NDY2YmViMzBjOnB1Ymxpc2g6NGY5YTA0NzMtYWY4OS00M2QyLWEyZTMtZmFiN2FkNmU0MzUyOnBhdWwxMTExYTp0YmQ6MTY2ODY0ODQzOTphY3Rpb25Ub2tlbi00ZjlhMDQ3My1hZjg5LTQzZDItYTJlMy1mYWI3YWQ2ZTQzNTIucGF1bDExMTFhLjE2Njg2NDg0Mzk="
             }
-        """.trimMargin());
+        """.trimMargin()
+        )
         val remoteMessage = RemoteMessage.Builder("fakefirebasetoken")
             .setData(dataMap)
             .build()
@@ -87,20 +80,26 @@ class SnapyrNotificationTest {
         assertThat(unparceledNotification!!.contentText).isEqualTo("We really want you to tap this notification")
         assertThat(unparceledNotification!!.actionToken).isEqualTo(TEST_ACTION_TOKEN)
         assertThat(unparceledNotification!!.deepLinkUrl.toString()).isEqualTo("snapyrsample://test/123")
-        assertThat(unparceledNotification!!.imageUrl).isEqualTo("https://images-na.ssl-images-amazon.com/images/S/pv-target-images/fb1fd46fbac48892ef9ba8c78f1eb6fa7d005de030b2a3d17b50581b2935832f._SX1080_.jpg")
+        assertThat(unparceledNotification!!.imageUrl).isEqualTo(
+            "https://images-na.ssl-images-amazon.com/images/S/pv" +
+                "-target-images/fb1fd46fbac48892ef9ba8c78f1eb6fa7d005de030b2a3d17b50581b2935832f._SX1080_.jpg"
+        )
     }
 
     @Test
     @Throws(IOException::class)
     fun testNotificationMissingOptionalFields() {
-        val dataMap = HashMap<String, String>();
-        dataMap.set("snapyr", """
+        val dataMap = HashMap<String, String>()
+        dataMap.set(
+            "snapyr",
+            """
             {
                 "title": "Tap this",
                 "contentText": "We really want you to tap this notification",
                 "actionToken": "Zjk1OTkxZGEtZWE5Yy00ZTQ0LTk5OGQtNWZmNWY0Y2EwNGQzOmIyOWY5MDE4LWVhMjUtNGJmNS04YTliLWQ4ZDZhOGJjMjlhMTpmYmYxMTljMS1lMjNlLTQxZDEtODkyMi05MjE5M2RlNGRkODk6NGZjOGE5NGQtNGU0Zi00NTQ4LWE3NjYtMzM1NDY2YmViMzBjOnB1Ymxpc2g6NGY5YTA0NzMtYWY4OS00M2QyLWEyZTMtZmFiN2FkNmU0MzUyOnBhdWwxMTExYTp0YmQ6MTY2ODY0ODQzOTphY3Rpb25Ub2tlbi00ZjlhMDQ3My1hZjg5LTQzZDItYTJlMy1mYWI3YWQ2ZTQzNTIucGF1bDExMTFhLjE2Njg2NDg0Mzk="
             }
-        """.trimMargin());
+        """.trimMargin()
+        )
         val remoteMessage = RemoteMessage.Builder("fakefirebasetoken")
             .setData(dataMap)
             .build()
@@ -118,8 +117,10 @@ class SnapyrNotificationTest {
     @Test(expected = java.lang.IllegalArgumentException::class)
     @Throws(IOException::class)
     fun testNotificationMissingRequiredField() {
-        val dataMap = HashMap<String, String>();
-        dataMap.set("snapyr", """
+        val dataMap = HashMap<String, String>()
+        dataMap.set(
+            "snapyr",
+            """
             {
                 "subtitle": "Please",
                 "contentText": "We really want you to tap this notification",
@@ -131,7 +132,8 @@ class SnapyrNotificationTest {
                 },
                 "actionToken": "Zjk1OTkxZGEtZWE5Yy00ZTQ0LTk5OGQtNWZmNWY0Y2EwNGQzOmIyOWY5MDE4LWVhMjUtNGJmNS04YTliLWQ4ZDZhOGJjMjlhMTpmYmYxMTljMS1lMjNlLTQxZDEtODkyMi05MjE5M2RlNGRkODk6NGZjOGE5NGQtNGU0Zi00NTQ4LWE3NjYtMzM1NDY2YmViMzBjOnB1Ymxpc2g6NGY5YTA0NzMtYWY4OS00M2QyLWEyZTMtZmFiN2FkNmU0MzUyOnBhdWwxMTExYTp0YmQ6MTY2ODY0ODQzOTphY3Rpb25Ub2tlbi00ZjlhMDQ3My1hZjg5LTQzZDItYTJlMy1mYWI3YWQ2ZTQzNTIucGF1bDExMTFhLjE2Njg2NDg0Mzk="
             }
-        """.trimMargin());
+        """.trimMargin()
+        )
         val remoteMessage = RemoteMessage.Builder("fakefirebasetoken")
             .setData(dataMap)
             .build()
@@ -141,17 +143,24 @@ class SnapyrNotificationTest {
     @Test(expected = NonSnapyrMessageException::class)
     @Throws(IOException::class)
     fun testNonSnapyrNotification() {
-        val dataMap = HashMap<String, String>();
+        val dataMap = HashMap<String, String>()
 
         dataMap.set("subtitle", "Please")
         dataMap.set("contentText", "We really want you to tap this notification")
         dataMap.set("deepLinkUrl", "snapyrsample://test/123")
-        dataMap.set("imageUrl", "https://images-na.ssl-images-amazon.com/images/S/pv-target-images/fb1fd46fbac48892ef9ba8c78f1eb6fa7d005de030b2a3d17b50581b2935832f._SX1080_.jpg")
-        dataMap.set("pushTemplate", """{
+        dataMap.set(
+            "imageUrl",
+            "https://images-na.ssl-images-amazon.com/images/S/pv-target-images/fb1fd46fbac48892e" +
+                "f9ba8c78f1eb6fa7d005de030b2a3d17b50581b2935832f._SX1080_.jpg"
+        )
+        dataMap.set(
+            "pushTemplate",
+            """{
             "id": "b29f9018-ea25-4bf5-8a9b-d8d6a8bc29a1",
             "modified": "2022-11-10T21:20:15.409Z"
-        }""")
-        dataMap.set("actionToken", "Zjk1OTkxZGEtZWE5Yy00ZTQ0LTk5OGQtNWZmNWY0Y2EwNGQzOmIyOWY5MDE4LWVhMjUtNGJmNS04YTliLWQ4ZDZhOGJjMjlhMTpmYmYxMTljMS1lMjNlLTQxZDEtODkyMi05MjE5M2RlNGRkODk6NGZjOGE5NGQtNGU0Zi00NTQ4LWE3NjYtMzM1NDY2YmViMzBjOnB1Ymxpc2g6NGY5YTA0NzMtYWY4OS00M2QyLWEyZTMtZmFiN2FkNmU0MzUyOnBhdWwxMTExYTp0YmQ6MTY2ODY0ODQzOTphY3Rpb25Ub2tlbi00ZjlhMDQ3My1hZjg5LTQzZDItYTJlMy1mYWI3YWQ2ZTQzNTIucGF1bDExMTFhLjE2Njg2NDg0Mzk=")
+        }"""
+        )
+        dataMap.set("actionToken", TEST_ACTION_TOKEN)
 
         val remoteMessage = RemoteMessage.Builder("fakefirebasetoken")
             .setData(dataMap)
