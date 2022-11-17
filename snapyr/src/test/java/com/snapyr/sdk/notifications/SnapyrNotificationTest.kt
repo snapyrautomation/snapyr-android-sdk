@@ -84,6 +84,18 @@ class SnapyrNotificationTest {
             "https://images-na.ssl-images-amazon.com/images/S/pv" +
                 "-target-images/fb1fd46fbac48892ef9ba8c78f1eb6fa7d005de030b2a3d17b50581b2935832f._SX1080_.jpg"
         )
+
+        val notificationMap = unparceledNotification.asValueMap()
+        assertThat(notificationMap.getInt("notificationId", -1)).isEqualTo(snapyrNotification.notificationId)
+        assertThat(notificationMap.getString("titleText")).isEqualTo("Tap this")
+        assertThat(notificationMap.getString("subtitleText")).isEqualTo("Please")
+        assertThat(notificationMap.getString("contentText")).isEqualTo("We really want you to tap this notification")
+        assertThat(notificationMap.getString("actionToken")).isEqualTo(TEST_ACTION_TOKEN)
+        assertThat(notificationMap.getString("deepLinkUrl")).isEqualTo("snapyrsample://test/123")
+        assertThat(notificationMap.getString("imageUrl")).isEqualTo(
+            "https://images-na.ssl-images-amazon.com/images/S/pv" +
+                "-target-images/fb1fd46fbac48892ef9ba8c78f1eb6fa7d005de030b2a3d17b50581b2935832f._SX1080_.jpg"
+        )
     }
 
     @Test
@@ -112,6 +124,15 @@ class SnapyrNotificationTest {
         assertThat(snapyrNotification.actionToken).isEqualTo(TEST_ACTION_TOKEN)
         assertThat(snapyrNotification.deepLinkUrl).isNull()
         assertThat(snapyrNotification.imageUrl).isNull()
+
+        val notificationMap = snapyrNotification.asValueMap()
+        assertThat(notificationMap.getInt("notificationId", -1)).isEqualTo(snapyrNotification.notificationId)
+        assertThat(notificationMap.getString("titleText")).isEqualTo("Tap this")
+        assertThat(notificationMap.getString("subtitleText")).isNull()
+        assertThat(notificationMap.getString("contentText")).isEqualTo("We really want you to tap this notification")
+        assertThat(notificationMap.getString("actionToken")).isEqualTo(TEST_ACTION_TOKEN)
+        assertThat(notificationMap.getString("deepLinkUrl")).isNull()
+        assertThat(notificationMap.getString("imageUrl")).isNull()
     }
 
     @Test(expected = java.lang.IllegalArgumentException::class)

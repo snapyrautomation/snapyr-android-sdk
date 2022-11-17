@@ -214,8 +214,9 @@ public class SnapyrNotification implements Parcelable {
                 .putValue("titleText", titleText)
                 .putValue("contentText", contentText)
                 .putValue("subtitleText", subtitleText)
-                .putValue("deepLinkUrl", deepLinkUrl.toString())
-                .putValue("imageUrl", imageUrl);
+                .putValue("deepLinkUrl", (deepLinkUrl != null) ? deepLinkUrl.toString() : null)
+                .putValue("imageUrl", imageUrl)
+                .putValue("actionToken", actionToken);
     }
 
     public static class NonSnapyrMessageException extends Exception {
