@@ -43,17 +43,6 @@ import com.snapyr.sdk.services.ServiceFacade;
 public class SnapyrNotificationListener extends Activity {
     private static final String TAG = "SnapyrNotificationListener";
 
-    public SnapyrNotificationListener() {
-        super();
-        Log.e("XXX", "SnapyrNotificationListener: CONSTRUCTOR 3");
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-        Log.e("XXX", "SnapyrNotificationListener: FINALIZE");
-        super.finalize();
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
