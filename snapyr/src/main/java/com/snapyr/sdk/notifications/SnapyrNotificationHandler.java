@@ -131,7 +131,7 @@ public class SnapyrNotificationHandler {
                 .setAutoCancel(true); // true means notification auto dismissed after tapping. TODO
 
         Intent trackIntent = new Intent(applicationContext, SnapyrNotificationListener.class);
-        trackIntent.putExtra("snapyrNotification", snapyrNotification);
+        trackIntent.putExtra("snapyr.notification", snapyrNotification);
         trackIntent.putExtra(NOTIFICATION_ID, snapyrNotification.notificationId);
 
         trackIntent.addFlags(

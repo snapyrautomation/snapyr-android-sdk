@@ -51,7 +51,7 @@ public class SnapyrNotificationListener extends Activity {
         super.onCreate(savedInstanceState);
         Intent intent = this.getIntent();
 
-        SnapyrNotification snapyrNotification = intent.getParcelableExtra("snapyrNotification");
+        SnapyrNotification snapyrNotification = intent.getParcelableExtra("snapyr.notification");
 
         int notificationId = intent.getIntExtra(SnapyrNotificationHandler.NOTIFICATION_ID, -1);
         // Dismiss source notification
@@ -78,7 +78,7 @@ public class SnapyrNotificationListener extends Activity {
         Intent deepLinkIntent = new Intent(SnapyrNotificationHandler.NOTIFICATION_TAPPED_ACTION);
         // makes intent "explicit", allowing it to reach manifest-defined receivers in current app
         deepLinkIntent.setPackage(this.getPackageName());
-        deepLinkIntent.putExtra("snapyrNotification", snapyrNotification);
+        deepLinkIntent.putExtra("snapyr.notification", snapyrNotification);
         this.sendBroadcast(deepLinkIntent);
         ServiceFacade.getLogger()
                 .info("SnapyrNotificationListener: notification-tapped broadcast sent");
@@ -86,7 +86,7 @@ public class SnapyrNotificationListener extends Activity {
 
     private void launchActualActivity(SnapyrNotification snapyrNotification) {
         Intent launchActivityIntent = getLaunchIntent(snapyrNotification.deepLinkUrl);
-        launchActivityIntent.putExtra("snapyrNotification", snapyrNotification);
+        launchActivityIntent.putExtra("snapyr.notification", snapyrNotification);
 
         try {
             this.startActivity(launchActivityIntent);

@@ -101,7 +101,7 @@ public class SnapyrFirebaseMessagingService extends FirebaseMessagingService {
     private void sendPushReceivedBroadcast(SnapyrNotification snapyrNotification) {
         Intent pushReceivedIntent =
                 new Intent(SnapyrNotificationHandler.NOTIFICATION_RECEIVED_ACTION);
-        pushReceivedIntent.putExtra("snapyrNotification", snapyrNotification);
+        pushReceivedIntent.putExtra("snapyr.notification", snapyrNotification);
         // make this intent "explicit" which allows it to reach a manifest-defined receiver
         pushReceivedIntent.setPackage(this.getPackageName());
         this.sendBroadcast(pushReceivedIntent);
