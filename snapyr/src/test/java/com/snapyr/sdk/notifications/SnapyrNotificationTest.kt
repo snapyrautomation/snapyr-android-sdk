@@ -23,7 +23,7 @@
  */
 package com.snapyr.sdk.notifications
 
-import android.os.Bundle
+import android.os.Parcel
 import com.google.firebase.messaging.RemoteMessage
 import com.snapyr.sdk.notifications.SnapyrNotification.NonSnapyrMessageException
 import java.io.IOException
@@ -69,9 +69,12 @@ class SnapyrNotificationTest {
         val snapyrNotification = SnapyrNotification(remoteMessage)
 
         // test parcel/unparcel, then ensure values are correct on the unparceled/copied object
-        val bundle = Bundle()
-        bundle.putParcelable("snapyrNotification", snapyrNotification)
-        val unparceledNotification = bundle.getParcelable<SnapyrNotification>("snapyrNotification")
+        val parcel = Parcel.obtain()
+        snapyrNotification.writeToParcel(parcel, 0)
+        // After writing is done, need to reset position for reading
+        parcel.setDataPosition(0)
+
+        val unparceledNotification = SnapyrNotification.CREATOR.createFromParcel(parcel)
 
         assertThat(unparceledNotification).isNotNull()
         assertThat(unparceledNotification!!.notificationId).isGreaterThan(0)

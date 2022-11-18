@@ -42,8 +42,7 @@ public class SnapyrNotification implements Parcelable {
     private static final Random random =
             new Random(); // seeded with current System.nanotime() by default
 
-    public final int notificationId =
-            random.nextInt(Integer.MAX_VALUE); // MAX_VALUE ensures non-negative
+    public final int notificationId;
     public final String titleText;
     public final String contentText;
     public final String subtitleText;
@@ -64,6 +63,7 @@ public class SnapyrNotification implements Parcelable {
 
     public SnapyrNotification(RemoteMessage remoteMessage)
             throws IllegalArgumentException, NonSnapyrMessageException {
+        this.notificationId = random.nextInt(Integer.MAX_VALUE); // MAX_VALUE ensures non-negative
         Map<String, String> rawData = remoteMessage.getData();
         String snapyrDataJson = rawData.get("snapyr");
         if (snapyrDataJson == null) {
@@ -173,6 +173,7 @@ public class SnapyrNotification implements Parcelable {
     // read operations must exactly match order and type of write operations in `writeToParcel`
     // method
     protected SnapyrNotification(Parcel in) {
+        notificationId = in.readInt();
         titleText = in.readString();
         contentText = in.readString();
         subtitleText = in.readString();
@@ -211,6 +212,7 @@ public class SnapyrNotification implements Parcelable {
     // `createFromParcel`
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(notificationId);
         dest.writeString(titleText);
         dest.writeString(contentText);
         dest.writeString(subtitleText);
