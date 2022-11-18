@@ -253,6 +253,7 @@ class SnapyrActivityLifecycleCallbacks
 
     public void onActivityCreated(
             Activity activity, Bundle activitySavedInstanceState, Boolean manualCall) {
+        ServiceFacade.getInstance().setCurrentActivity(activity);
         if (this.checkAndUpdateCallbackTracked(
                 MonitoredCallbacks.ON_ACTIVITY_CREATED, activity, manualCall)) {
             return;
@@ -266,7 +267,6 @@ class SnapyrActivityLifecycleCallbacks
             TrackerUtil.trackDeepLink(activity, activity.getIntent());
         }
         this.trackNotificationIntent(activity);
-        ServiceFacade.getInstance().setCurrentActivity(activity);
     }
 
     private void trackNotificationIntent(Activity activity) {
@@ -320,6 +320,7 @@ class SnapyrActivityLifecycleCallbacks
     }
 
     public void onActivityResumed(Activity activity, Boolean manualCall) {
+        ServiceFacade.getInstance().setCurrentActivity(activity);
         if (this.checkAndUpdateCallbackTracked(
                 MonitoredCallbacks.ON_ACTIVITY_RESUMED, activity, manualCall)) {
             return;
