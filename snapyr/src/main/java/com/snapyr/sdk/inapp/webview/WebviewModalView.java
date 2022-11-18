@@ -23,6 +23,8 @@
  */
 package com.snapyr.sdk.inapp.webview;
 
+import static com.snapyr.sdk.internal.Utils.isNullOrEmpty;
+
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -84,6 +86,12 @@ public class WebviewModalView extends FrameLayout {
 
     // todo: DRY this with SnapyrNotificationListener intent / activity launch code?
     private void handleClick(String id, String url, ValueMap parameters) {
+        if (isNullOrEmpty(url)) {
+            ServiceFacade.getLogger()
+                    .debug("WebviewModalView: empty url on click handler; returning");
+            return;
+        }
+
         Uri linkUri = Uri.parse(url);
         Intent launchIntent = new Intent(Intent.ACTION_VIEW, linkUri);
         launchIntent.setPackage(this.getContext().getPackageName());
