@@ -24,7 +24,11 @@
 package com.snapyr.sdk.inapp.webview;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
 import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
@@ -40,6 +44,9 @@ import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.ValueMap;
 import com.snapyr.sdk.core.R;
 import com.snapyr.sdk.services.ServiceFacade;
+import java.util.Iterator;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class WebviewModalView extends FrameLayout {
     static PopupWindow popupWindow = null;
@@ -56,6 +63,13 @@ public class WebviewModalView extends FrameLayout {
                 new Runnable() {
                     @Override
                     public void run() {
+                        if (activity == null) {
+                            ServiceFacade.getLogger()
+                                    .error(
+                                            new NullPointerException(),
+                                            "In-app overlay: tracked activity is null; unable to display popup");
+                            return;
+                        }
                         new WebviewModalView(activity, rawHtml, actionToken);
                     }
                 });
@@ -65,6 +79,50 @@ public class WebviewModalView extends FrameLayout {
         if (WebviewModalView.popupWindow != null) {
             WebviewModalView.popupWindow.dismiss();
             return;
+        }
+    }
+
+    // todo: DRY this with SnapyrNotificationListener intent / activity launch code?
+    private void handleClick(String id, String url, ValueMap parameters) {
+        Uri linkUri = Uri.parse(url);
+        Intent launchIntent = new Intent(Intent.ACTION_VIEW, linkUri);
+        launchIntent.setPackage(this.getContext().getPackageName());
+
+        JSONObject paramJson = parameters.toJsonObject();
+        Bundle paramBundle = new Bundle();
+        for (Iterator<String> it = paramJson.keys(); it.hasNext(); ) {
+            String key = it.next();
+            String value = null;
+            try {
+                value = paramJson.getString(key);
+            } catch (JSONException ignored) {
+            }
+            paramBundle.putString(key, value);
+        }
+
+        launchIntent.putExtra("parameters", paramBundle);
+        launchIntent.putExtra("id", id);
+
+        try {
+            this.getContext().startActivity(launchIntent);
+            return;
+        } catch (ActivityNotFoundException e) {
+            ServiceFacade.getLogger()
+                    .debug("WebviewModalView: Error trying to launch click intent", e);
+        }
+
+        // Try to launch url in browser if activity open attempt failed
+        try {
+            String scheme = linkUri.getScheme();
+            if (scheme.equalsIgnoreCase("http") || scheme.equalsIgnoreCase("https")) {
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, linkUri);
+                this.getContext().startActivity(browserIntent);
+            }
+        } catch (Exception e) {
+            ServiceFacade.getLogger()
+                    .error(
+                            e,
+                            "WebviewModalView: Error trying to launch browser intent. Launching link URL failed");
         }
     }
 
@@ -155,10 +213,11 @@ public class WebviewModalView extends FrameLayout {
                             }
 
                             @Override
-                            public void onClick(String id, ValueMap parameters) {
+                            public void onClick(String id, String url, ValueMap parameters) {
                                 wasInteractedWith = true;
                                 Properties props = new Properties(parameters);
                                 snapyr.trackInAppMessageClick(actionToken, props);
+                                handleClick(id, url, parameters);
                                 // TODO: should we dismiss on click?
                                 dismissPopup();
                             }
