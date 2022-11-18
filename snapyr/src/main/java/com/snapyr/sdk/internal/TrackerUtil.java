@@ -55,10 +55,14 @@ public class TrackerUtil {
     public static void trackNotificationInteraction(
             Snapyr snapyrInst, SnapyrNotification snapyrNotification) {
         Context applicationContext = ServiceFacade.getApplication().getApplicationContext();
+        String deepLinkUrl =
+                snapyrNotification.deepLinkUrl != null
+                        ? snapyrNotification.deepLinkUrl.toString()
+                        : null;
 
         Properties props =
                 new Properties()
-                        .putValue("deepLinkUrl", snapyrNotification.deepLinkUrl.toString())
+                        .putValue("deepLinkUrl", deepLinkUrl)
                         .putValue("actionId", snapyrNotification.actionId);
 
         props.putValue(SnapyrNotificationHandler.NOTIF_TOKEN_KEY, snapyrNotification.actionToken)

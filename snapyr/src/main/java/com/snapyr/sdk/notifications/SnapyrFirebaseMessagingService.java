@@ -87,7 +87,9 @@ public class SnapyrFirebaseMessagingService extends FirebaseMessagingService {
                                 snapyrNotification.actionToken)
                         .putValue(
                                 SnapyrNotificationHandler.ACTION_DEEP_LINK_KEY,
-                                snapyrNotification.deepLinkUrl.toString());
+                                (snapyrNotification.deepLinkUrl != null)
+                                        ? snapyrNotification.deepLinkUrl.toString()
+                                        : null);
 
         snapyrInstance.pushNotificationReceived(properties);
 
