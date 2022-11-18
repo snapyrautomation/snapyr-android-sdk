@@ -137,6 +137,41 @@ public class SnapyrNotification implements Parcelable {
         this.imageUrl = getOrDefault(jsonData, SnapyrNotificationHandler.NOTIF_IMAGE_URL_KEY, null);
     }
 
+    private String getOrDefault(JSONObject data, String key, String defaultVal) {
+        String val = null;
+        try {
+            val = data.getString(key);
+        } catch (Exception ignore) {
+        }
+
+        if (isNullOrEmpty(val)) {
+            return defaultVal;
+        }
+        return val;
+    }
+
+    public void setPushTemplate(PushTemplate pushTemplate) {
+        this.pushTemplate = pushTemplate;
+    }
+
+    public PushTemplate getPushTemplate() {
+        return this.pushTemplate;
+    }
+
+    public ValueMap asValueMap() {
+        return new ValueMap()
+                .putValue("notificationId", notificationId)
+                .putValue("titleText", titleText)
+                .putValue("contentText", contentText)
+                .putValue("subtitleText", subtitleText)
+                .putValue("deepLinkUrl", (deepLinkUrl != null) ? deepLinkUrl.toString() : null)
+                .putValue("imageUrl", imageUrl)
+                .putValue("actionToken", actionToken);
+    }
+
+    // Constructor for use by Parcelable CREATOR below. NB order is significant - order and type of
+    // read operations must exactly match order and type of write operations in `writeToParcel`
+    // method
     protected SnapyrNotification(Parcel in) {
         titleText = in.readString();
         contentText = in.readString();
@@ -166,32 +201,14 @@ public class SnapyrNotification implements Parcelable {
                 }
             };
 
-    private String getOrDefault(JSONObject data, String key, String defaultVal) {
-        String val = null;
-        try {
-            val = data.getString(key);
-        } catch (Exception ignore) {
-        }
-
-        if (isNullOrEmpty(val)) {
-            return defaultVal;
-        }
-        return val;
-    }
-
-    public void setPushTemplate(PushTemplate pushTemplate) {
-        this.pushTemplate = pushTemplate;
-    }
-
-    public PushTemplate getPushTemplate() {
-        return this.pushTemplate;
-    }
-
     @Override
     public int describeContents() {
         return 0;
     }
 
+    // NB order is significant - order and type of write operations here must exactly match order
+    // and type of read operations in `SnapyrNotification(Parcel in)` method, which is used by
+    // `createFromParcel`
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(titleText);
@@ -206,17 +223,6 @@ public class SnapyrNotification implements Parcelable {
         dest.writeString(channelId);
         dest.writeString(channelName);
         dest.writeString(channelDescription);
-    }
-
-    public ValueMap asValueMap() {
-        return new ValueMap()
-                .putValue("notificationId", notificationId)
-                .putValue("titleText", titleText)
-                .putValue("contentText", contentText)
-                .putValue("subtitleText", subtitleText)
-                .putValue("deepLinkUrl", (deepLinkUrl != null) ? deepLinkUrl.toString() : null)
-                .putValue("imageUrl", imageUrl)
-                .putValue("actionToken", actionToken);
     }
 
     public static class NonSnapyrMessageException extends Exception {
