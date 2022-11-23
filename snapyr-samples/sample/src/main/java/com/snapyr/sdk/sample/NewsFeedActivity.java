@@ -27,9 +27,7 @@ import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.Html;
@@ -38,29 +36,20 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-import androidx.annotation.RequiresApi;
-import butterknife.BindView;
-import butterknife.ButterKnife;
 import butterknife.OnClick;
 import com.snapyr.sdk.Snapyr;
-import com.snapyr.sdk.Traits;
+import com.snapyr.sdk.notifications.SnapyrNotification;
 import io.github.inflationx.viewpump.ViewPumpContextWrapper;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
-public class MainActivity extends Activity {
-    @BindView(R.id.user_id)
-    EditText userId;
-
-    public MainActivity() {
-        super();
-        Log.e("Snapyr.Sample", "MainActivity CONSTRUCTOR");
-    }
+public class NewsFeedActivity extends Activity {
+    //    @BindView(R.id.user_id_newsfeed)
+    //    EditText userIdNewsfeed;
 
     /** Returns true if the string is null, or empty (when trimmed). */
     public static boolean isNullOrEmpty(String text) {
@@ -69,31 +58,24 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.e("Snapyr.Sample", "MainActivity onCreate");
         super.onCreate(savedInstanceState);
 
         // For debugging - destroys the FB token so a new one will be created. Probably does some
         // other stuff too
         //        FirebaseInstallations.getInstance().delete();
 
-        setContentView(R.layout.activity_main);
-        ButterKnife.bind(this);
+        setContentView(R.layout.activity_newsfeed);
+        //        ButterKnife.bind(this);
 
         Intent intent = getIntent();
-        this.addLog("onCreate", MessageFormat.format("intent: {0}", intent));
+        SnapyrNotification snapyrNotification =
+                intent.getExtras().getParcelable("snapyr.notification");
+        addLog(
+                "onCreate",
+                MessageFormat.format("intent: {0}\nsnapyrNotif:{1}", intent, snapyrNotification));
         if (intent != null) {
             handleOpenIntent(intent);
         }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.i(
-                "Snapyr.Sample",
-                MessageFormat.format(
-                        "MainActivity onResume: taskId: {0} isTaskRoot: {1}",
-                        getTaskId(), isTaskRoot()));
     }
 
     @Override
@@ -104,7 +86,9 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onNewIntent(Intent intent) {
-        addLog("onNewIntent", MessageFormat.format("intent: {0}", intent));
+        SnapyrNotification snapyrNotification =
+                intent.getExtras().getParcelable("snapyr.notification");
+        addLog("onNewIntent", MessageFormat.format("intent: {0}\n{1}", intent, snapyrNotification));
         handleOpenIntent(intent);
         // `onNewIntent` doesn't automatically update the intent on the activity. Do that explicitly
         // so any later activity calls to `getIntent()` get this new version
@@ -129,60 +113,37 @@ public class MainActivity extends Activity {
         }
     }
 
-    @OnClick(R.id.pushtest_bad_url)
-    void onBadUrlClick() {
-        Snapyr.with(this).track("chPushTestBadUrl");
+    @OnClick(R.id.action_track_a_newsfeed)
+    void onButtonAClicked() {
+        Snapyr.with(this).track("pushTest");
     }
-
-    @OnClick(R.id.pushtest_leaderboard)
-    void onLeaderboardClick() {
-        Snapyr.with(this).track("chPushTestLeaderboard");
-    }
-
-    @OnClick(R.id.pushtest_homescreen)
-    void onHomescreenClick() {
-        Snapyr.with(this).track("chPushTestHomescreen");
-    }
-
-    @OnClick(R.id.pushtest_no_deeplink)
-    void onNoDeeplinkClick() {
-        Snapyr.with(this).track("chPushTestNoDeeplink");
-    }
-
-//    @OnClick(R.id.action_track_a)
-//    void onButtonAClicked() {
-//        Snapyr.with(this).track("pushTestAndroid");
-//    }
-//
-//    @OnClick(R.id.action_track_b)
-//    void onButtonBClicked() {
-//        //        Snapyr.with(this).track("Button B Clicked");
-//        PackageManager pm = this.getPackageManager();
-//        Intent newsFeedIntent = new Intent(this, GlobalLeaderBoardActivityKt.class);
-//        this.startActivity(newsFeedIntent);
-//    }
-
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    @OnClick(R.id.action_show_notification)
-    void onShowNotifyClicked() {
-        Snapyr.with(this).getNotificationHandler().showSampleNotification();
-    }
-
-    @OnClick(R.id.action_identify)
-    void onIdentifyButtonClicked() {
-        String id = userId.getText().toString();
-        if (isNullOrEmpty(id)) {
-            Toast.makeText(this, R.string.id_required, Toast.LENGTH_LONG).show();
-        } else {
-            Traits traits = new Traits().putValue("testAmount", 100);
-            Snapyr.with(this).identify(id, traits, null);
-        }
-    }
-
-    @OnClick(R.id.action_flush)
-    void onFlushButtonClicked() {
-        Snapyr.with(this).flush();
-    }
+    //
+    //    @OnClick(R.id.action_track_b_newsfeed)
+    //    void onButtonBClicked() {
+    //        Snapyr.with(this).track("Button B Clicked");
+    //    }
+    //
+    //    @RequiresApi(api = Build.VERSION_CODES.O)
+    //    @OnClick(R.id.action_show_notification_newsfeed)
+    //    void onShowNotifyClicked() {
+    //        Snapyr.with(this).getNotificationHandler().showSampleNotification();
+    //    }
+    //
+    //    @OnClick(R.id.action_identify_newsfeed)
+    //    void onIdentifyButtonClicked() {
+    //        String id = userIdNewsfeed.getText().toString();
+    //        if (isNullOrEmpty(id)) {
+    //            Toast.makeText(this, R.string.id_required, Toast.LENGTH_LONG).show();
+    //        } else {
+    //            Traits traits = new Traits().putValue("testAmount", 100);
+    //            Snapyr.with(this).identify(id, traits, null);
+    //        }
+    //    }
+    //
+    //    @OnClick(R.id.action_flush_newsfeed)
+    //    void onFlushButtonClicked() {
+    //        Snapyr.with(this).flush();
+    //    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -233,7 +194,7 @@ public class MainActivity extends Activity {
     }
 
     private void prependLogEntry(Spanned newEntry) {
-        TextView logView = this.findViewById(R.id.event_log);
+        TextView logView = this.findViewById(R.id.event_log_newsfeed);
         Log.i("Snapyr.Sample", String.valueOf(newEntry));
         if (logView == null) {
             Log.e("Snapyr.sample", "addLog: could not find event_log view");

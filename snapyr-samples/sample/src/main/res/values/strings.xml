@@ -32,6 +32,11 @@
     <string name="button_a">Button A</string>
     <string name="button_b">Button B</string>
 
+    <string name="pushtest_bad_url">chPushTestBadUrl</string>
+    <string name="pushtest_leaderboard">chPushTestLeaderboard</string>
+    <string name="pushtest_homescreen">chPushTestHomescreen</string>
+    <string name="pushtest_no_deeplink">chPushTestNoDeeplink</string>
+
     <string name="show_notification">Show Local Notification</string>
 
     <string name="flush">Flush Events</string>

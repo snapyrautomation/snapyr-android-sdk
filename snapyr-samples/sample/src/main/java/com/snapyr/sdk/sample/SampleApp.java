@@ -42,7 +42,8 @@ public class SampleApp extends Application {
 
     // https://segment.com/segment-engineering/sources/android-test/settings/keys
     //    private static final String ANALYTICS_WRITE_KEY = "HO63Z36e0Ufa8AAgbjDomDuKxFuUICqI";
-    private static final String ANALYTICS_WRITE_KEY = "cTcjOQYhhxOTXF6eHFflOCyYPO6pfAOV";
+    //    private static final String ANALYTICS_WRITE_KEY = "cTcjOQYhhxOTXF6eHFflOCyYPO6pfAOV";
+    public static final String ANALYTICS_WRITE_KEY = "MsZEepxHLRM9d7CU0ClTC84T0E9w9H8w";
 
     @RequiresApi(api = Build.VERSION_CODES.P)
     @Override
@@ -63,9 +64,14 @@ public class SampleApp extends Application {
                                         // to
                                         // client code in the wild. If you want to be really careful
                                         // uncomment the penaltyDeath line above --BS
+                                        Throwable cause = v.getCause();
+                                        String stack = "<cause was null>";
+                                        if (cause != null) {
+                                            stack = String.valueOf(cause.getStackTrace());
+                                        }
                                         Log.e(
                                                 v.getLocalizedMessage(),
-                                                String.valueOf(v.getCause().getStackTrace()));
+                                                stack);
                                     }
                                 })
                         .build());
