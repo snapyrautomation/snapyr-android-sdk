@@ -35,6 +35,7 @@ import android.text.TextUtils
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import butterknife.OnClick
@@ -45,9 +46,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 
 class GlobalLeaderBoardActivityKt : Activity() {
-//    @JvmField
-//    @BindView(R.id.user_id)
-//    var userId: EditText? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -55,7 +53,10 @@ class GlobalLeaderBoardActivityKt : Activity() {
         // other stuff too
         //        FirebaseInstallations.getInstance().delete();
         setContentView(R.layout.activity_global_leaderboard)
-//        ButterKnife.bind(this)
+        findViewById<Button>(R.id.action_track_a_leaderboard).setOnClickListener {
+            onButtonAClicked()
+        }
+
         val intent = intent
         this.addLog("onCreate", MessageFormat.format("intent: {0}", intent))
         intent?.let { handleOpenIntent(it) }
@@ -93,7 +94,7 @@ class GlobalLeaderBoardActivityKt : Activity() {
 
     @OnClick(R.id.action_track_a_leaderboard)
     fun onButtonAClicked() {
-        Snapyr.with(this).track("pushTest")
+        Snapyr.with(this).track("chPushTestLeaderboard")
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

@@ -38,6 +38,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import butterknife.ButterKnife;
 import butterknife.OnClick;
 import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.notifications.SnapyrNotification;
@@ -48,14 +50,6 @@ import java.util.Date;
 import java.util.List;
 
 public class NewsFeedActivity extends Activity {
-    //    @BindView(R.id.user_id_newsfeed)
-    //    EditText userIdNewsfeed;
-
-    /** Returns true if the string is null, or empty (when trimmed). */
-    public static boolean isNullOrEmpty(String text) {
-        return TextUtils.isEmpty(text) || text.trim().length() == 0;
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,7 +59,7 @@ public class NewsFeedActivity extends Activity {
         //        FirebaseInstallations.getInstance().delete();
 
         setContentView(R.layout.activity_newsfeed);
-        //        ButterKnife.bind(this);
+        ButterKnife.bind(this);
 
         Intent intent = getIntent();
         SnapyrNotification snapyrNotification =
@@ -115,35 +109,8 @@ public class NewsFeedActivity extends Activity {
 
     @OnClick(R.id.action_track_a_newsfeed)
     void onButtonAClicked() {
-        Snapyr.with(this).track("pushTest");
+        Snapyr.with(this).track("chPushTestHomescreen");
     }
-    //
-    //    @OnClick(R.id.action_track_b_newsfeed)
-    //    void onButtonBClicked() {
-    //        Snapyr.with(this).track("Button B Clicked");
-    //    }
-    //
-    //    @RequiresApi(api = Build.VERSION_CODES.O)
-    //    @OnClick(R.id.action_show_notification_newsfeed)
-    //    void onShowNotifyClicked() {
-    //        Snapyr.with(this).getNotificationHandler().showSampleNotification();
-    //    }
-    //
-    //    @OnClick(R.id.action_identify_newsfeed)
-    //    void onIdentifyButtonClicked() {
-    //        String id = userIdNewsfeed.getText().toString();
-    //        if (isNullOrEmpty(id)) {
-    //            Toast.makeText(this, R.string.id_required, Toast.LENGTH_LONG).show();
-    //        } else {
-    //            Traits traits = new Traits().putValue("testAmount", 100);
-    //            Snapyr.with(this).identify(id, traits, null);
-    //        }
-    //    }
-    //
-    //    @OnClick(R.id.action_flush_newsfeed)
-    //    void onFlushButtonClicked() {
-    //        Snapyr.with(this).flush();
-    //    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

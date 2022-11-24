@@ -56,16 +56,16 @@
                 android:text="@string/pushtest_bad_url" />
 
             <Button
-                android:id="@+id/pushtest_leaderboard"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/pushtest_leaderboard" />
-
-            <Button
                 android:id="@+id/pushtest_homescreen"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/pushtest_homescreen" />
+
+            <Button
+                android:id="@+id/pushtest_leaderboard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/pushtest_leaderboard" />
 
             <Button
                 android:id="@+id/pushtest_no_deeplink"

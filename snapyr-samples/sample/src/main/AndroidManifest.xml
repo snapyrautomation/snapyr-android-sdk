@@ -88,8 +88,8 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
-                <data android:host="cricheroes.app" />
-                <data android:pathPrefix="/ch-leader-board" />
+                <data android:host="snapyrtest.app" />
+                <data android:pathPrefix="/leader-board" />
                 <data android:scheme="https" />
             </intent-filter>
         </activity>
@@ -108,7 +108,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
-                <data android:host="cricheroes.app" />
+                <data android:host="snapyrtest.app" />
                 <data android:pathPrefix="/home-screen" />
                 <data android:scheme="https" />
             </intent-filter>
