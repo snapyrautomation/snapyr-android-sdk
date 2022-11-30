@@ -114,13 +114,36 @@ public class MainActivity extends Activity {
 
     @OnClick(R.id.action_track_a)
     void onButtonAClicked() {
-        Snapyr.with(this).track("pushTest");
+        Snapyr.with(this).track("register1");
     }
 
     @OnClick(R.id.action_track_b)
     void onButtonBClicked() {
         Snapyr.with(this).track("Button B Clicked");
     }
+
+    //    @OnClick(R.id.pushtest_homescreen)
+    //    void onHomescreenClick() {
+    //        Snapyr.with(this).track("chPushTestHomescreen");
+    //    }
+    //
+    //    @OnClick(R.id.pushtest_no_deeplink)
+    //    void onNoDeeplinkClick() {
+    //        Snapyr.with(this).track("chPushTestNoDeeplink");
+    //    }
+
+    //    @OnClick(R.id.action_track_a)
+    //    void onButtonAClicked() {
+    //        Snapyr.with(this).track("pushTestAndroid");
+    //    }
+    //
+    //    @OnClick(R.id.action_track_b)
+    //    void onButtonBClicked() {
+    //        //        Snapyr.with(this).track("Button B Clicked");
+    //        PackageManager pm = this.getPackageManager();
+    //        Intent newsFeedIntent = new Intent(this, GlobalLeaderBoardActivityKt.class);
+    //        this.startActivity(newsFeedIntent);
+    //    }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     @OnClick(R.id.action_show_notification)

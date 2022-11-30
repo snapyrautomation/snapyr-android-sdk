@@ -163,6 +163,7 @@ public class BatchUploadQueue {
     }
 
     public void performEnqueue(BasePayload original) {
+        Log.d("Snapyr.Events", "performEnqueue start");
         // Make a copy of the payload so we don't mutate the original.
         ValueMap payload = new ValueMap();
         payload.putAll(original);
@@ -207,6 +208,11 @@ public class BatchUploadQueue {
                 .verbose(
                         "Enqueued %s payload. %s elements in the queue.",
                         original, batchQueue.size());
+        Log.d(
+                "Snapyr.Events",
+                String.format(
+                        "Enqueued %s payload. %s elements in the queue.",
+                        original, batchQueue.size()));
         if (batchQueue.size() >= flushQueueSize) {
             submitFlush();
         }
@@ -220,8 +226,10 @@ public class BatchUploadQueue {
     /** Submits a flush message to the network executor. */
     public void submitFlush() {
         if (!shouldFlush()) {
+            Log.d("Snapyr.Events", "submitFlush: SKIP");
             return;
         }
+        Log.d("Snapyr.Events", "submitFlush: PROCEED...");
 
         ExecutorService networkExecutor = ServiceFacade.getNetworkExecutor();
         if (networkExecutor.isShutdown()) {
@@ -259,6 +267,8 @@ public class BatchUploadQueue {
         int payloadsUploaded = 0;
         WriteConnection connection = null;
         try {
+            long t1 = System.nanoTime();
+
             // Open a connection.
             connection = ServiceFacade.getConnectionFactory().postBatch();
 
@@ -268,6 +278,10 @@ public class BatchUploadQueue {
                             this.batchQueue,
                             connection.getOutputStream(),
                             ServiceFacade.getCrypto());
+
+            long t2 = System.nanoTime();
+            double sendElapsed = (t2 - t1) / 1e6; // in millis
+            Log.w("Snapyr.Events", String.format("QUEUE upload time: %.2fms", sendElapsed));
 
             // Process the response.
             int responseCode = connection.getResponseCode();
@@ -289,6 +303,15 @@ public class BatchUploadQueue {
                         responseCode, connection.getResponseMessage(), responseBody);
             } else if (inputStream != null) {
                 responseBody = Utils.readFully(inputStream);
+                long t3 = System.nanoTime();
+                double receiveElapsed = (t3 - t2) / 1e6; // in millis
+                double fullRequestElapsed = (t3 - t1) / 1e6; // in millis
+                Log.w(
+                        "Snapyr.Events",
+                        String.format("QUEUE response time: %.2fms", receiveElapsed));
+                Log.w(
+                        "Snapyr.Events",
+                        String.format("QUEUE TOTAL request time: %.2fms", fullRequestElapsed));
                 handleActionsIfAny(responseBody);
             }
 

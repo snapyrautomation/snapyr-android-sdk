@@ -53,6 +53,7 @@ public class SnapyrFirebaseMessagingService extends FirebaseMessagingService {
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
+        Log.e("Snapyr.Messaging", "onMessageReceived");
         super.onMessageReceived(remoteMessage);
         SnapyrNotification snapyrNotification;
         try {
@@ -74,11 +75,15 @@ public class SnapyrFirebaseMessagingService extends FirebaseMessagingService {
             return;
         }
 
+        long t1 = System.nanoTime();
         PushTemplate template = processPushTemplate(snapyrNotification, snapyrInstance);
         if (template != null) {
             // rich push, inject the template data into the context data we're passing down
             snapyrNotification.setPushTemplate(template);
         }
+        long t2 = System.nanoTime();
+        double tElapsed = (t2 - t1) / 1e6; // in milliseconds
+        Log.e("Snapyr.Messaging", String.format("processPushTemplate time: %.2fms", tElapsed));
 
         com.snapyr.sdk.Properties properties =
                 new com.snapyr.sdk.Properties()
@@ -111,6 +116,7 @@ public class SnapyrFirebaseMessagingService extends FirebaseMessagingService {
     private PushTemplate processPushTemplate(
             @NonNull SnapyrNotification snapyrNotification, Snapyr sdkInstance) {
         if (snapyrNotification.templateId == null || snapyrNotification.templateModified == null) {
+            Log.w("Snapyr.Messaging", "processPushTemplate: no template, immediate return");
             return null;
         }
 
@@ -119,8 +125,16 @@ public class SnapyrFirebaseMessagingService extends FirebaseMessagingService {
                 && (!template.getModified().before(snapyrNotification.templateModified))) {
             // if the modified date in the push payload is equal to or older than the cached
             // templates we're good to go and can just used the cached template value
+            Log.w(
+                    "Snapyr.Messaging",
+                    "processPushTemplate: template found & up-to-date; immediate return");
             return template;
         }
+        Log.w(
+                "Snapyr.Messaging",
+                String.format(
+                        "processPushTemplate: template refresh!!! id: [%s] modified: [%s]",
+                        snapyrNotification.templateId, snapyrNotification.templateModified));
 
         // either missing template or it's older than the timestamp in the push notification
         // re-fetch the sdk config and retry

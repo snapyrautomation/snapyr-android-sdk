@@ -24,6 +24,7 @@
 package com.snapyr.sdk.inapp;
 
 import android.content.Context;
+import android.util.Log;
 import androidx.annotation.NonNull;
 import com.snapyr.sdk.inapp.requests.AckUserActionRequest;
 import com.snapyr.sdk.inapp.requests.GetUserActionsRequest;
@@ -53,14 +54,22 @@ public class InAppManager implements InAppIFace {
     }
 
     private void processAndAck(InAppMessage message) {
+        Log.w("Snapyr.InApp", "processAndAck start");
         ServiceFacade.getNetworkExecutor()
                 .submit(
                         new Runnable() {
                             @Override
                             public void run() {
+                                Log.w("Snapyr.InApp", "processAndAck EXECUTOR start");
                                 try {
+                                    long t1 = System.nanoTime();
                                     AckUserActionRequest.execute(
                                             message.UserId, message.ActionToken);
+                                    long t2 = System.nanoTime();
+                                    double ackElapsed = (t2 - t1) / 1e6; // in millis
+                                    Log.w(
+                                            "Snapyr.InApp",
+                                            String.format("ACK time: %.2fms", ackElapsed));
                                     // Trigger user callbacks only after ack'ing, to prevent
                                     // duplicate user callback triggers in the event of ack failure
                                     actionProcessor.process(message);

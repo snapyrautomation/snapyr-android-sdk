@@ -116,6 +116,7 @@ public class SnapyrNotificationHandler {
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     public void showRemoteNotification(SnapyrNotification snapyrNotification) {
+        Log.e("Snapyr.Messaging", "showRemoteNotification start");
         registerChannel(
                 snapyrNotification.channelId,
                 snapyrNotification.channelName,
@@ -165,6 +166,8 @@ public class SnapyrNotificationHandler {
         // Image handling - fetch from URL
         // TODO (@paulwsmith): move off-thread? (maybe not necessary; not part of main thread
         // anyway)
+        Log.e("Snapyr.Messaging", "showRemoteNotification: start image processing");
+        long t1 = System.nanoTime();
         if (!isNullOrEmpty(snapyrNotification.imageUrl)) {
             InputStream inputStream = null;
             Bitmap image = null;
@@ -179,9 +182,13 @@ public class SnapyrNotificationHandler {
                         e);
             }
         }
+        long t2 = System.nanoTime();
+        double tElapsed = (t2 - t1) / 1e6; // in milliseconds
+        Log.e("Snapyr.Messaging", String.format("image processing time: %.2fms", tElapsed));
 
         Notification notification = builder.build();
         notificationMgr.notify(snapyrNotification.notificationId, notification);
+        Log.e("Snapyr.Messaging", "showRemoteNotification: done; notification fired");
     }
 
     private int getNotificationIcon() {

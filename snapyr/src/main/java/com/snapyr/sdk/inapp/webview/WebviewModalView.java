@@ -30,9 +30,11 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
@@ -56,8 +58,11 @@ public class WebviewModalView extends FrameLayout {
     private boolean wasInteractedWith = false;
     private final String actionToken;
     private final Snapyr snapyr;
+    private static long tStart;
 
     public static void showPopup(Activity activity, String rawHtml, String actionToken) {
+        Log.w("Snapyr.InApp", "showPopup start");
+        tStart = System.nanoTime();
         if (WebviewModalView.popupWindow != null) {
             return;
         }
@@ -136,9 +141,16 @@ public class WebviewModalView extends FrameLayout {
 
     public WebviewModalView(Context context, String html, String token) {
         super(context);
+        long construct1 = System.nanoTime();
+        Log.w("Snapyr.InApp", "WebviewModalView constructor start");
         this.actionToken = token;
         this.snapyr = Snapyr.with(context);
+        long inflate1 = System.nanoTime();
         contents = inflate(getContext(), R.layout.webview_modal, this);
+        double inflateElapsed = (System.nanoTime() - inflate1) / 1e6; // in millis
+        Log.w(
+                "Snapyr.InApp",
+                String.format("WebviewModalView view inflation time: %.2fms", inflateElapsed));
 
         WebView view = configureWebview(context, token);
 
@@ -159,6 +171,10 @@ public class WebviewModalView extends FrameLayout {
         int width = LinearLayout.LayoutParams.MATCH_PARENT;
         int height = LinearLayout.LayoutParams.MATCH_PARENT;
 
+        double elapsed2 = (System.nanoTime() - construct1) / 1e6; // in millis
+        Log.w(
+                "Snapyr.InApp",
+                String.format("WebviewModalView will open popup; elapsed: %.2fms", elapsed2));
         popupWindow = new PopupWindow(this, width, height, true);
         popupWindow.setOnDismissListener(
                 new PopupWindow.OnDismissListener() {
@@ -170,6 +186,9 @@ public class WebviewModalView extends FrameLayout {
         popupWindow.showAtLocation(contents, Gravity.CENTER, 0, 0);
         view.setVisibility(INVISIBLE);
 
+        double elapsed3 = (System.nanoTime() - construct1) / 1e6; // in millis
+        Log.w("Snapyr.InApp", String.format("WebviewModalView DONE; elapsed: %.2fms", elapsed3));
+
         WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
     }
 
@@ -178,7 +197,34 @@ public class WebviewModalView extends FrameLayout {
             @Override
             public void onPageCommitVisible(WebView view, String url) {
                 super.onPageCommitVisible(view, url);
-                view.setVisibility(VISIBLE);
+
+                double elapsed = (System.nanoTime() - tStart) / 1e6; // in millis
+                Log.w(
+                        "Snapyr.InApp",
+                        String.format(
+                                "WebviewModalView onPageCommitVisible; elapsed: %.2fms", elapsed));
+
+                printDimensions(view, "onPageCommitVisible");
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    view.postVisualStateCallback(
+                            0,
+                            new WebView.VisualStateCallback() {
+                                @Override
+                                public void onComplete(long l) {
+                                    double elapsed =
+                                            (System.nanoTime() - tStart) / 1e6; // in millis
+                                    Log.w(
+                                            "Snapyr.InApp",
+                                            String.format(
+                                                    "WebviewModalView postVisualStateCallback; elapsed: %.2fms",
+                                                    elapsed));
+                                    printDimensions(view, "onComplete");
+                                    view.setVisibility(VISIBLE);
+                                }
+                            });
+                } else {
+                    view.setVisibility(VISIBLE);
+                }
             }
         };
     }
@@ -233,10 +279,39 @@ public class WebviewModalView extends FrameLayout {
                             @Override
                             public void onLoad(float clientHeight) {
                                 snapyr.trackInAppMessageImpression(actionToken);
+                                ServiceFacade.getCurrentActivity()
+                                        .runOnUiThread(
+                                                new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        double elapsed =
+                                                                (System.nanoTime() - tStart)
+                                                                        / 1e6; // in millis
+                                                        Log.w(
+                                                                "Snapyr.InApp",
+                                                                String.format(
+                                                                        "WebviewModalView onLoad; elapsed: %.2fms",
+                                                                        elapsed));
+                                                        printDimensions(
+                                                                wv,
+                                                                String.format(
+                                                                        "onLoad (reported height: %f",
+                                                                        clientHeight));
+                                                    }
+                                                });
+                                //                                new Handler(Looper.g)
                             }
                         }),
                 "snapyrMessageHandler");
 
         return wv;
+    }
+
+    private void printDimensions(WebView wv, String comment) {
+        Log.e(
+                "Snapyr.Webview",
+                String.format(
+                        "%s: Webview height: %d  contentHeight: %d  measuredHeight: %d",
+                        comment, wv.getHeight(), wv.getContentHeight(), wv.getMeasuredHeight()));
     }
 }

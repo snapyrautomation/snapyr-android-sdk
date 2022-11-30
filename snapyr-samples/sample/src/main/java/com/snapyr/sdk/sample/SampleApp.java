@@ -42,7 +42,7 @@ public class SampleApp extends Application {
 
     // https://segment.com/segment-engineering/sources/android-test/settings/keys
     //    private static final String ANALYTICS_WRITE_KEY = "HO63Z36e0Ufa8AAgbjDomDuKxFuUICqI";
-    private static final String ANALYTICS_WRITE_KEY = "cTcjOQYhhxOTXF6eHFflOCyYPO6pfAOV";
+    private static final String ANALYTICS_WRITE_KEY = "TCCuJys6hhdqGGOPRUdATfdWlmieFxrg";
 
     @RequiresApi(api = Build.VERSION_CODES.P)
     @Override

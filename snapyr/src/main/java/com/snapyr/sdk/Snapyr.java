@@ -40,6 +40,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -940,7 +941,9 @@ public class Snapyr {
 
     @Private
     void fillAndEnqueue(BasePayload.Builder<?, ?> builder, Options options) {
+        Log.d("Snapyr.Events", "fillAndEnqueue start");
         waitForAdvertisingId();
+        Log.d("Snapyr.Events", "done waitForAdvertisingId");
 
         // TODO (major version change) -> do not override, merge it with defaultOptions
         final Options finalOptions;
@@ -971,6 +974,7 @@ public class Snapyr {
         }
 
         ServiceFacade.getLogger().verbose("Created payload %s.", payload);
+        Log.d("Snapyr.Events", "fillAndEnqueue done, about to performEnqueue");
         this.sendQueue.performEnqueue(payload);
     }
 

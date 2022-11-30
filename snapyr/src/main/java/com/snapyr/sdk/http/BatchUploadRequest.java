@@ -49,7 +49,7 @@ public class BatchUploadRequest implements Closeable, BatchQueue.ElementVisitor 
     @Private static final Charset UTF_8 = Charset.forName("UTF-8");
     static final String SNAPYR_KEY = "Snapyr";
 
-    public static final boolean DEBUG_MODE = false;
+    public static final boolean DEBUG_MODE = true;
     StringBuilder debugString = new StringBuilder();
     private boolean needsComma = false;
     private JsonWriter jsonWriter;
@@ -58,10 +58,14 @@ public class BatchUploadRequest implements Closeable, BatchQueue.ElementVisitor 
     int size;
     int payloadCount;
 
+    public static long t1 = 0;
+    public static long t2 = 0;
+
     public static int execute(BatchQueue queue, OutputStream stream, Crypto crypto)
             throws IOException {
         BatchUploadRequest uploader = new BatchUploadRequest(stream, crypto);
         try {
+            t1 = System.nanoTime();
             uploader.beginObject();
             uploader.beginBatchArray();
             queue.forEach(uploader);
@@ -75,6 +79,9 @@ public class BatchUploadRequest implements Closeable, BatchQueue.ElementVisitor 
         } finally {
             uploader.close();
             stream.close();
+            t2 = System.nanoTime();
+            double sendElapsed = (t2 - t1) / 1e6; // in millis
+            Log.v("Snapyr.Events", String.format("batch upload time: %.2fms", sendElapsed));
         }
         return uploader.payloadCount;
     }

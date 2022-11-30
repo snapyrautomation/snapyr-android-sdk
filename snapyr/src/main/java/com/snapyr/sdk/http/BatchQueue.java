@@ -23,6 +23,7 @@
  */
 package com.snapyr.sdk.http;
 
+import android.util.Log;
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.IOException;
@@ -78,7 +79,11 @@ public abstract class BatchQueue implements Closeable {
 
         @Override
         public void add(byte[] data) throws IOException {
+            long t1 = System.nanoTime();
             queueFile.add(data);
+            Log.d(
+                    "Snapyr.Events",
+                    String.format("queue add elapsed: %.2f", (System.nanoTime() - t1) / 1e6));
         }
 
         @Override
