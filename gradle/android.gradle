@@ -6,6 +6,11 @@ ext {
     }
 }
 
+// When SDK is included in another project locally, ensures root Snapyr SDK `build.gradle` is processed before continuing. This is needed to ensure Snapyr root dependencies and `ext` values are available by the time this file's tasks run
+if (snapyrRootProject != rootProject) {
+    evaluationDependsOn(snapyrRootProject.path)
+}
+
 apply plugin: 'com.diffplug.gradle.spotless'
 
 android {
