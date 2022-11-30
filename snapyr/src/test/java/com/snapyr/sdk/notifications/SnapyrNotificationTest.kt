@@ -27,6 +27,8 @@ import android.os.Parcel
 import com.google.firebase.messaging.RemoteMessage
 import com.snapyr.sdk.notifications.SnapyrNotification.NonSnapyrMessageException
 import java.io.IOException
+import java.time.Instant
+import java.util.Date
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -87,6 +89,10 @@ class SnapyrNotificationTest {
             "https://images-na.ssl-images-amazon.com/images/S/pv" +
                 "-target-images/fb1fd46fbac48892ef9ba8c78f1eb6fa7d005de030b2a3d17b50581b2935832f._SX1080_.jpg"
         )
+        assertThat(unparceledNotification!!.templateId).isEqualTo("b29f9018-ea25-4bf5-8a9b-d8d6a8bc29a1")
+        val modifiedInstant = Instant.parse("2022-11-10T21:20:15.409Z")
+        val modified = Date.from(modifiedInstant)
+        assertThat(unparceledNotification!!.templateModified).isEqualTo(modified)
 
         val notificationMap = unparceledNotification.asValueMap()
         assertThat(notificationMap.getInt("notificationId", -1)).isEqualTo(snapyrNotification.notificationId)

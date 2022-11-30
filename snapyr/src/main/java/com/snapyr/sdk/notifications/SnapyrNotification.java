@@ -98,10 +98,10 @@ public class SnapyrNotification implements Parcelable {
             JSONObject template =
                     jsonData.getJSONObject(SnapyrNotificationHandler.NOTIF_TEMPLATE_KEY);
             templateId = template.getString("id");
-            String modifiedStr = jsonData.getString("modified");
+            String modifiedStr = template.getString("modified");
             templateModified = Utils.parseISO8601Date(modifiedStr);
         } catch (Exception e) {
-            Log.e(
+            Log.w(
                     "Snapyr",
                     "Could not parse push template data. Continuing without template/action buttons.");
             templateId = null;
