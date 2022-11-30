@@ -63,9 +63,12 @@ public class SampleApp extends Application {
                                         // to
                                         // client code in the wild. If you want to be really careful
                                         // uncomment the penaltyDeath line above --BS
-                                        Log.e(
-                                                v.getLocalizedMessage(),
-                                                String.valueOf(v.getCause().getStackTrace()));
+                                        Throwable cause = v.getCause();
+                                        String stack = "<cause was null>";
+                                        if (cause != null) {
+                                            stack = String.valueOf(cause.getStackTrace());
+                                        }
+                                        Log.e(v.getLocalizedMessage(), stack);
                                     }
                                 })
                         .build());
