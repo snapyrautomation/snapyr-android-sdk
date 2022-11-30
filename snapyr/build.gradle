@@ -35,6 +35,7 @@ android {
 	defaultConfig {
 		consumerProguardFiles 'proguard-rules-lib.txt'
 		buildConfigField 'String', 'VERSION_NAME', "\"$VERSION_NAME\""
+		buildConfigField "java.util.Date", "BUILD_DATE", "new java.util.Date(" + System.currentTimeMillis() + "L)"
 	}
 }
 
