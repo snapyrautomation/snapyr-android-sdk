@@ -128,7 +128,12 @@ public class SnapyrNotificationHandler {
                 .setContentTitle(snapyrNotification.titleText)
                 .setContentText(snapyrNotification.contentText)
                 .setSubText(snapyrNotification.subtitleText)
-                .setAutoCancel(true); // true means notification auto dismissed after tapping. TODO
+                .setAutoCancel(true) // true means notification auto dismissed after tapping
+                // Allows expansion of notifications with text overflow. Will optionally be
+                // overridden by BigPictureStyle later, if notification has rich media
+                .setStyle(
+                        new NotificationCompat.BigTextStyle()
+                                .bigText(snapyrNotification.contentText));
 
         Intent trackIntent = new Intent(applicationContext, SnapyrNotificationListener.class);
         trackIntent.putExtra("snapyr.notification", snapyrNotification);
@@ -171,7 +176,10 @@ public class SnapyrNotificationHandler {
             try {
                 inputStream = new URL(snapyrNotification.imageUrl).openStream();
                 image = BitmapFactory.decodeStream(inputStream);
-                builder.setStyle(new NotificationCompat.BigPictureStyle().bigPicture(image));
+                builder.setStyle(
+                        new NotificationCompat.BigPictureStyle()
+                                .bigPicture(image)
+                                .setSummaryText(snapyrNotification.contentText));
             } catch (Exception e) {
                 Log.e(
                         "Snapyr",
