@@ -46,12 +46,7 @@ package com.snapyr.sdk.internal;
        ]
 */
 
-import android.os.Build;
-import androidx.annotation.RequiresApi;
 import com.snapyr.sdk.ValueMap;
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -68,14 +63,12 @@ public class PushTemplate {
     Date modified;
     ArrayList<ActionButton> buttons;
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     public PushTemplate(Map<String, Object> src) {
         super();
         this.id = (String) src.get("id");
         String modifiedStr = (String) src.get("modified");
 
-        TemporalAccessor ta = DateTimeFormatter.ISO_INSTANT.parse(modifiedStr);
-        this.modified = Date.from(Instant.from(ta));
+        this.modified = Utils.parseISO8601Date(modifiedStr);
         this.buttons = new ArrayList<>();
 
         ArrayList<Map<String, Object>> buttonsRaw = (ArrayList) src.get("actions");
@@ -84,7 +77,6 @@ public class PushTemplate {
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     public static Map<String, PushTemplate> ParseTemplate(ValueMap metadata) {
         ArrayList<Map<String, Object>> templates =
                 (ArrayList<Map<String, Object>>) metadata.get("pushTemplates");

@@ -35,14 +35,12 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.ProcessLifecycleOwner;
 import com.snapyr.sdk.http.BatchQueue;
@@ -220,7 +218,6 @@ public class Snapyr {
 
         analyticsExecutor.submit(
                 new Runnable() {
-                    @RequiresApi(api = Build.VERSION_CODES.O)
                     @Override
                     public void run() {
                         RefreshConfiguration(false);
@@ -455,7 +452,6 @@ public class Snapyr {
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     public void RefreshConfiguration(boolean force) {
         ProjectSettings newSettings = getSettings(force);
         if (!isNullOrEmpty(newSettings)) {

@@ -24,10 +24,8 @@
 package com.snapyr.sdk.notifications;
 
 import android.content.Intent;
-import android.os.Build;
 import android.util.Log;
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.snapyr.sdk.Snapyr;
@@ -50,7 +48,6 @@ public class SnapyrFirebaseMessagingService extends FirebaseMessagingService {
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
@@ -107,7 +104,6 @@ public class SnapyrFirebaseMessagingService extends FirebaseMessagingService {
         this.sendBroadcast(pushReceivedIntent);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     private PushTemplate processPushTemplate(
             @NonNull SnapyrNotification snapyrNotification, Snapyr sdkInstance) {
         if (snapyrNotification.templateId == null || snapyrNotification.templateModified == null) {
