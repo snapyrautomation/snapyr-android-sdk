@@ -123,9 +123,15 @@ public class SnapyrNotificationHandler {
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(this.context, snapyrNotification.channelId);
         builder.setSmallIcon(getNotificationIcon())
+                // only applies for Android N or older (ignored on later versions) - enables
+                // sound/vibration/lights, which helps make the "heads-up" notif preview display
+                .setDefaults(NotificationCompat.DEFAULT_ALL)
                 .setContentTitle(snapyrNotification.titleText)
                 .setContentText(snapyrNotification.contentText)
                 .setSubText(snapyrNotification.subtitleText)
+                // Android N or older - must be PRIORITY_HIGH or higher for "heads-up" notif preview
+                // to display
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true) // true means notification auto dismissed after tapping
                 // Allows expansion of notifications with text overflow. Will optionally be
                 // overridden by BigPictureStyle later, if notification has rich media
