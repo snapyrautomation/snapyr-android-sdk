@@ -36,7 +36,6 @@ import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.util.Log;
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -114,7 +113,6 @@ public class SnapyrNotificationHandler {
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
     public void showRemoteNotification(SnapyrNotification snapyrNotification) {
         registerChannel(
                 snapyrNotification.channelId,
@@ -218,14 +216,14 @@ public class SnapyrNotificationHandler {
         }
         if (result == 0) {
             // Nothing found yet; use the app's own launcher icon. Should always be set...
-            Log.d(
+            Log.w(
                     "Snapyr",
                     "SnapyrNotificationHandler: couldn't find notification icon; falling back to your app's launcher icon");
             result = applicationContext.getApplicationInfo().icon;
         }
         if (result == 0) {
             // ... if not, use an Android built-in icon guaranteed to be present (a bell)
-            Log.d(
+            Log.w(
                     "Snapyr",
                     "SnapyrNotificationHandler: couldn't find app's launcher icon; falling back to system icon");
             result = android.R.drawable.ic_popup_reminder;
@@ -268,7 +266,6 @@ public class SnapyrNotificationHandler {
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     public void showSampleNotification() {
         ArrayList<ValueMap> actionButtons = new ArrayList<>();
         actionButtons.add(
