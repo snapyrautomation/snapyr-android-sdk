@@ -37,6 +37,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -173,8 +174,8 @@ public class WebviewModalView extends FrameLayout {
         WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
     }
 
-    private InAppWebviewClient createClient() {
-        return new InAppWebviewClient() {
+    private WebViewClient createClient() {
+        return new WebViewClient() {
             @Override
             public void onPageCommitVisible(WebView view, String url) {
                 super.onPageCommitVisible(view, url);
