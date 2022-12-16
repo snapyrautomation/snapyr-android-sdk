@@ -34,6 +34,8 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Build;
+import android.text.Html;
+import android.text.Spanned;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
@@ -113,6 +115,16 @@ public class SnapyrNotificationHandler {
         }
     }
 
+    private CharSequence renderHtmlString(String rawString) {
+        try {
+            Spanned spanned = Html.fromHtml(rawString);
+            return spanned;
+        } catch (Exception e) {
+            Log.e("Snapyr.Notification", "Error attempting to render HTML", e);
+            return rawString;
+        }
+    }
+
     public void showRemoteNotification(SnapyrNotification snapyrNotification) {
         registerChannel(
                 snapyrNotification.channelId,
@@ -120,15 +132,17 @@ public class SnapyrNotificationHandler {
                 snapyrNotification.channelDescription,
                 CHANNEL_DEFAULT_IMPORTANCE);
 
+        CharSequence parsedBody = renderHtmlString(snapyrNotification.contentText);
+
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(this.context, snapyrNotification.channelId);
         builder.setSmallIcon(getNotificationIcon())
                 // only applies for Android N or older (ignored on later versions) - enables
                 // sound/vibration/lights, which helps make the "heads-up" notif preview display
                 .setDefaults(NotificationCompat.DEFAULT_ALL)
-                .setContentTitle(snapyrNotification.titleText)
-                .setContentText(snapyrNotification.contentText)
-                .setSubText(snapyrNotification.subtitleText)
+                .setContentTitle(renderHtmlString(snapyrNotification.titleText))
+                .setContentText(renderHtmlString(snapyrNotification.contentText))
+                .setSubText(renderHtmlString(snapyrNotification.subtitleText))
                 // Android N or older - must be PRIORITY_HIGH or higher for "heads-up" notif preview
                 // to display
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -137,7 +151,9 @@ public class SnapyrNotificationHandler {
                 // overridden by BigPictureStyle later, if notification has rich media
                 .setStyle(
                         new NotificationCompat.BigTextStyle()
-                                .bigText(snapyrNotification.contentText));
+                                .setBigContentTitle(renderHtmlString("<strong><span style=\"color: #ff0000\">BigText content title</span></strong>"))
+                                .setSummaryText(renderHtmlString("<strong><span style=\"color: #00ff00\">BigText summary text</span></strong>"))
+                                .bigText(renderHtmlString(snapyrNotification.contentText)));
 
         Intent trackIntent = new Intent(applicationContext, SnapyrNotificationListener.class);
         trackIntent.putExtra("snapyr.notification", snapyrNotification);
@@ -183,7 +199,8 @@ public class SnapyrNotificationHandler {
                 builder.setStyle(
                         new NotificationCompat.BigPictureStyle()
                                 .bigPicture(image)
-                                .setSummaryText(snapyrNotification.contentText));
+                                .setBigContentTitle(renderHtmlString("<strong><span style=\"color: #0000ff\">BigPicture content title</span></strong>"))
+                                .setSummaryText(renderHtmlString(snapyrNotification.contentText)));
             } catch (Exception e) {
                 Log.e(
                         "Snapyr",
@@ -258,7 +275,7 @@ public class SnapyrNotificationHandler {
                         trackIntent,
                         flags);
 
-        builder.addAction(R.drawable.ic_snapyr_logo_only, template.title, pendingIntent);
+        builder.addAction(R.drawable.ic_snapyr_logo_only, renderHtmlString(template.title), pendingIntent);
     }
 
     private int getDefaultPendingIntentFlags() {
@@ -278,13 +295,19 @@ public class SnapyrNotificationHandler {
                 new ValueMap()
                         .putValue("id", "button_one")
                         .putValue("actionId", "button_one")
-                        .putValue("title", "button_one")
+                        .putValue("title", "<strong>bold</strong>")
                         .putValue("deepLinkUrl", "snapyrsample://firsttest"));
         actionButtons.add(
                 new ValueMap()
                         .putValue("id", "button_two")
                         .putValue("actionId", "button_two")
-                        .putValue("title", "button_two")
+                        .putValue("title", "<em>italic</em>")
+                        .putValue("deepLinkUrl", "snapyrsample://secondtest"));
+        actionButtons.add(
+                new ValueMap()
+                        .putValue("id", "button_three")
+                        .putValue("actionId", "button_three")
+                        .putValue("title", "<u><span style=\"color: #00ff00\">u + color</span></u>")
                         .putValue("deepLinkUrl", "snapyrsample://secondtest"));
 
         ValueMap pushTemplateRaw =
@@ -295,17 +318,21 @@ public class SnapyrNotificationHandler {
 
         PushTemplate pushTemplate = new PushTemplate(pushTemplateRaw);
 
+        String notifBody = "<p><span style=\"color: #ea001d\"><strong>7Shot...over the boundary!</strong></span>🙌</p>"
+            + "<s>And you</s> <span style=\"color: #006683\"><strong>get 40% Off</strong></span> on Pizzas! 🎉 Use code:...";
+//                + "<p>Img test: [<img src=\"https://ps.w.org/wp-notification-bell/assets/icon-256x256.png\">]</p>";
+
         ValueMap samplePushData =
                 new ValueMap()
-                        .putValue(NOTIF_TITLE_KEY, "Snapyr: Title")
-                        .putValue(NOTIF_SUBTITLE_KEY, "Snapyr: Subtext")
-                        .putValue(NOTIF_CONTENT_KEY, "Snapyr: Content text")
+                        .putValue(NOTIF_TITLE_KEY, "<strong>Snapyr</strong>: <em><u>Title</u></em>")
+                        .putValue(NOTIF_SUBTITLE_KEY, "<b>Snapyr</b>: <i>Subtext</i>")
+                        .putValue(NOTIF_CONTENT_KEY, notifBody)
                         .putValue(
                                 NOTIF_DEEP_LINK_KEY,
                                 "snapyrsample://test/encoded&20message/more%20stuff")
-                        .putValue(
-                                NOTIF_IMAGE_URL_KEY,
-                                "https://images-na.ssl-images-amazon.com/images/S/pv-target-images/fb1fd46fbac48892ef9ba8c78f1eb6fa7d005de030b2a3d17b50581b2935832f._RI_.jpg")
+//                        .putValue(
+//                                NOTIF_IMAGE_URL_KEY,
+//                                "https://images-na.ssl-images-amazon.com/images/S/pv-target-images/fb1fd46fbac48892ef9ba8c78f1eb6fa7d005de030b2a3d17b50581b2935832f._RI_.jpg")
                         .putValue(
                                 NOTIF_TEMPLATE_KEY,
                                 "{\"modified\":\"2022-01-01T00:00:00Z\",\"id\":\"abcdef01-2345-6789-0123-abcdef012345\"}")
