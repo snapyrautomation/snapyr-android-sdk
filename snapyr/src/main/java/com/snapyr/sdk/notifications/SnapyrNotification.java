@@ -61,6 +61,8 @@ public class SnapyrNotification implements Parcelable {
     public final String channelName;
     public final String channelDescription;
 
+    public final boolean useCustomNotifLayout;
+
     public SnapyrNotification(RemoteMessage remoteMessage)
             throws IllegalArgumentException, NonSnapyrMessageException {
         this.notificationId = random.nextInt(Integer.MAX_VALUE); // MAX_VALUE ensures non-negative
@@ -135,6 +137,16 @@ public class SnapyrNotification implements Parcelable {
         this.deepLinkUrl = (deepLinkUrl != null) ? Uri.parse(deepLinkUrl) : null;
 
         this.imageUrl = getOrDefault(jsonData, SnapyrNotificationHandler.NOTIF_IMAGE_URL_KEY, null);
+
+        boolean _useCustomNotifLayout = false;
+        try {
+            if (jsonData.has("useCustomNotifLayout") && jsonData.getBoolean("useCustomNotifLayout")) {
+                _useCustomNotifLayout = true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        useCustomNotifLayout = _useCustomNotifLayout;
     }
 
     private String getOrDefault(JSONObject data, String key, String defaultVal) {
@@ -187,6 +199,7 @@ public class SnapyrNotification implements Parcelable {
         channelId = in.readString();
         channelName = in.readString();
         channelDescription = in.readString();
+        useCustomNotifLayout = in.readInt() != 0;
     }
 
     public static final Creator<SnapyrNotification> CREATOR =
@@ -225,6 +238,7 @@ public class SnapyrNotification implements Parcelable {
         dest.writeString(channelId);
         dest.writeString(channelName);
         dest.writeString(channelDescription);
+        dest.writeInt(useCustomNotifLayout ? 1 : 0);
     }
 
     public static class NonSnapyrMessageException extends Exception {

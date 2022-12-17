@@ -37,6 +37,10 @@ import android.os.Build;
 import android.text.Html;
 import android.text.Spanned;
 import android.util.Log;
+import android.view.View;
+import android.widget.RemoteViews;
+import android.widget.RemoteViewsService;
+
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
@@ -116,8 +120,17 @@ public class SnapyrNotificationHandler {
     }
 
     private CharSequence renderHtmlString(String rawString) {
+        return renderHtmlString(rawString, Html.FROM_HTML_MODE_LEGACY);
+    }
+
+    private CharSequence renderHtmlString(String rawString, int flags) {
         try {
-            Spanned spanned = Html.fromHtml(rawString);
+            Spanned spanned = null;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                spanned = Html.fromHtml(rawString, flags);
+            } else {
+                spanned = Html.fromHtml(rawString);
+            }
             return spanned;
         } catch (Exception e) {
             Log.e("Snapyr.Notification", "Error attempting to render HTML", e);
@@ -132,7 +145,36 @@ public class SnapyrNotificationHandler {
                 snapyrNotification.channelDescription,
                 CHANNEL_DEFAULT_IMPORTANCE);
 
-        CharSequence parsedBody = renderHtmlString(snapyrNotification.contentText);
+        RemoteViews notifLayoutCollapsed = new RemoteViews(applicationContext.getPackageName(), R.layout.notification_collapsed);
+        RemoteViews notifLayoutExpanded = new RemoteViews(applicationContext.getPackageName(), R.layout.notification_expanded);
+
+        int collapsedFlags = Html.FROM_HTML_OPTION_USE_CSS_COLORS | Html.FROM_HTML_MODE_COMPACT;
+        notifLayoutCollapsed.setTextViewText(R.id.collapsed_notification_title, renderHtmlString(snapyrNotification.titleText, collapsedFlags));
+        notifLayoutCollapsed.setTextViewText(R.id.collapsed_notification_info, renderHtmlString(snapyrNotification.contentText, collapsedFlags));
+
+        int expandedFlags = Html.FROM_HTML_OPTION_USE_CSS_COLORS | Html.FROM_HTML_MODE_LEGACY;
+        notifLayoutExpanded.setTextViewText(R.id.expanded_notification_title, renderHtmlString(snapyrNotification.titleText, expandedFlags));
+        notifLayoutExpanded.setTextViewText(R.id.expanded_notification_info, renderHtmlString(snapyrNotification.contentText, expandedFlags));
+
+        // Image handling - fetch from URL
+        // TODO (@paulwsmith): move off-thread? (maybe not necessary; not part of main thread
+        // anyway)
+        if (!isNullOrEmpty(snapyrNotification.imageUrl) && snapyrNotification.useCustomNotifLayout) {
+            InputStream inputStream = null;
+            Bitmap image = null;
+            try {
+                inputStream = new URL(snapyrNotification.imageUrl).openStream();
+                image = BitmapFactory.decodeStream(inputStream);
+                notifLayoutCollapsed.setImageViewBitmap(R.id.image_view_collapsed, image);
+                notifLayoutCollapsed.setViewVisibility(R.id.image_view_collapsed, View.VISIBLE);
+                notifLayoutExpanded.setImageViewBitmap(R.id.image_view_expanded, image);
+            } catch (Exception e) {
+                Log.e(
+                        "Snapyr",
+                        "SnapyrNotificationHandler: found imageUrl but unable to fetch or apply image",
+                        e);
+            }
+        }
 
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(this.context, snapyrNotification.channelId);
@@ -146,14 +188,46 @@ public class SnapyrNotificationHandler {
                 // Android N or older - must be PRIORITY_HIGH or higher for "heads-up" notif preview
                 // to display
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setAutoCancel(true) // true means notification auto dismissed after tapping
-                // Allows expansion of notifications with text overflow. Will optionally be
-                // overridden by BigPictureStyle later, if notification has rich media
-                .setStyle(
-                        new NotificationCompat.BigTextStyle()
-                                .setBigContentTitle(renderHtmlString("<strong><span style=\"color: #ff0000\">BigText content title</span></strong>"))
-                                .setSummaryText(renderHtmlString("<strong><span style=\"color: #00ff00\">BigText summary text</span></strong>"))
-                                .bigText(renderHtmlString(snapyrNotification.contentText)));
+                .setAutoCancel(true); // true means notification auto dismissed after tapping
+
+        if (snapyrNotification.useCustomNotifLayout) {
+            builder.setStyle(new NotificationCompat.DecoratedCustomViewStyle())
+                    .setCustomContentView(notifLayoutCollapsed)
+                    .setCustomBigContentView(notifLayoutExpanded);
+        } else {
+            // Allows expansion of notifications with text overflow. Will optionally be
+            // overridden by BigPictureStyle later, if notification has rich media
+            builder.setStyle(
+                    new NotificationCompat.BigTextStyle()
+                            .bigText(renderHtmlString(snapyrNotification.contentText)));
+
+            // Image handling - fetch from URL
+            // TODO (@paulwsmith): move off-thread? (maybe not necessary; not part of main thread
+            // anyway)
+            if (!isNullOrEmpty(snapyrNotification.imageUrl)) {
+                InputStream inputStream = null;
+                Bitmap image = null;
+                try {
+                    inputStream = new URL(snapyrNotification.imageUrl).openStream();
+                    image = BitmapFactory.decodeStream(inputStream);
+                    CharSequence bigContentTitle = renderHtmlString(snapyrNotification.titleText);
+                    if (snapyrNotification.subtitleText != null && snapyrNotification.subtitleText != "") {
+                        bigContentTitle = renderHtmlString(snapyrNotification.titleText + " - " + snapyrNotification.subtitleText);
+                    }
+                    builder.setStyle(
+                            new NotificationCompat.BigPictureStyle()
+                                    .bigPicture(image)
+                                    .setBigContentTitle(bigContentTitle)
+                                    .setSummaryText(renderHtmlString(snapyrNotification.contentText)));
+                } catch (Exception e) {
+                    Log.e(
+                            "Snapyr",
+                            "SnapyrNotificationHandler: found imageUrl but unable to fetch or apply image",
+                            e);
+                }
+            }
+        }
+
 
         Intent trackIntent = new Intent(applicationContext, SnapyrNotificationListener.class);
         trackIntent.putExtra("snapyr.notification", snapyrNotification);
@@ -184,28 +258,6 @@ public class SnapyrNotificationHandler {
                         snapyrNotification.notificationId,
                         button,
                         snapyrNotification.actionToken);
-            }
-        }
-
-        // Image handling - fetch from URL
-        // TODO (@paulwsmith): move off-thread? (maybe not necessary; not part of main thread
-        // anyway)
-        if (!isNullOrEmpty(snapyrNotification.imageUrl)) {
-            InputStream inputStream = null;
-            Bitmap image = null;
-            try {
-                inputStream = new URL(snapyrNotification.imageUrl).openStream();
-                image = BitmapFactory.decodeStream(inputStream);
-                builder.setStyle(
-                        new NotificationCompat.BigPictureStyle()
-                                .bigPicture(image)
-                                .setBigContentTitle(renderHtmlString("<strong><span style=\"color: #0000ff\">BigPicture content title</span></strong>"))
-                                .setSummaryText(renderHtmlString(snapyrNotification.contentText)));
-            } catch (Exception e) {
-                Log.e(
-                        "Snapyr",
-                        "SnapyrNotificationHandler: found imageUrl but unable to fetch or apply image",
-                        e);
             }
         }
 
@@ -318,9 +370,9 @@ public class SnapyrNotificationHandler {
 
         PushTemplate pushTemplate = new PushTemplate(pushTemplateRaw);
 
-        String notifBody = "<p><span style=\"color: #ea001d\"><strong>7Shot...over the boundary!</strong></span>🙌</p>"
+        String notifBody = "<p><span style=\"color: #ea001d\"><strong>1Shot...over the boundary!</strong></span>🙌</p>"
             + "<s>And you</s> <span style=\"color: #006683\"><strong>get 40% Off</strong></span> on Pizzas! 🎉 Use code:...";
-//                + "<p>Img test: [<img src=\"https://ps.w.org/wp-notification-bell/assets/icon-256x256.png\">]</p>";
+//            + "<p>Img test: [<img src=\"https://ps.w.org/wp-notification-bell/assets/icon-256x256.png\">]</p>";
 
         ValueMap samplePushData =
                 new ValueMap()
@@ -330,13 +382,14 @@ public class SnapyrNotificationHandler {
                         .putValue(
                                 NOTIF_DEEP_LINK_KEY,
                                 "snapyrsample://test/encoded&20message/more%20stuff")
-//                        .putValue(
-//                                NOTIF_IMAGE_URL_KEY,
-//                                "https://images-na.ssl-images-amazon.com/images/S/pv-target-images/fb1fd46fbac48892ef9ba8c78f1eb6fa7d005de030b2a3d17b50581b2935832f._RI_.jpg")
+                        .putValue(
+                                NOTIF_IMAGE_URL_KEY,
+                                "https://images-na.ssl-images-amazon.com/images/S/pv-target-images/fb1fd46fbac48892ef9ba8c78f1eb6fa7d005de030b2a3d17b50581b2935832f._RI_.jpg")
                         .putValue(
                                 NOTIF_TEMPLATE_KEY,
                                 "{\"modified\":\"2022-01-01T00:00:00Z\",\"id\":\"abcdef01-2345-6789-0123-abcdef012345\"}")
-                        .putValue(NOTIF_TOKEN_KEY, "abc123");
+                        .putValue(NOTIF_TOKEN_KEY, "abc123")
+                        .putValue("useCustomNotifLayout", true);
 
         HashMap<String, String> messageData = new HashMap<>();
         messageData.put("snapyr", samplePushData.toJsonObject().toString());
