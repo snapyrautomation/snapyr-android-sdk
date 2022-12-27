@@ -189,6 +189,14 @@ public class SnapyrNotificationHandler {
                         "Snapyr",
                         "SnapyrNotificationHandler: found imageUrl but unable to fetch or apply image",
                         e);
+            } finally {
+                try {
+                    if (inputStream != null) {
+                        inputStream.close();
+                    }
+                } catch (Exception e) {
+                    Log.w("Snapyr", "Error closing stream for notification image", e);
+                }
             }
         }
 
