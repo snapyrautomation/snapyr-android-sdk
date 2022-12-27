@@ -51,9 +51,9 @@ class SnapyrNotificationUtils {
         if (writeKey == null) {
             return null;
         }
-        return new Snapyr.Builder(context, writeKey)
-                .snapyrEnvironment(environment)
+        return new HelperSnapyrBuilder(context, writeKey)
                 .enableHelperInstance(context)
+                .snapyrEnvironment(environment)
                 .build();
     }
 }

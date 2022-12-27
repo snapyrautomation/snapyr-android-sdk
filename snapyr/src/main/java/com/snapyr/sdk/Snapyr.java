@@ -39,7 +39,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.Lifecycle;
@@ -1234,7 +1233,7 @@ public class Snapyr {
         private boolean useNewLifecycleMethods = true; // opt-out feature
         private ConnectionFactory.Environment snapyrEnvironment =
                 ConnectionFactory.Environment.PROD;
-        private boolean isHelperInstance = false; // internal use only
+        protected boolean isHelperInstance = false; // internal use only
 
         /** Start building a new {@link Snapyr} instance. */
         public Builder(Context context, String writeKey) {
@@ -1466,18 +1465,6 @@ public class Snapyr {
         public Builder defaultProjectSettings(ValueMap defaultProjectSettings) {
             Utils.assertNotNull(defaultProjectSettings, "defaultProjectSettings");
             this.defaultProjectSettings = defaultProjectSettings;
-            return this;
-        }
-
-        /** Snapyr internal use only - do not call */
-        public Builder enableHelperInstance(Context ctx) {
-            if (!ctx.getClass()
-                    .getPackage()
-                    .getName()
-                    .equals(SnapyrNotificationHandler.class.getPackage().getName())) {
-                Log.e("Snapyr", "Snapyr internal use only - do not call");
-            }
-            this.isHelperInstance = true;
             return this;
         }
 
