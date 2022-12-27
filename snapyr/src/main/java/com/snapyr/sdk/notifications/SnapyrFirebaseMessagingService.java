@@ -50,8 +50,21 @@ public class SnapyrFirebaseMessagingService extends FirebaseMessagingService {
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
-        super.onMessageReceived(remoteMessage);
+        try {
+            super.onMessageReceived(remoteMessage);
+            handleMessageReceived(remoteMessage);
+        } catch (Exception e) {
+            Log.e(
+                    "Snapyr",
+                    "Notification service encountered an unexpected error while attempting to process and display an incoming push notification",
+                    e);
+        }
+    }
+
+    private void handleMessageReceived(RemoteMessage remoteMessage) {
         SnapyrNotification snapyrNotification;
+        Snapyr snapyrInstance;
+
         try {
             snapyrNotification = new SnapyrNotification(remoteMessage);
         } catch (SnapyrNotification.NonSnapyrMessageException e) {
@@ -63,11 +76,18 @@ public class SnapyrFirebaseMessagingService extends FirebaseMessagingService {
             return;
         }
 
-        Snapyr snapyrInstance = SnapyrNotificationUtils.getSnapyrInstance(this);
-        if (snapyrInstance == null) {
+        try {
+            snapyrInstance = SnapyrNotificationUtils.getSnapyrInstance(this);
+            if (snapyrInstance == null) {
+                Log.e(
+                        "Snapyr",
+                        "Notification service couldn't initialize Snapyr. Make sure you've initialized Snapyr from within your main application prior to receiving notifications.");
+                return;
+            }
+        } catch (Exception e) {
             Log.e(
                     "Snapyr",
-                    "Notification service couldn't initialize Snapyr. Make sure you've initialized Snapyr from within your main application prior to receiving notifications.");
+                    "Notification service encountered exception while initializing Snapyr. Make sure you've initialized Snapyr from within your main application prior to receiving notifications.");
             return;
         }
 
