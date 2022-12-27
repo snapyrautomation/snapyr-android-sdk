@@ -39,6 +39,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.Lifecycle;
@@ -1468,9 +1469,13 @@ public class Snapyr {
             return this;
         }
 
+        /** Snapyr internal use only - do not call */
         public Builder enableHelperInstance(Context ctx) {
-            if (ctx.getClass().getPackage() != SnapyrNotificationHandler.class.getPackage()) {
-                throw new IllegalAccessError("Snapyr internal use only");
+            if (!ctx.getClass()
+                    .getPackage()
+                    .getName()
+                    .equals(SnapyrNotificationHandler.class.getPackage().getName())) {
+                Log.e("Snapyr", "Snapyr internal use only - do not call");
             }
             this.isHelperInstance = true;
             return this;
