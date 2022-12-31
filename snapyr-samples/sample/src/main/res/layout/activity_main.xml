@@ -84,6 +84,12 @@
             android:layout_height="wrap_content"
             android:text="@string/flush" />
 
+        <Button
+            android:id="@+id/action_reset_pushtoken"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/reset_token" />
+
         <TextView
             android:id="@+id/event_log"
             android:layout_width="match_parent"

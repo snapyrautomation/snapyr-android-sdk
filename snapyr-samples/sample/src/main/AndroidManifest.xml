@@ -62,7 +62,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
             <intent-filter>
-                <action android:name="com.snapyr.sdk.notifications.ACTION_DEEPLINK" />
+<!--                <action android:name="com.snapyr.sdk.notifications.ACTION_DEEPLINK" />-->
+                <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
 
                 <data
@@ -74,12 +75,12 @@
             </intent-filter>
         </activity>
 
-        <activity android:name="com.snapyr.sdk.notifications.SnapyrNotificationListener">
-            <intent-filter>
-                <action android:name="com.snapyr.sdk.notifications.TRACK_BROADCAST" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
+<!--        <activity android:name="com.snapyr.sdk.notifications.SnapyrNotificationListener">-->
+<!--            <intent-filter>-->
+<!--                <action android:name="com.snapyr.sdk.notifications.TRACK_BROADCAST" />-->
+<!--                <category android:name="android.intent.category.DEFAULT" />-->
+<!--            </intent-filter>-->
+<!--        </activity>-->
 
         <service
             android:name="com.snapyr.sdk.notifications.SnapyrFirebaseMessagingService"

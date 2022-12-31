@@ -36,6 +36,8 @@
 
     <string name="flush">Flush Events</string>
 
+    <string name="reset_token">Reset FCM Push Token</string>
+
     <string name="identify_button">Identify User</string>
     <string name="identify_user_id">Type in an ID to identify the user</string>
     <string name="id_required">User ID should not be blank or empty</string>

@@ -59,7 +59,7 @@ spotless {
     java {
         target '**/*.java'
         googleJavaFormat().aosp()
-        licenseHeader getLicenseText()
+//        licenseHeader getLicenseText()
     }
     kotlin {
         target '**/*.kt'
@@ -67,7 +67,7 @@ spotless {
                 'android'        : 'true',
                 'max_line_length': '120',
         ])
-        licenseHeader getLicenseText()
+//        licenseHeader getLicenseText()
     }
     groovyGradle {
         target '*.gradle'

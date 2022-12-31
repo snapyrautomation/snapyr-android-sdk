@@ -63,13 +63,17 @@ public class SnapyrNotification implements Parcelable {
 
     public SnapyrNotification(RemoteMessage remoteMessage)
             throws IllegalArgumentException, NonSnapyrMessageException {
-        this.notificationId = random.nextInt(Integer.MAX_VALUE); // MAX_VALUE ensures non-negative
-        Map<String, String> rawData = remoteMessage.getData();
-        String snapyrDataJson = rawData.get("snapyr");
+        this(remoteMessage.getData().get("snapyr"));
+    }
+
+    public SnapyrNotification(String snapyrDataJson)
+            throws IllegalArgumentException, NonSnapyrMessageException {
         if (snapyrDataJson == null) {
             throw new NonSnapyrMessageException(
                     "No 'snapyr' data found on notification payload (not a Snapyr notification)");
         }
+
+        this.notificationId = random.nextInt(Integer.MAX_VALUE); // MAX_VALUE ensures non-negative
 
         JSONObject jsonData = null;
         try {
