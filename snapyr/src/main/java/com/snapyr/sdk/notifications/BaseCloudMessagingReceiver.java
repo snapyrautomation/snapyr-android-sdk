@@ -15,7 +15,7 @@ import androidx.annotation.WorkerThread;
 import com.google.android.gms.cloudmessaging.CloudMessage;
 import com.google.android.gms.common.util.concurrent.NamedThreadFactory;
 //import com.google.android.gms.internal.cloudmessaging.GoogleZzaParcelable;
-//import com.google.android.gms.internal.cloudmessaging.GoogleZzf;
+import com.google.android.gms.internal.cloudmessaging.zzf;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import java.util.concurrent.ExecutionException;

@@ -31,7 +31,8 @@ final class GoogleZzo {
             if (var10002.length() != 0) {
                 var10001 = "Invalid interface descriptor: ".concat(var10002);
             } else {
-                String var10003 = new String;
+//                String var10003 = new String;
+                String var10003 = "";
                 var10001 = var10003;
 //                var10003.<init>("Invalid interface descriptor: ");
             }

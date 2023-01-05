@@ -20,6 +20,7 @@ import androidx.annotation.Nullable;
 //import com.google.android.gms.cloudmessaging.zzk;
 //import com.google.android.gms.cloudmessaging.zzm;
 //import com.google.android.gms.cloudmessaging.GoogleZzo;
+import com.google.android.gms.cloudmessaging.zzh;
 import com.google.android.gms.cloudmessaging.zzp;
 //import com.google.android.gms.cloudmessaging.zzq;
 import com.google.android.gms.common.internal.Preconditions;
@@ -44,12 +45,12 @@ final class GoogleZzf implements ServiceConnection {
     GoogleZzf(GoogleZzeTaskThing var1) {
         this.zzf = var1;
         this.zza = 0;
-        this.zzb = new Messenger(new com.google.android.gms.internal.cloudmessaging.zze(Looper.getMainLooper(), new GoogleZzi(this)));
+        this.zzb = new Messenger(new GoogleZzeGmsInternalCMExtendsHandler(Looper.getMainLooper(), new GoogleZzi(this)));
         this.zzd = new ArrayDeque();
         this.zze = new SparseArray();
     }
 
-    final synchronized boolean zza(GoogleZzq<?> var1) {
+    synchronized boolean zza(GoogleZzq<?> var1) {
         switch(this.zza) {
             case 0:
                 this.zzd.add(var1);
@@ -61,9 +62,12 @@ final class GoogleZzf implements ServiceConnection {
                 this.zza = 1;
                 Intent var4;
                 (var4 = new Intent("com.google.android.c2dm.intent.REGISTER")).setPackage("com.google.android.gms");
-                if (!ConnectionTracker.getInstance().bindService(GoogleZzeTaskThing.zza(this.zzf), var4, this, 1)) {
+//                if (!ConnectionTracker.getInstance().bindService(GoogleZzeTaskThing.zza(this.zzf), var4, this, 1)) {
+                if (!ConnectionTracker.getInstance().bindService(this.zzf.zzb, var4, this, 1)) {
                     this.zza(0, "Unable to bind to service");
                 } else {
+                    com.google.android.gms.cloudmessaging.zze.zzb(this.zzf).schedule(new GoogleZzhRunnable(this), 30L, TimeUnit.SECONDS);
+//                    this.zzf.zzb(0, new Bundle()).sche
                     GoogleZzeTaskThing.singleton.zzb(this.zzf).schedule(new zzh(this), 30L, TimeUnit.SECONDS);
                 }
 
@@ -140,7 +144,8 @@ final class GoogleZzf implements ServiceConnection {
             if (var10002.length() != 0) {
                 var10001 = "Disconnected: ".concat(var10002);
             } else {
-                String var10003 = new String;
+//                String var10003 = new String;
+                String var10003 = "";
                 var10001 = var10003;
 //                var10003.<init>("Disconnected: ");
             }

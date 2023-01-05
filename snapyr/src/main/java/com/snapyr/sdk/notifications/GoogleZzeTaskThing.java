@@ -8,6 +8,7 @@ import androidx.annotation.VisibleForTesting;
 
 //import com.google.android.gms.cloudmessaging.zzn;
 //import com.google.android.gms.cloudmessaging.zzq;
+import com.google.android.gms.common.internal.zzs;
 import com.google.android.gms.common.util.concurrent.NamedThreadFactory;
 import com.google.android.gms.tasks.Task;
 import java.util.concurrent.ScheduledExecutorService;
@@ -43,7 +44,7 @@ public final class GoogleZzeTaskThing {
     }
 
     public final Task<Bundle> zzb(int var1, Bundle var2) {
-        return this.zza((GoogleZzq)(new zzs(this.GoogleZzaParcelable(), 1, var2)));
+        return this.zza((GoogleZzq)(new GoogleZzsExtendsZzq(this.zza(), 1, var2)));
     }
 
     private final synchronized <T> Task<T> zza(GoogleZzq<T> var1) {
