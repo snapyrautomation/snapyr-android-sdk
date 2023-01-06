@@ -49,7 +49,7 @@ public class BatchUploadRequest implements Closeable, BatchQueue.ElementVisitor 
     @Private static final Charset UTF_8 = Charset.forName("UTF-8");
     static final String SNAPYR_KEY = "Snapyr";
 
-    public static final boolean DEBUG_MODE = true;
+    public static final boolean DEBUG_MODE = false;
     StringBuilder debugString = new StringBuilder();
     private boolean needsComma = false;
     private JsonWriter jsonWriter;
