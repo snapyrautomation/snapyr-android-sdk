@@ -20,18 +20,6 @@
         </activity>
 
         <receiver
-            android:name="com.snapyr.sdk.notifications.SnapyrCloudMessagingReceiver"
-            android:enabled="true"
-            android:exported="true"
-            android:permission="com.google.android.c2dm.permission.SEND">
-            <!-- TODO: add priority to intent filter? -->
-            <intent-filter>
-                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
-                <category android:name="com.snapyr.sdk.notifications" />
-            </intent-filter>
-        </receiver>
-
-        <receiver
             android:name="com.snapyr.sdk.notifications.SnapyrC2DMReceiver"
             android:enabled="true"
             android:exported="true"
