@@ -30,22 +30,26 @@ public class SnapyrC2DMReceiver extends BroadcastReceiver {
         super();
     }
 
-    /**
-     * TODO:
-     *  - onReceive is called on main thread. Need to move to another thread/executor
-     *      - See BroadcastReceiver `goAsync()`
-     *      - `CloudMessagingReceiver` (from GCM code) does this too, maybe look there
-     *  - Review device token handling
-     *      - Not done through C2DM; this will still be done through Firebase. That means we / the client still need to include Firebase packages through Gradle the same as before (as well as google-services.json). 
-     *      - Looks like we CAN fully get rid of SnapyrFirebaseMessagingService
-     *      - autoRegisterFirebaseToken called at Snapyr init should handle getting + storing the token
-     *      - onNewToken was duplicating calls and should be unnecessary
-     *      - There does not seem to be any situation where a token would change DURING app runtime, unless there was explicit code to delete the old token. So checking the token on every app startup should be sufficient for keeping things up-to-date...
-     *          - https://groups.google.com/g/firebase-talk/c/Ka6bTmQeNwg - notes about when tokens change
-     *          - See if we can listen for changes some other way, just to be safe?
-     *  - Watch out for duplicate sends of the same notification? (use message ID to dedupe?)
-     *  - Test w/ React Native - make sure everything works the same as before
-     */
+    // TODO:
+    //  - onReceive is called on main thread. Need to move to another thread/executor
+    //      - See BroadcastReceiver `goAsync()`
+    //      - `CloudMessagingReceiver` (from GCM code) does this too, maybe look there
+    //  - Review device token handling
+    //      - Not done through C2DM; this will still be done through Firebase. That means we / the
+    //        client still need to include Firebase packages through Gradle the same as before (as
+    //        well as google-services.json).
+    //      - Looks like we CAN fully get rid of SnapyrFirebaseMessagingService
+    //      - autoRegisterFirebaseToken called at Snapyr init should handle getting + storing the
+    //        token
+    //      - onNewToken was duplicating calls and should be unnecessary
+    //      - There does not seem to be any situation where a token would change DURING app runtime,
+    //        unless there was explicit code to delete the old token. So checking the token on every
+    //        app startup should be sufficient for keeping things up-to-date...
+    //          - https://groups.google.com/g/firebase-talk/c/Ka6bTmQeNwg - notes about when tokens
+    //            change
+    //          - See if we can listen for changes some other way, just to be safe?
+    //  - Watch out for duplicate sends of the same notification? (use message ID to dedupe?)
+    //  - Test w/ React Native - make sure everything works the same as before
     @Override
     public void onReceive(Context context, Intent intent) {
         boolean isMainThread = Looper.myLooper() == Looper.getMainLooper(); // true
