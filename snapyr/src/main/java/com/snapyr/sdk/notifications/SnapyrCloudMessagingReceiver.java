@@ -60,9 +60,7 @@ public class SnapyrCloudMessagingReceiver extends CloudMessagingReceiver {
         Integer google_ttl = extras.getInt("google.ttl"); // 2419200
         String google_original_priority = extras.getString("google.original_priority"); // "normal"
         // the original "snapyr" key from the push payload, as a String (needs to be JSON parsed)
-        String snapyr =
-                extras.getString(
-                        "snapyr"); // {"xxdeepLinkUrl":"https:\/\/cricheroes.app\/home-screen\/my-cricket\/my-matches","deepLinkUrl":"https:\/\/cricheroes.app\/sasdfhome-screen\/my-cricket\/my-matches","subtitle":"Yes it is!","imageUrl":"https:\/\/images-na.ssl-images-amazon.com\/images\/S\/pv-target-images\/fb1fd46fbac48892ef9ba8c78f1eb6fa7d005de030b2a3d17b50581b2935832f._SX1080_.jpg","contentText":"Bring your teammates on CricHeroes and start scoring. 💪","pushTemplate":{"modified":"2022-11-10T21:20:15.409Z","id":"b29f9018-ea25-4bf5-8a9b-d8d6a8bc29a1"},"actionToken":"Zjk1OTkxZGEtZWE5Yy00ZTQ0LTk5OGQtNWZmNWY0Y2EwNGQzOmIyOWY5MDE4LWVhMjUtNGJmNS04YTliLWQ4ZDZhOGJjMjlhMTpmYmYxMTljMS1lMjNlLTQxZDEtODkyMi05MjE5M2RlNGRkODk6NGZjOGE5NGQtNGU0Zi00NTQ4LWE3NjYtMzM1NDY2YmViMzBjOnB1Ymxpc2g6NGY5YTA0NzMtYWY4OS00M2QyLWEyZTMtZmFiN2FkNmU0MzUyOnBhdWwxMTExYTp0YmQ6MTY2ODY0ODQzOTphY3Rpb25Ub2tlbi00ZjlhMDQ3My1hZjg5LTQzZDItYTJlMy1mYWI3YWQ2ZTQzNTIucGF1bDExMTFhLjE2Njg2NDg0Mzk=","title":"4Alice, it's high time!","xdeepLinkUrl":"https:\/\/cricheroes.app\/ch-leader-board"}
+        String snapyr = extras.getString("snapyr");
         // Matches Firebase Project ID
         String from2 = extras.getString("from"); // 983718517902
         // Unique message id, which comes back as `results.message_id` in response body when sending
