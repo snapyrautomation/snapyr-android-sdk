@@ -44,21 +44,17 @@ import androidx.annotation.RequiresApi;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.installations.FirebaseInstallations;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.snapyr.sdk.Snapyr;
 import com.snapyr.sdk.Traits;
-import com.snapyr.sdk.inapp.webview.WebviewModalView;
-
 import io.github.inflationx.viewpump.ViewPumpContextWrapper;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends Activity {
     @BindView(R.id.user_id)
@@ -190,9 +186,7 @@ public class MainActivity extends Activity {
                     addLog("Push token reset", "ERROR getting new token");
                 }
 
-
-
-//                installationInst.registerFidListener()
+                //                installationInst.registerFidListener()
                 boolean autoInitEnabled = messagingInst.isAutoInitEnabled();
             }
         }.start();
@@ -250,14 +244,15 @@ public class MainActivity extends Activity {
             Log.e("Snapyr.sample", "addLog: could not find event_log view");
             return;
         }
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                // Prepend so the latest entry shows up on top
-                Editable editableText = logView.getEditableText();
-                editableText.insert(0, newEntry);
-                logView.setText(editableText);
-            }
-        });
+        runOnUiThread(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        // Prepend so the latest entry shows up on top
+                        Editable editableText = logView.getEditableText();
+                        editableText.insert(0, newEntry);
+                        logView.setText(editableText);
+                    }
+                });
     }
 }

@@ -286,7 +286,6 @@ public class Snapyr {
                     new Runnable() {
                         @Override
                         public void run() {
-//                            Looper.getMainLooper().getQueue().sche
                             HANDLER.post(
                                     new Runnable() {
                                         @Override

@@ -34,7 +34,6 @@ import com.snapyr.sdk.ValueMap;
 import com.snapyr.sdk.internal.PushTemplate;
 import com.snapyr.sdk.internal.Utils;
 import java.util.Date;
-import java.util.Map;
 import java.util.Random;
 import org.json.JSONObject;
 
