@@ -12,7 +12,9 @@
 <!--    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />-->
 
     <application>
-        <activity android:name="com.snapyr.sdk.notifications.SnapyrNotificationListener">
+        <activity
+            android:name="com.snapyr.sdk.notifications.SnapyrNotificationListener"
+            android:exported="false">
             <intent-filter>
                 <action android:name="com.snapyr.sdk.notifications.TRACK_BROADCAST" />
                 <category android:name="android.intent.category.DEFAULT" />
